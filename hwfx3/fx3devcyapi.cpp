@@ -208,6 +208,12 @@ void FX3DevCyAPI::fx3_development_call() {
             fprintf( stderr, "initing ad9361...\n");
             dev->initialize();
             fprintf( stderr, "ad9361 inted\n");
+
+            dev->tune(ad9361_device_t::RX, 1600000000.0);
+
+            dev->set_gain(ad9361_device_t::RX, ad9361_device_t::chain_t::CHAIN_1, 87.5);
+            dev->set_gain(ad9361_device_t::RX, ad9361_device_t::chain_t::CHAIN_2, 87.5);
+
         } catch ( std::runtime_error rt_err ) {
             fprintf( stderr, "Error in ad9361: %s\n", rt_err.what() );
         }
