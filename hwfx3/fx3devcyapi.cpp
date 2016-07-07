@@ -1,9 +1,9 @@
 #include "fx3devcyapi.h"
-#include "HexParser.h"
+#ifndef NO_CY_API
 
+#include "HexParser.h"
 #include "ad9361/ad9361_tuner.h"
 
-#ifndef NO_CY_API
 
 FX3DevCyAPI::FX3DevCyAPI() :
     data_handler( NULL ),
@@ -499,7 +499,6 @@ fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data
     }
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
-#endif
 
 
 void FX3DevCyAPI::xfer_loop() {
@@ -646,4 +645,5 @@ void FX3DevCyAPI::poke8(uint32_t register_address24, uint8_t value) {
     send24bitSPI( value, register_address24 );
 }
 
+#endif
 

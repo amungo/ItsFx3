@@ -101,14 +101,13 @@ public:
     FX3DevCyAPI(){}
     ~FX3DevCyAPI(){}
 
-public:
     // FX3DevIfce interface
-    fx3_dev_err_t init(const char*, const char*){ return FX3_ERR_DRV_NOT_IMPLEMENTED; }
-    void startRead(DeviceDataHandlerIfce*){}
+    fx3_dev_err_t init(const char *firmwareFileName, const char *additionalFirmwareFileName){ return FX3_ERR_DRV_NOT_IMPLEMENTED; }
+    void startRead(DeviceDataHandlerIfce *handler){}
     void stopRead(){}
-    void sendAttCommand5bits(uint32_t){}
-    fx3_dev_debug_info_t getDebugInfoFromBoard(){ return fx3_dev_debug_info_t(); }
-
+    void sendAttCommand5bits(uint32_t bits){}
+    fx3_dev_debug_info_t getDebugInfoFromBoard(bool ask_speed_only){ return fx3_dev_debug_info_t(); }
+    void fx3_development_call(){}
 };
 #endif
 
