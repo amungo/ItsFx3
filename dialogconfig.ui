@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>458</width>
+    <width>456</width>
     <height>365</height>
    </rect>
   </property>
@@ -105,7 +105,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>61</width>
+      <width>111</width>
       <height>17</height>
      </rect>
     </property>
@@ -152,9 +152,9 @@
    <widget class="QLabel" name="labelPreDef">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>110</x>
       <y>10</y>
-      <width>141</width>
+      <width>191</width>
       <height>20</height>
      </rect>
     </property>
@@ -167,7 +167,7 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>81</width>
+      <width>131</width>
       <height>17</height>
      </rect>
     </property>
@@ -200,7 +200,7 @@
      <rect>
       <x>10</x>
       <y>110</y>
-      <width>141</width>
+      <width>201</width>
       <height>20</height>
      </rect>
     </property>
@@ -213,7 +213,7 @@
      <rect>
       <x>10</x>
       <y>80</y>
-      <width>131</width>
+      <width>191</width>
       <height>16</height>
      </rect>
     </property>
@@ -224,9 +224,9 @@
    <widget class="QCheckBox" name="checkBoxHaveDbg">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>150</x>
       <y>50</y>
-      <width>121</width>
+      <width>171</width>
       <height>17</height>
      </rect>
     </property>
@@ -238,9 +238,9 @@
   <widget class="QLabel" name="labelDriver">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>240</x>
      <y>10</y>
-     <width>61</width>
+     <width>81</width>
      <height>20</height>
     </rect>
    </property>
@@ -253,7 +253,7 @@
     <rect>
      <x>20</x>
      <y>320</y>
-     <width>111</width>
+     <width>171</width>
      <height>17</height>
     </rect>
    </property>
