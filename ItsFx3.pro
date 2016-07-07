@@ -137,8 +137,8 @@ else:win32-g++:   PRE_TARGETDEPS += $$PWD/libs/libusb/MinGW32/static/libusb-1.0.
 
 win32: LIBS += -L$$PWD/libs/cyapi/x86/ -lCyAPI
 
-INCLUDEPATH += $$PWD/libs/cyapi/x86
-DEPENDPATH += $$PWD/libs/cyapi/x86
+win32: INCLUDEPATH += $$PWD/libs/cyapi/x86
+win32: DEPENDPATH += $$PWD/libs/cyapi/x86
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/cyapi/x86/CyAPI.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/libs/cyapi/x86/libCyAPI.a
@@ -147,8 +147,8 @@ else:win32-g++: PRE_TARGETDEPS += $$PWD/libs/cyapi/x86/libCyAPI.a
 
 win32: LIBS += -L$$PWD/libs/libfftw/ -llibfftw3f-3
 
-INCLUDEPATH += $$PWD/libs/libfftw
-DEPENDPATH += $$PWD/libs/libfftw
+win32: INCLUDEPATH += $$PWD/libs/libfftw
+win32: DEPENDPATH += $$PWD/libs/libfftw
 
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libfftw/libfftw3f-3.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/libs/libfftw/liblibfftw3f-3.a
