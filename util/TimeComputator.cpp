@@ -1,21 +1,6 @@
 #include "TimeComputator.h"
 #include <cstdio>
-
-#ifdef WIN32
-static void gettimeofday( struct timeval* tv, void* ) {
-    LARGE_INTEGER ticks;
-    QueryPerformanceCounter( &ticks );
-
-    LARGE_INTEGER ticks_per_second;
-    QueryPerformanceFrequency(&ticks_per_second);
-
-    long long mks = ( 1000000 * ticks.QuadPart ) / ticks_per_second.QuadPart;
-
-    tv->tv_sec  = mks / 1000000;
-    tv->tv_usec = mks % 1000000;
-}
-
-#endif
+#include <chrono>
 
 TimeComputator::TimeComputator( std::string name ) :
     print_period( 1 ),
@@ -27,13 +12,12 @@ TimeComputator::TimeComputator( std::string name ) :
 }
 
 void TimeComputator::Start() {
-    gettimeofday( &time_last, 0 );
+    time_last_mks = getNowMks();
 }
 
 void TimeComputator::Finish() {
-    struct timeval time_now;
-    gettimeofday( &time_now, 0 );
-    time_accum_mks += time_now.tv_usec - time_last.tv_usec + 1000000.0 * ( time_now.tv_sec - time_last.tv_sec );
+    int64_t time_now = getNowMks();
+    time_accum_mks += time_now - time_last_mks;
 
     calls_count++;
 
@@ -47,6 +31,10 @@ void TimeComputator::Finish() {
 
 void TimeComputator::SetPrintPeriod(int n) {
     print_period = n;
+}
+
+int64_t TimeComputator::getNowMks() {
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 

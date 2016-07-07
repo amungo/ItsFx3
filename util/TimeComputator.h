@@ -1,13 +1,8 @@
 #ifndef TIMECOMPUTATOR_H
 #define TIMECOMPUTATOR_H
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
 #include <string>
+#include <cstdint>
 
 class TimeComputator
 {
@@ -17,11 +12,13 @@ public:
     void Finish();
     void SetPrintPeriod( int n );
 private:
-    struct timeval time_last;
+    int64_t time_last_mks;
     int print_period;
     int calls_count;
     double time_accum_mks;
     std::string name;
+
+    int64_t getNowMks();
 };
 
 #endif // TIMECOMPUTATOR_H
