@@ -14,12 +14,6 @@ class ad9361_device_t {
 public:
     ad9361_device_t( DeviceControlIOIfce* device_cmd_io, ad9361_params* params  );
     ~ad9361_device_t();
-
-
-
-
-
-public:
     enum direction_t { RX, TX };
     enum gain_mode_t {GAIN_MODE_MANUAL, GAIN_MODE_SLOW_AGC, GAIN_MODE_FAST_AGC};
     enum chain_t { CHAIN_1, CHAIN_2, CHAIN_BOTH };

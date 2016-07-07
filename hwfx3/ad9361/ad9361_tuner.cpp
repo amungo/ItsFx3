@@ -22,7 +22,7 @@ const double ad9361_device_t::AD9361_CAL_VALID_WINDOW = 100e6;
 const double ad9361_device_t::AD9361_RECOMMENDED_MAX_BANDWIDTH = 56e6;
 
 /* Startup RF frequencies */
-const double ad9361_device_t::DEFAULT_RX_FREQ = 800e6;
+const double ad9361_device_t::DEFAULT_RX_FREQ = 5000e6;
 const double ad9361_device_t::DEFAULT_TX_FREQ = 850e6;
 
 
@@ -312,7 +312,6 @@ void ad9361_device_t::_calibrate_synth_charge_pumps()
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     _io_iface->poke8(0x23d, 0x00);
-
     /* Calibrate the TX synthesizer charge pump. */
     count = 0;
     _io_iface->poke8(0x27d, 0x04);
@@ -1195,13 +1194,17 @@ double ad9361_device_t::_tune_bbvco(const double rate)
 
     _req_coreclk = rate;
 
-    const double fref = 40e6;
+#if 1
+    const double fref = 2*40e6;
     const int modulus = 2088960;
+#else
+    const double fref = 2*19.2e6;
+    const int modulus = 2088960;
+#endif
     const double vcomax = 1430e6;
     const double vcomin = 672e6;
     double vcorate;
     int vcodiv;
-
     /* Iterate over VCO dividers until appropriate divider is found. */
     int i = 1;
     for (; i <= 6; i++) {
@@ -1230,7 +1233,11 @@ double ad9361_device_t::_tune_bbvco(const double rate)
     double icp = icp_baseline * (actual_vcorate / freq_baseline);
     int icp_reg = static_cast<int>(icp / 25e-6) - 1;
 
+#if 0
     _io_iface->poke8(0x045, 0x00);            // REFCLK / 1 to BBPLL
+#else
+    _io_iface->poke8(0x045, 0x03);            // REFCLK x 2 to BBPLL
+#endif
     _io_iface->poke8(0x046, icp_reg & 0x3F);  // CP current
     _io_iface->poke8(0x048, 0xe8);            // BBPLL loop filters
     _io_iface->poke8(0x049, 0x5b);            // BBPLL loop filters
@@ -1275,7 +1282,8 @@ double ad9361_device_t::_tune_helper(direction_t direction, const double value)
 {
     fprintf( stderr, "_tune_helper(%d, %.000000f MHz)\n", (int) direction, value / 1e6 );
     /* The RFPLL runs from 6 GHz - 12 GHz */
-    const double fref = 2.0*19.2e6;//80e6;
+    //const double fref = 2.0*19.2e6;
+    const double fref = 80e6;
     const int modulus = 8388593;
     const double vcomax = 12e9;
     const double vcomin = 6e9;
@@ -1624,7 +1632,11 @@ void ad9361_device_t::initialize()
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
     /* Tune the BBPLL, write TX and RX FIRS. */
-    _setup_rates(50e6);
+#if 1
+    _setup_rates(12.50e6);
+#else
+    _setup_rates(19.2e6);
+#endif
 
     /* Setup data ports (FDD dual port DDR):
      *      FDD dual port DDR CMOS no swap.
@@ -1633,7 +1645,7 @@ void ad9361_device_t::initialize()
     case AD9361_DDR_FDD_LVCMOS: {
         _io_iface->poke8(0x010, 0xc8); // Swap I&Q on Tx, Swap I&Q on Rx, Toggle frame sync mode
         _io_iface->poke8(0x011, 0x00);
-        _io_iface->poke8(0x012, 0x02);
+        _io_iface->poke8(0x012, 0x22);//0x02);//SDR mode patched
     } break;
 
     case AD9361_DDR_FDD_LVDS: {
@@ -1725,8 +1737,11 @@ void ad9361_device_t::initialize()
     /* The order of the following process is EXTREMELY important. If the
      * below functions are modified at all, device initialization and
      * calibration might be broken in the process! */
-
+#if 1
     _io_iface->poke8(0x015, 0x04); // dual synth mode, synth en ctrl en
+#else
+    _io_iface->poke8(0x015, 0xa2); // dual synth mode, synth en ctrl en
+#endif
     _io_iface->poke8(0x014, 0x05); // use SPI for TXNRX ctrl, to ALERT, TX on
     _io_iface->poke8(0x013, 0x01); // enable ENSM
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -1734,7 +1749,7 @@ void ad9361_device_t::initialize()
     _calibrate_synth_charge_pumps();
 
     _tune_helper(RX, _rx_freq);
-    //_tune_helper(TX, _tx_freq);
+    _tune_helper(TX, _tx_freq);
 
     _program_mixer_gm_subtable();
     _program_gain_table();
@@ -1764,7 +1779,7 @@ void ad9361_device_t::initialize()
     // cals done, set PPORT config
     switch (_client_params->get_digital_interface_mode()) {
     case AD9361_DDR_FDD_LVCMOS: {
-        _io_iface->poke8(0x012, 0x02);
+        _io_iface->poke8(0x012, 0x22);//0x02);//SDR mode patched
     } break;
 
     case AD9361_DDR_FDD_LVDS: {
@@ -1797,10 +1812,14 @@ void ad9361_device_t::initialize()
     _io_iface->poke8(0x15C, 0x67); // Power Measurement Duration
 
     /* Turn on the default RX & TX chains. */
-    set_active_chains(true, false, false, false);
+    //set_active_chains(true, false, false, false);
+    set_active_chains(false, false, true, true);
 
     /* Set TXers & RXers on (only works in FDD mode) */
     _io_iface->poke8(0x014, 0x21);
+
+    //output_test_tone();
+
 }
 
 
@@ -1901,7 +1920,7 @@ double ad9361_device_t::set_clock_rate(const double req_rate)
     // cals done, set PPORT config
     switch (_client_params->get_digital_interface_mode()) {
         case AD9361_DDR_FDD_LVCMOS: {
-            _io_iface->poke8(0x012, 0x02);
+            _io_iface->poke8(0x012, 0x22);//0x02);//SDR mode patched
         }break;
 
         case AD9361_DDR_FDD_LVDS: {
@@ -2161,7 +2180,8 @@ void ad9361_device_t::output_test_tone()  // On RF side!
 {
     std::lock_guard<std::recursive_mutex> lock(_mutex);
     /* Output a 480 kHz tone at 800 MHz */
-    _io_iface->poke8(0x3F4, 0x0B);
+    _io_iface->poke8(0x3F4, 0xcB);//0x0B
+    _io_iface->poke8(0x3F6, 0x0c);//0x00
     _io_iface->poke8(0x3FC, 0xFF);
     _io_iface->poke8(0x3FD, 0xFF);
     _io_iface->poke8(0x3FE, 0x3F);
