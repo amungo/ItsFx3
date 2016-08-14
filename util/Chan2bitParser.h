@@ -37,4 +37,27 @@ inline short decode2bit_to_short_ch3( unsigned short code ) {
 }
 
 
+
+
+inline short decode_2bchar_to_short_ch0( unsigned char code ) {
+    static short decode_samples_i16[4] = {1, 3, -1, -3};
+    return decode_samples_i16[ ( code & CODE_MASK_CH0 ) ];
+}
+
+inline short decode_2bchar_to_short_ch1( unsigned char code ) {
+    static short decode_samples_i16[4] = {1, 3, -1, -3};
+    return decode_samples_i16[ ( code & CODE_MASK_CH1 ) >> CODE_SHIFT_CH1 ];
+}
+
+inline short decode_2bchar_to_short_ch2( unsigned char code ) {
+    static short decode_samples_i16[4] = {1, 3, -1, -3};
+    return decode_samples_i16[ ( code & CODE_MASK_CH2 ) >> CODE_SHIFT_CH2 ];
+}
+
+inline short decode_2bchar_to_short_ch3( unsigned char code ) {
+    static short decode_samples_i16[4] = {1, 3, -1, -3};
+    return decode_samples_i16[ ( code & CODE_MASK_CH3 ) >> CODE_SHIFT_CH3 ];
+}
+
+
 #endif

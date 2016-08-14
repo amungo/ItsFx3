@@ -73,24 +73,8 @@ void StreamDumper::HandleADCStreamData(void* data, size_t size8) {
             if ( wrote != size8 ) {
                 fprintf( stderr, "__error__ StreamDumper::HandleStreamData() wrote %u of %u!\n", wrote, size8 );
             }
-            samples = size8 / sizeof(int16_t);
+            samples = size8 / sizeof(int8_t);
 
-        } else if ( type == StreamDump_4ch_AllChan_Byte ) {
-            samples = size8 / sizeof(int16_t);
-            uint32_t size_pts = size8 / 2;
-            uint16_t* p16 = ( uint16_t* ) data;
-            uint8_t* dst = new uint8_t[ size_pts ];
-
-            for ( uint32_t i = 0; i < size_pts; i++ ) {
-                dst[ i ] = ( uint8_t )( p16[ i ] & 0xFF );
-            }
-
-            size_t wrote = fwrite( dst, sizeof( uint8_t ), size_pts, dump_file );
-            if ( wrote != size_pts ) {
-                fprintf( stderr, "__error__ StreamDumper::HandleStreamData() wrote %u of %u!\n", wrote, size_pts );
-            }
-
-            delete [] dst;
         }
     }
     fmtx.unlock();

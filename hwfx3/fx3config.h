@@ -133,7 +133,7 @@ struct FX3Config {
             have_atts       = false;
             have_dbg        = true;
             fn_hex          = "nt1065.hex";
-            fn_img          = "fx3_nt1065.img";
+            fn_img          = "fx3_nt1065_8bit.img";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
             break;

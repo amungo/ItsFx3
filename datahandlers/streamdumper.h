@@ -15,7 +15,6 @@
 #include <cstdint>
 
 enum StreamDumpType_t {
-    StreamDump_4ch_AllChan_Byte,
     StreamDump_AllData,
     StreamDump_4ch_0ch_Byte,
     StreamDump_4ch_1ch_Byte,
@@ -24,8 +23,7 @@ enum StreamDumpType_t {
     StreamDump_TypeCount
 };
 static const char* StreamDumpTypeNames[ StreamDump_TypeCount ] = {
-    "All 4ch data in one byte",
-    "All ADC data (with dummy 0xFF)",
+    "All ADC data",
     "0-th chan as byte",
     "1-st chan as byte",
     "2-nd chan as byte",

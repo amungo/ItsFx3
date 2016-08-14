@@ -64,50 +64,53 @@ void StreamRouter::RouteData(void* data, size_t size8) {
     chans_data.resize( 0 );
     bool need_delete = false;
 
-    uint32_t pts_cnt16 = size8 / sizeof( int16_t );
+    uint32_t pts_cnt;
     if ( adc_type == ADC_NT1065 || adc_type == ADC_SE4150 ) {
+        pts_cnt = size8 / sizeof( uint8_t );
         chans_data.resize( 4 );
 
         need_delete = true;
         for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            chans_data[ ch ] = new int16_t[ pts_cnt16 ];
+            chans_data[ ch ] = new int16_t[ pts_cnt ];
         }
-        uint16_t* p16 = ( uint16_t* ) data;
-        for ( uint32_t i = 0; i < pts_cnt16; i+=4 ) {
-            chans_data[ 0 ][ i+0 ] = decode2bit_to_short_ch0(p16[i]);
-            chans_data[ 0 ][ i+1 ] = decode2bit_to_short_ch0(p16[i+1]);
-            chans_data[ 0 ][ i+2 ] = decode2bit_to_short_ch0(p16[i+2]);
-            chans_data[ 0 ][ i+3 ] = decode2bit_to_short_ch0(p16[i+3]);
+        uint8_t* p8 = ( uint8_t* ) data;
+        for ( uint32_t i = 0; i < pts_cnt; i+=4 ) {
+            chans_data[ 0 ][ i+0 ] = decode2bit_to_short_ch0(p8[i+0]);
+            chans_data[ 0 ][ i+1 ] = decode2bit_to_short_ch0(p8[i+1]);
+            chans_data[ 0 ][ i+2 ] = decode2bit_to_short_ch0(p8[i+2]);
+            chans_data[ 0 ][ i+3 ] = decode2bit_to_short_ch0(p8[i+3]);
 
-            chans_data[ 1 ][ i+0 ] = decode2bit_to_short_ch1(p16[i]);
-            chans_data[ 1 ][ i+1 ] = decode2bit_to_short_ch1(p16[i+1]);
-            chans_data[ 1 ][ i+2 ] = decode2bit_to_short_ch1(p16[i+2]);
-            chans_data[ 1 ][ i+3 ] = decode2bit_to_short_ch1(p16[i+3]);
+            chans_data[ 1 ][ i+0 ] = decode2bit_to_short_ch1(p8[i+0]);
+            chans_data[ 1 ][ i+1 ] = decode2bit_to_short_ch1(p8[i+1]);
+            chans_data[ 1 ][ i+2 ] = decode2bit_to_short_ch1(p8[i+2]);
+            chans_data[ 1 ][ i+3 ] = decode2bit_to_short_ch1(p8[i+3]);
 
-            chans_data[ 2 ][ i+0 ] = decode2bit_to_short_ch2(p16[i]);
-            chans_data[ 2 ][ i+1 ] = decode2bit_to_short_ch2(p16[i+1]);
-            chans_data[ 2 ][ i+2 ] = decode2bit_to_short_ch2(p16[i+2]);
-            chans_data[ 2 ][ i+3 ] = decode2bit_to_short_ch2(p16[i+3]);
+            chans_data[ 2 ][ i+0 ] = decode2bit_to_short_ch2(p8[i+0]);
+            chans_data[ 2 ][ i+1 ] = decode2bit_to_short_ch2(p8[i+1]);
+            chans_data[ 2 ][ i+2 ] = decode2bit_to_short_ch2(p8[i+2]);
+            chans_data[ 2 ][ i+3 ] = decode2bit_to_short_ch2(p8[i+3]);
 
-            chans_data[ 3 ][ i+0 ] = decode2bit_to_short_ch3(p16[i]);
-            chans_data[ 3 ][ i+1 ] = decode2bit_to_short_ch3(p16[i+1]);
-            chans_data[ 3 ][ i+2 ] = decode2bit_to_short_ch3(p16[i+2]);
-            chans_data[ 3 ][ i+3 ] = decode2bit_to_short_ch3(p16[i+3]);
+            chans_data[ 3 ][ i+0 ] = decode2bit_to_short_ch3(p8[i+0]);
+            chans_data[ 3 ][ i+1 ] = decode2bit_to_short_ch3(p8[i+1]);
+            chans_data[ 3 ][ i+2 ] = decode2bit_to_short_ch3(p8[i+2]);
+            chans_data[ 3 ][ i+3 ] = decode2bit_to_short_ch3(p8[i+3]);
         }
     } else if ( adc_type == ADC_1ch_16bit ) {
+        pts_cnt = size8 / sizeof( uint16_t );
         chans_data.resize( 1 );
         need_delete = false;
         chans_data[ 0 ] = ( int16_t* ) data;
 
     } else if ( adc_type == ADC_AD9361 ) {
+        pts_cnt = size8 / sizeof( uint16_t );
         chans_data.resize( 2 );
         need_delete = true;
         for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            chans_data[ ch ] = new int16_t[ pts_cnt16 / 2 ];
+            chans_data[ ch ] = new int16_t[ pts_cnt / 2 ];
         }
 
         int16_t* p16 = ( int16_t* ) data;
-        for ( uint32_t i = 0; i < pts_cnt16 / 2; i += 4 ) {
+        for ( uint32_t i = 0; i < pts_cnt / 2; i += 4 ) {
 
             chans_data[ 0 ][ i + 0 ] = *p16++; // I
             chans_data[ 0 ][ i + 1 ] = *p16++; // Q
@@ -136,9 +139,9 @@ void StreamRouter::RouteData(void* data, size_t size8) {
     while ( handler != handlers_copy.end() ) {
         (*handler)->HandleADCStreamData(data, size8);
         for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            uint32_t p_cnt_fixed = pts_cnt16;
+            uint32_t p_cnt_fixed = pts_cnt;
             if ( adc_type == ADC_AD9361 ) {
-                p_cnt_fixed = pts_cnt16 / 2;
+                p_cnt_fixed = pts_cnt / 2;
             }
             (*handler)->HandleStreamDataOneChan(chans_data[ ch ], p_cnt_fixed, ch);
         }

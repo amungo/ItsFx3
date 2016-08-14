@@ -392,7 +392,7 @@ fx3_dev_err_t FX3DevCyAPI::send16bitSPI(unsigned char data, unsigned char addr) 
     buf[0] = (UCHAR)(data);
     buf[1] = (UCHAR)(addr);
     
-    fprintf( stderr, "FX3Dev::send16bitToDevice( 0x%02X, 0x%02X )\n", data, addr );
+    //fprintf( stderr, "FX3Dev::send16bitToDevice( 0x%02X, 0x%02X )\n", data, addr );
     
     CCyControlEndPoint* CtrlEndPt;
     CtrlEndPt = StartParams.USBDevice->ControlEndPt;

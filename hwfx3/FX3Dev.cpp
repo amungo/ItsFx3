@@ -455,7 +455,7 @@ fx3_dev_debug_info_t FX3Dev::getDebugInfoFromBoard(bool ask_speed_only) {
 
 
 fx3_dev_err_t FX3Dev::send16bitToDeviceSynch( uint8_t byte0, uint8_t byte1 ) {
-    fprintf( stderr, "FX3Dev::send16bitToDevice( 0x%02X, 0x%02X )\n", byte0, byte1 );
+    //fprintf( stderr, "FX3Dev::send16bitToDevice( 0x%02X, 0x%02X )\n", byte0, byte1 );
     // see transferDataToDevice() for more information abput this specific values
     uint8_t bmRequestType = LIBUSB_RECIPIENT_DEVICE | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_OUT;
     uint8_t bRequest = CMD_REG_WRITE;
