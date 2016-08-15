@@ -75,25 +75,25 @@ void StreamRouter::RouteData(void* data, size_t size8) {
         }
         uint8_t* p8 = ( uint8_t* ) data;
         for ( uint32_t i = 0; i < pts_cnt; i+=4 ) {
-            chans_data[ 0 ][ i+0 ] = decode2bit_to_short_ch0(p8[i+0]);
-            chans_data[ 0 ][ i+1 ] = decode2bit_to_short_ch0(p8[i+1]);
-            chans_data[ 0 ][ i+2 ] = decode2bit_to_short_ch0(p8[i+2]);
-            chans_data[ 0 ][ i+3 ] = decode2bit_to_short_ch0(p8[i+3]);
+            chans_data[ 0 ][ i+0 ] = decode_2bchar_to_short_ch0(p8[i+0]);
+            chans_data[ 0 ][ i+1 ] = decode_2bchar_to_short_ch0(p8[i+1]);
+            chans_data[ 0 ][ i+2 ] = decode_2bchar_to_short_ch0(p8[i+2]);
+            chans_data[ 0 ][ i+3 ] = decode_2bchar_to_short_ch0(p8[i+3]);
 
-            chans_data[ 1 ][ i+0 ] = decode2bit_to_short_ch1(p8[i+0]);
-            chans_data[ 1 ][ i+1 ] = decode2bit_to_short_ch1(p8[i+1]);
-            chans_data[ 1 ][ i+2 ] = decode2bit_to_short_ch1(p8[i+2]);
-            chans_data[ 1 ][ i+3 ] = decode2bit_to_short_ch1(p8[i+3]);
+            chans_data[ 1 ][ i+0 ] = decode_2bchar_to_short_ch1(p8[i+0]);
+            chans_data[ 1 ][ i+1 ] = decode_2bchar_to_short_ch1(p8[i+1]);
+            chans_data[ 1 ][ i+2 ] = decode_2bchar_to_short_ch1(p8[i+2]);
+            chans_data[ 1 ][ i+3 ] = decode_2bchar_to_short_ch1(p8[i+3]);
 
-            chans_data[ 2 ][ i+0 ] = decode2bit_to_short_ch2(p8[i+0]);
-            chans_data[ 2 ][ i+1 ] = decode2bit_to_short_ch2(p8[i+1]);
-            chans_data[ 2 ][ i+2 ] = decode2bit_to_short_ch2(p8[i+2]);
-            chans_data[ 2 ][ i+3 ] = decode2bit_to_short_ch2(p8[i+3]);
+            chans_data[ 2 ][ i+0 ] = decode_2bchar_to_short_ch2(p8[i+0]);
+            chans_data[ 2 ][ i+1 ] = decode_2bchar_to_short_ch2(p8[i+1]);
+            chans_data[ 2 ][ i+2 ] = decode_2bchar_to_short_ch2(p8[i+2]);
+            chans_data[ 2 ][ i+3 ] = decode_2bchar_to_short_ch2(p8[i+3]);
 
-            chans_data[ 3 ][ i+0 ] = decode2bit_to_short_ch3(p8[i+0]);
-            chans_data[ 3 ][ i+1 ] = decode2bit_to_short_ch3(p8[i+1]);
-            chans_data[ 3 ][ i+2 ] = decode2bit_to_short_ch3(p8[i+2]);
-            chans_data[ 3 ][ i+3 ] = decode2bit_to_short_ch3(p8[i+3]);
+            chans_data[ 3 ][ i+0 ] = decode_2bchar_to_short_ch3(p8[i+0]);
+            chans_data[ 3 ][ i+1 ] = decode_2bchar_to_short_ch3(p8[i+1]);
+            chans_data[ 3 ][ i+2 ] = decode_2bchar_to_short_ch3(p8[i+2]);
+            chans_data[ 3 ][ i+3 ] = decode_2bchar_to_short_ch3(p8[i+3]);
         }
     } else if ( adc_type == ADC_1ch_16bit ) {
         pts_cnt = size8 / sizeof( uint16_t );
