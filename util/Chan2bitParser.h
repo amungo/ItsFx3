@@ -60,4 +60,25 @@ inline short decode_2bchar_to_short_ch3( unsigned char code ) {
 }
 
 
+
+inline float decode_2bchar_to_float_ch0( unsigned char code ) {
+    static float decode_samples_f32[4] = {1.0f, 3.0f, -1.0f, -3.0f};
+    return decode_samples_f32[ ( code & CODE_MASK_CH0 ) ];
+}
+
+inline float decode_2bchar_to_float_ch1( unsigned char code ) {
+    static float decode_samples_f32[4] = {1.0f, 3.0f, -1.0f, -3.0f};
+    return decode_samples_f32[ ( code & CODE_MASK_CH1 ) >> CODE_SHIFT_CH1 ];
+}
+
+inline float decode_2bchar_to_float_ch2( unsigned char code ) {
+    static float decode_samples_f32[4] = {1.0f, 3.0f, -1.0f, -3.0f};
+    return decode_samples_f32[ ( code & CODE_MASK_CH2 ) >> CODE_SHIFT_CH2 ];
+}
+
+inline float decode_2bchar_to_float_ch3( unsigned char code ) {
+    static float decode_samples_f32[4] = {1.0f, 3.0f, -1.0f, -3.0f};
+    return decode_samples_f32[ ( code & CODE_MASK_CH3 ) >> CODE_SHIFT_CH3 ];
+}
+
 #endif

@@ -81,6 +81,12 @@ void add_vector( float* dst, const float* B, int len ) {
     }
 }
 
+void add_vector(float_cpx_t *dst, const float_cpx_t *B, int len) {
+    for ( int i = 0; i < len; i++ ) {
+        dst[ i ].add( B[ i ] );
+    }
+}
+
 void get_lengths(const float_cpx_t *A, float *result, int len, double scale ) {
     for ( int i = 0; i < len; i++ ) {
         result[ i ] = A[ i ].len() * scale;
@@ -98,6 +104,12 @@ float get_mean(const float *A, int len) {
     return mean;
 }
 
+void mul_vec(float_cpx_t *A, float_cpx_t k, int len) {
+    for ( int i = 0; i < len; i++ ) {
+        A[i].mul_cpx(k);
+    }
+}
+
 float_cpx_t *freq_shift(const float_cpx_t *signal, uint32_t samples_count, double SR_hz, double freq_shift_hz) {
     float_cpx_t* out = new float_cpx_t[ samples_count ];
     float t = freq_shift_hz * 2.0f * M_PI / SR_hz;
@@ -107,4 +119,31 @@ float_cpx_t *freq_shift(const float_cpx_t *signal, uint32_t samples_count, doubl
         out[ i ] = signal[ i ].mul_cpx_const( css );
     }
     return out;
+}
+
+float_cpx_t* make_fir(const float_cpx_t *S, const float *fir, int out_len, int fir_len) {
+    float_cpx_t* ans = new float_cpx_t[ out_len ];
+
+    for ( int i = 0; i < out_len; i++ ) {
+        ans[ i ] = float_cpx_t(0.0f, 0.0f);
+        const float* h = fir;
+        const float_cpx_t* x = &S[i];
+
+        for ( int k = 0; k < fir_len; k++ ) {
+            ans[ i ].add( x->mul_real_const( *h ) );
+            x++;
+            h++;
+        }
+    }
+
+    return ans;
+}
+
+float_cpx_t calc_correlation(float_cpx_t *A, float_cpx_t *B, int len) {
+    float_cpx_t acc(0.0f, 0.0f);
+    for ( int i = 0; i < len; i++ ) {
+        float_cpx_t x = A[i].mul_cpx_conj_const( B[i] );
+        acc.add( x );
+    }
+    return acc;
 }

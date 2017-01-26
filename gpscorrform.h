@@ -81,6 +81,8 @@ private:
     int relativeShift;
     void setshifts();
 
+    int antijamIdx;
+
     void processRawData( const std::vector<short>* data );
 
     void uiRecalc();

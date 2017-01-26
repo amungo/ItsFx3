@@ -10,7 +10,8 @@
 
 enum DataType {
     DT_INT8_REAL  = 0,
-    DT_INT16_REAL = 1
+    DT_INT16_REAL = 1,
+    DT_FLOAT_IQ   = 2
 };
 
 class RawSignal {

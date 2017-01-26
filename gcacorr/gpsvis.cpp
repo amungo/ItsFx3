@@ -107,7 +107,7 @@ bool GPSVis::FindMaxCorr(double &freq_out, int &time_shift_out, float& corr_val,
         }
         ++it;
     }
-    bool found = corr_matrix.all_stat.corr_relative_coef() > 3.0;
+    bool found = corr_matrix.all_stat.corr_relative_coef() > this->edgeKoef;
     if ( found ) {
         fprintf( stderr, "**" );
     } else {
@@ -117,7 +117,8 @@ bool GPSVis::FindMaxCorr(double &freq_out, int &time_shift_out, float& corr_val,
 
     freq_out       = corr_matrix.all_stat.freq;
     time_shift_out = corr_matrix.all_stat.time_shift;
-    corr_val       = corr_matrix.all_stat.max_correlation;
+    //corr_val       = corr_matrix.all_stat.max_correlation;
+    corr_val = corr_matrix.all_stat.corr_relative_coef();
     if ( found ) {
         return true;
     } else {
@@ -145,7 +146,8 @@ void GPSVis::PreciseFreq(double &freq_out, int &time_shift_out, float &corr_val)
 
     freq_out       = corr_matrix.all_stat.freq;
     time_shift_out = corr_matrix.all_stat.time_shift;
-    corr_val       = corr_matrix.all_stat.max_correlation;
+    //corr_val       = corr_matrix.all_stat.max_correlation;
+    corr_val = corr_matrix.all_stat.corr_relative_coef();
 
     //file_dump( &corr_matrix.cmap[ freq_out ].data[ 0 ], corr_matrix.cmap[ freq_out ].data.size() * 4, "dump.flt" );
 
@@ -172,6 +174,10 @@ void GPSVis::GetCorrMatrix( std::vector< std::vector< float > >& ans, std::vecto
         ++it;
         x++;
     }
+}
+
+void GPSVis::SetEdgeKoef(double k) {
+    this->edgeKoef = k;
 }
 
 

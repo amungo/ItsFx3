@@ -37,6 +37,7 @@ public:
     bool FindMaxCorr(double& freq_out, int& time_shift_out, float &corr_val);
     void PreciseFreq(double& freq_out, int& time_shift_out, float &corr_val);
     void GetCorrMatrix( std::vector< std::vector< float > >& out, std::vector<double>& freqs);
+    void SetEdgeKoef( double k );
 
 private:
     void FlushCorr();
@@ -62,6 +63,8 @@ private:
     correlation_matrix_t corr_matrix;
 
     std::vector< RawSignal* >* sigs;
+
+    double edgeKoef;
 
 };
 

@@ -57,12 +57,18 @@ void RawSignal::LoadData(void *data, DataType dtype, uint32_t offset) {
             signal_source[ i ].i = ( float ) p16[ i + offset ];
             signal_source[ i ].q = 0.0f;
         }
+    } else if ( dtype == DT_FLOAT_IQ ) {
+        float_cpx_t* pIQF = ( float_cpx_t* ) data;
+        for ( int i = 0; i < N; i++ ) {
+            signal_source[ i ] = pIQF[ i + offset ];
+        }
     } else {
         fprintf( stderr, "RawSignal::LoadData() error data type unknown\n" );
     }
     //file_dump( signal_source, N*8, "sig.flt" );
     MakeSignalFFT();
 }
+
 
 const float_cpx_t* RawSignal::GetSignalShifted(double freq) {
     //fprintf( stderr, "RawSignal::GetSignalShifted( %.0f )\n", freq );

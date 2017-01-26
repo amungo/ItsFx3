@@ -19,13 +19,22 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
 
 
     int dtm = 0;
+    bool have_cypress = false;
+    int cypress_idx = 0;
 #ifndef NO_CY_API
+    have_cypress = true;
+    cypress_idx = dtm;
     ui->comboBoxDriverType->insertItem( dtm++, "Cypress API", QVariant(DrvTypeCypress));
 #endif
     int libusb_idx = dtm;
     ui->comboBoxDriverType->insertItem( dtm++, "LibUsb API", QVariant(DrvTypeLibUsb));
     ui->comboBoxDriverType->insertItem( dtm++, "File Sim", QVariant(DrvTypeFileSim));
-    ui->comboBoxDriverType->setCurrentIndex(libusb_idx);
+
+    if ( have_cypress ) {
+        ui->comboBoxDriverType->setCurrentIndex(cypress_idx);
+    } else {
+        ui->comboBoxDriverType->setCurrentIndex(libusb_idx);
+    }
 
     for ( int dtm = 0; dtm < ( int ) ADC_Types_Count; dtm++ ) {
         #ifdef NO_GPS
