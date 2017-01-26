@@ -77,6 +77,10 @@ private:
 
     std::vector< plot_data_t > cdata;
 
+    std::vector< int > shifts;
+    int relativeShift;
+    void setshifts();
+
     void processRawData( const std::vector<short>* data );
 
     void uiRecalc();
@@ -91,6 +95,7 @@ private slots:
     void RecFile(bool);
     void ChooseFile(bool);
     void RefreshPressed(int);
+    void relativeCorrChanged(int);
 
 
 signals:

@@ -36,6 +36,8 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
 
     QObject::connect(ui->checkRefresh, SIGNAL(stateChanged(int)), this, SLOT(RefreshPressed(int)));
 
+    QObject::connect(ui->spinBoxRelativeCorr, SIGNAL(valueChanged(int)), this, SLOT(relativeCorrChanged(int)) );
+
     plotCorrAll   = ui->widgetCorrAll;
     plotCorrGraph = ui->widgetCorrGraph;
 
@@ -73,6 +75,7 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
 
     ui->tableRes->setRowCount( PRN_MAX );
     ui->tableRes->setColumnCount( 4 );
+    shifts.resize( PRN_MAX );
 
     QStringList heads;
     heads << "Stat" << "Freq" << "Shift" << "Val";
@@ -270,6 +273,14 @@ QTableWidgetItem* MakeTableItem( const QString& str, bool grey ) {
     return item;
 }
 
+void GPSCorrForm::setshifts() {
+    for ( int i = 0; i < ui->tableRes->rowCount() && i < shifts.size(); i++ ) {
+        ui->tableRes->setItem( i, 2,
+            MakeTableItem( QString::number( shifts.at(i) - relativeShift ), true ) );
+    }
+}
+
+
 void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool is_visible) {
 
     int tidx = prn - 1;
@@ -287,10 +298,16 @@ void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool i
         ui->tableRes->setItem( tidx, 0, MakeTableItem(QString("-"), !is_visible ) );
     }
 
-    ui->tableRes->setItem( tidx, 1, MakeTableItem( QString::number( freq, 'f', 0  ), !is_visible ) );
-    ui->tableRes->setItem( tidx, 2, MakeTableItem( QString::number( shift ), !is_visible ) );
-    ui->tableRes->setItem( tidx, 3, MakeTableItem( QString::number( corr, 'f', 0 ), !is_visible ) );
+    shifts.at(tidx) = shift;
 
+    ui->tableRes->setItem( tidx, 1,
+                           MakeTableItem( QString::number( freq, 'f', 0  ), !is_visible ) );
+    ui->tableRes->setItem( tidx, 2,
+                           MakeTableItem( QString::number( shifts.at(tidx) - relativeShift ), !is_visible ) );
+    ui->tableRes->setItem( tidx, 3,
+                           MakeTableItem( QString::number( corr, 'f', 0 ), !is_visible ) );
+
+    //setShifts();
     redrawVisGraph();
 }
 
@@ -299,6 +316,7 @@ void GPSCorrForm::cellSelected(int x, int) {
     plot_data_t& p = cdata[ idx ];
     p.mutex->lock();
     qDebug( "PRN %d, init = %d", idx, p.inited );
+    ui->spinBoxRelativeCorr->setValue(shifts.at(x));
 
     plotCorrGraph->clearGraphs();
     if ( p.inited ) {
@@ -364,4 +382,10 @@ void GPSCorrForm::ChooseFile(bool) {
 
 void GPSCorrForm::RefreshPressed(int state) {
     uiRecalc();
+}
+
+void GPSCorrForm::relativeCorrChanged(int x) {
+    fprintf( stderr, "relativeCorrChanged(%d)\n\n", x );
+    relativeShift = ui->spinBoxRelativeCorr->value();
+    setshifts();
 }

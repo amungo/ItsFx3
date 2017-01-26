@@ -50,9 +50,9 @@
    <property name="geometry">
     <rect>
      <x>470</x>
-     <y>120</y>
+     <y>170</y>
      <width>591</width>
-     <height>521</height>
+     <height>471</height>
     </rect>
    </property>
   </widget>
@@ -60,7 +60,7 @@
    <property name="geometry">
     <rect>
      <x>470</x>
-     <y>90</y>
+     <y>140</y>
      <width>491</width>
      <height>31</height>
     </rect>
@@ -271,6 +271,25 @@
    </property>
    <property name="text">
     <string>Channel</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBoxRelativeCorr">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>100</y>
+     <width>81</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-53000</number>
+   </property>
+   <property name="maximum">
+    <number>53000</number>
+   </property>
+   <property name="singleStep">
+    <number>10</number>
    </property>
   </widget>
  </widget>
