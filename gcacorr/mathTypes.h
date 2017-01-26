@@ -1,6 +1,7 @@
 #ifndef _math_types_h_
 #define _math_types_h_
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 typedef struct float_cpx_t {
@@ -14,6 +15,10 @@ typedef struct float_cpx_t {
         this->q += A.q;
     }
     
+    inline float_cpx_t add_const( const float_cpx_t& A ) const {
+        return float_cpx_t( i + A.i, q + A.q );
+    }
+
     inline float_cpx_t& mul_real( const float x ) {
         this->i *= x;
         this->q *= x;
@@ -47,6 +52,16 @@ typedef struct float_cpx_t {
     inline float len() const {
         return sqrt( len_squared() );
     }
+
+    inline double angle( const float_cpx_t& A ) const {
+        double dot = i*A.i + q*A.q;     // dot product
+        double det = i*A.q - q*A.i;     // determinant
+        double angle = atan2(det, dot); // atan2(y, x) or atan2(sin, cos)
+        return angle;
+    }
+    inline double angle_deg( const float_cpx_t& A ) const {
+         return angle( A ) * 180.0 / M_PI;
+    }
     
 } float_cpx_t;
 
@@ -56,6 +71,19 @@ static inline float_cpx_t cpx_mul( const float_cpx_t& A, const float_cpx_t& B ) 
     S.q = A.i * B.q + A.q * B.i;
     return S;
 }
+
+static inline float_cpx_t operator* ( const float_cpx_t& A, const float_cpx_t& B ) {
+    return cpx_mul( A, B );
+}
+
+static inline float_cpx_t operator- ( const float_cpx_t& A, const float_cpx_t& B ) {
+    return A.add_const( B.mul_real_const( -1.0f ) );
+}
+
+static inline float_cpx_t operator+ ( const float_cpx_t& A, const float_cpx_t& B ) {
+    return A.add_const( B );
+}
+
 
 #endif
 

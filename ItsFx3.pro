@@ -49,7 +49,8 @@ SOURCES += main.cpp \
     SpectrumForm.cpp \
     util/TimeComputator.cpp \
     hwfx3/ad9361/ad9361_tuner.cpp \
-    hwfx3/ad9361/types/filters.cpp
+    hwfx3/ad9361/types/filters.cpp \
+    gcacorr/lazy_matrix.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -107,7 +108,8 @@ HEADERS  += itsmain.h \
     hwfx3/ad9361/ad9361_filter_taps.h \
     hwfx3/ad9361/ad9361_gain_tables.h \
     hwfx3/ad9361/ad9361_synth_lut.h \
-    datahandlers/filedumpcallbackifce.h
+    datahandlers/filedumpcallbackifce.h \
+    gcacorr/lazy_matrix.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
