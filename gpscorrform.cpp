@@ -147,7 +147,7 @@ void GPSCorrForm::calcSats()
         timer_corr_prepare.Start();
         GPSVis sv( PRN_IN_OPER[ si ],
                    7000.0,
-                   1000.0,
+                   ui->spinBoxFreqStep->value(),
                    cfg->adc_sample_rate_hz,
                    0.0
                    //GPS_L1_FREQ - cfg->inter_freq_hz
