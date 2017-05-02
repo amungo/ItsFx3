@@ -32,7 +32,6 @@ FileSimDev::FileSimDev(const char *sigfname, double real_sr, size_t pts_cnt_per_
         fprintf( stderr, "__error__ FileSimDev::FileSimDev() file IO error \n" );
     }
     buf_file = new int8_t[ block_pts ];
-    buf_send = new int16_t[ block_pts ];
     thr = std::thread( &FileSimDev::run, this );
 }
 
@@ -51,10 +50,6 @@ FileSimDev::~FileSimDev() {
         delete [] buf_file;
         buf_file = NULL;
     }
-    if ( buf_send ) {
-        delete [] buf_send;
-        buf_send = NULL;
-    }
 }
 
 void FileSimDev::run() {
@@ -72,12 +67,9 @@ void FileSimDev::run() {
             fprintf( stderr, "current_offset8 %12d, %5.0f ms\n", current_offset8, 1000.0 * ((double)current_offset8/1) / SR );
             fread( buf_file, 1, block_pts, file );
             current_offset8 += block_pts;
-            for ( int i = 0; i < block_pts; i++ ) {
-                buf_send[ i ] = ( int16_t ) buf_file[ i ];
-            }
 
             if ( cb_handle ) {
-                cb_handle->HandleDeviceData( buf_send, block_pts * sizeof( int16_t ) );
+                cb_handle->HandleDeviceData( buf_file, block_pts );
             }
         }
     }

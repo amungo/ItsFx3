@@ -26,7 +26,6 @@ private:
     size_t current_offset8;
     size_t file_size8;
     int8_t*  buf_file;
-    int16_t* buf_send;
 
     bool running;
     bool need_exit;
