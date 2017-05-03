@@ -121,7 +121,7 @@ INCLUDEPATH += $$PWD/fftw_inc
 
 win32: LIBS += -luser32
 win32: LIBS += -lsetupapi
-win32: LIBS += /NODEFAULTLIB:LIBCMT
+win32: QMAKE_LFLAGS += /NODEFAULTLIB:LIBCMT
 
 win32:!win32-g++: LIBS += -L$$PWD/libs/libusb/MS32/static/ -llibusb-1.0
 else:win32-g++:   LIBS += -L$$PWD/libs/libusb/MinGW32/static/ -lusb-1.0
