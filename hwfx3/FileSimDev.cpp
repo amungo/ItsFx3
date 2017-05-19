@@ -7,6 +7,24 @@
 #endif
 
 
+int fseek_cross( FILE* f, int64_t offset, int origin ) {
+#ifdef WIN32
+    return _fseeki64( f, offset, origin );
+#else
+    return fseek( f, offset, origin );
+#endif
+}
+
+int64_t ftell_cross( FILE* f ) {
+#ifdef WIN32
+    return _ftelli64( f );
+#else
+    return ftell( f );
+#endif
+}
+
+
+
 FileSimDev::FileSimDev(const char *sigfname, double real_sr, size_t pts_cnt_per_block) :
     cb_handle( NULL ),
     file( NULL ),
@@ -23,10 +41,10 @@ FileSimDev::FileSimDev(const char *sigfname, double real_sr, size_t pts_cnt_per_
     file = fopen( sigfname, "rb" );
     if ( file ) {
         fprintf( stderr, "FileSimDev::FileSimDev() file was opened\n" );
-        fseek( file, 0, SEEK_END );
-        file_size8 = ftell( file );
-        fseek( file, 0, SEEK_SET );
-        fprintf( stderr, "FileSimDev::FileSimDev() file size %lu bytes\n", file_size8 );
+        fseek_cross( file, 0, SEEK_END );
+        file_size8 = ftell_cross( file );
+        fseek_cross( file, 0, SEEK_SET );
+        fprintf( stderr, "FileSimDev::FileSimDev() file size %lld bytes\n", file_size8 );
         fprintf( stderr, "FileSimDev::FileSimDev() sleep pause = %u ms\n", sleep_ms );
     } else {
         fprintf( stderr, "__error__ FileSimDev::FileSimDev() file IO error \n" );
@@ -62,9 +80,9 @@ void FileSimDev::run() {
         if ( running ) {
             if ( file_size8 < current_offset8 + block_pts ) {
                 current_offset8 = 0;
-                fseek( file, 0, SEEK_SET );
+                fseek_cross( file, 0, SEEK_SET );
             }
-            fprintf( stderr, "current_offset8 %12d, %5.0f ms\n", current_offset8, 1000.0 * ((double)current_offset8/1) / SR );
+            fprintf( stderr, "current_offset8 %12lld, %5.0f ms\n", current_offset8, 1000.0 * ((double)current_offset8/1) / SR );
             fread( buf_file, 1, block_pts, file );
             current_offset8 += block_pts;
 

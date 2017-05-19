@@ -21,10 +21,10 @@ private:
     FILE* file;
 
     double SR;
-    size_t block_pts;
+    int64_t block_pts;
     uint32_t sleep_ms;
-    size_t current_offset8;
-    size_t file_size8;
+    int64_t current_offset8;
+    int64_t file_size8;
     int8_t*  buf_file;
 
     bool running;
