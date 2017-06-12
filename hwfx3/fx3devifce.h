@@ -33,6 +33,10 @@ public:
 
     virtual void fx3_development_call() {}
 
+    virtual void writeGPIO( uint32_t gpio, uint32_t value ) {}
+    virtual void readGPIO( uint32_t gpio, uint32_t* value ) {}
+    virtual void startGpif() {}
+
 };
 
 #endif // FX3DEVIFCE

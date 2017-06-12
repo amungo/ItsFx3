@@ -427,7 +427,7 @@ fx3_dev_debug_info_t FX3Dev::getDebugInfoFromBoard(bool ask_speed_only) {
     } else {
         uint32_t len32 = 8;
         uint32_t* ans = new uint32_t[ len32 ];
-        fx3_dev_err_t eres = txControlFromDevice( (uint8_t*)ans, len32 * sizeof( uint32_t ), CMD_READ_DBG, 0, 1 );
+        fx3_dev_err_t eres = txControlFromDevice( (uint8_t*)ans, len32 * sizeof( uint32_t ), CMD_READ_DEBUG_INFO, 0, 1 );
         if ( eres != FX3_ERR_OK ) {
             fprintf( stderr, "FX3Dev::getDebugInfoFromBoard() __error__  %d %s\n", eres, fx3_get_error_string( eres ) );
         }

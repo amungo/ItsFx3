@@ -46,6 +46,11 @@ struct StartDataTransferParams{
     EndPointParams  CurEndPoint;
 };
 
+#define NT1065EN		(17)		/* GPIO17, CTL[0] */
+#define NT1065AOK		(52)		/* GPIO52 */
+#define VCTCXOEN		(19)		/* GPIO19, CTL[2] */
+#define ANTLNAEN		(50)		/* GPIO50 */
+#define ANTFEEDEN		(18)		/* GPIO18, CTL[1] */
 
 class FX3DevCyAPI : public FX3DevIfce, public DeviceControlIOIfce
 {
@@ -61,7 +66,29 @@ public:
     void sendAttCommand5bits(uint32_t bits);
     fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false );
     void fx3_development_call();
+    uint32_t GetNt1065ChipID();
+    void readNtReg(uint32_t reg);
+
+    void writeGPIO( uint32_t gpio, uint32_t value );
+    void readGPIO( uint32_t gpio, uint32_t* value );
+    void startGpif();
+
 private:
+
+
+    static const uint8_t  CMD_FW_LOAD   = 0xA0;          // Vendor command for firmware flashing.
+
+    static const uint8_t  CMD_GET_VERSION     = ( 0xB0 );
+    static const uint8_t  CMD_INIT_PROJECT    = ( 0xB1 );
+    static const uint8_t  CMD_REG_WRITE       = ( 0xB3 );
+    static const uint8_t  CMD_READ_DEBUG_INFO = ( 0xB4 );
+    static const uint8_t  CMD_REG_READ        = ( 0xB5 );
+    static const uint8_t  CMD_CYPRESS_RESET   = ( 0xBF );
+
+    static const uint8_t  CMD_START       = ( 0xC0 );
+    static const uint8_t  CMD_WRITE_GPIO  = ( 0xC1 );
+    static const uint8_t  CMD_READ_GPIO   = ( 0xC2 );
+
     fx3_dev_err_t scan( int& loadable_count, int& streamable_count );
     fx3_dev_err_t prepareEndPoints();
     void startTransferData( unsigned int EndPointInd, int PPX, int QueueSize, int TimeOut );

@@ -70,13 +70,13 @@ void HWManager::closeHardware() {
 
 void HWManager::startStreams() {
     if ( dev ) {
-        dev->startRead( NULL );
-
-        // Temporary workaround for a strange 'odd launch' bug
-        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
-        dev->stopRead();
-        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
         dev->startRead( this );
+
+//        // Temporary workaround for a strange 'odd launch' bug
+//        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+//        dev->stopRead();
+//        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+//        dev->startRead( this );
     }
     emit informStartHWStatus( true, "Data stream was started" );
 }
