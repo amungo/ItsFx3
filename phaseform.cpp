@@ -2,6 +2,7 @@
 #include <QPainter>
 
 #include <cmath>
+#include "gcacorr/dsp_utils.h"
 #include "phaseform.h"
 #include "ui_phaseform.h"
 
@@ -20,13 +21,12 @@ const int points_cnt = right_point - left_point;
 
 const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
-const int avg_cnt = 1;
+const int avg_cnt = 20;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PhaseForm),
     router( NULL ),
-    tbuf_fft_out( fft_len ),
     tbuf_powers( fft_len ),
     tbuf_phases( fft_len ),
     fft( fft_len )
@@ -45,6 +45,14 @@ PhaseForm::PhaseForm(QWidget *parent) :
     fft_out_averaged.resize(4);
     for ( size_t i = 0; i < fft_out_averaged.size(); i++ ) {
         fft_out_averaged.at(i).resize(fft_len);
+    }
+
+    tbuf_fft.resize(avg_cnt);
+    for ( size_t iter = 0; iter < tbuf_fft.size(); iter++ ) {
+        tbuf_fft[ iter ].resize( 4 );
+        for ( size_t ch = 0; ch < tbuf_fft[ iter ].size(); ch++ ) {
+            tbuf_fft[ iter ][ ch ].resize( fft_len );
+        }
     }
 
     chan_colors[0] = Qt::blue;
@@ -77,7 +85,7 @@ PhaseForm::~PhaseForm()
 
 }
 
-void PhaseForm::paintEvent(QPaintEvent *event) {
+void PhaseForm::paintEvent(QPaintEvent* /*event*/) {
     PaintPowers();
 }
 
@@ -97,18 +105,53 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
     if ( pts_cnt < source_len * avg_cnt ) {
         return;
     }
+    if ( all_ch_data.size() != 4 ) {
+        return;
+    }
 
     lock_guard< mutex > lock( mtx );
-    for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
+    if ( avg_cnt == 1 ) {
 
-        if ( avg_cnt == 1 ) {
+        for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
             fft.TransformShort( all_ch_data[ channel ], fft_out_averaged[ channel ].data() );
-            pphs_valid = false;
-        } else {
-
         }
 
+    } else {
+
+        for ( int iter = 0; iter < avg_cnt; iter++ ) {
+            for ( size_t channel = 0; channel < 4; channel++ ) {
+                fft.TransformShort(
+                            all_ch_data[ channel ] + fft_len * iter,
+                            tbuf_fft[ iter ][ channel ].data()
+                            );
+            }
+        }
+
+        for ( int pt = 0; pt < half_fft_len; pt++ ) {
+            float_cpx_t corr[4];
+            corr[0] = float_cpx_t( 0.0f, 0.0f );
+            corr[1] = float_cpx_t( 0.0f, 0.0f );
+            corr[2] = float_cpx_t( 0.0f, 0.0f );
+            corr[3] = float_cpx_t( 0.0f, 0.0f );
+
+            for ( int iter = 0; iter < avg_cnt; iter++ ) {
+                for ( int ch = 0; ch < 4; ch++ ) {
+                    corr[ch].add(
+                        calc_correlation(
+                            tbuf_fft[ iter ][ 0  ][ pt ],
+                            tbuf_fft[ iter ][ ch ][ pt ]
+                        )
+                    );
+                }
+            }
+
+            for ( int ch = 0; ch < 4; ch++ ) {
+                fft_out_averaged[ ch ][ pt ] = corr[ ch ].mul_real( 1.0f / (float) avg_cnt );
+            }
+        }
     }
+
+    pphs_valid = false;
 }
 
 void PhaseForm::MakePphs() {
@@ -154,8 +197,8 @@ void PhaseForm::Tick()
 void PhaseForm::PaintPowers() {
     lock_guard< mutex > lock( mtx );
 
-    float shiftPowers = 400.0f;
-    float scalePowers = -6.0f;
+    float shiftPowers = 500.0f;
+    float scalePowers = -4.0f;
 
     float shiftPhases = 450.0f;
     float scalePhases = 0.5f;
@@ -164,19 +207,25 @@ void PhaseForm::PaintPowers() {
     float stepX = ( this->width() - border * 2.0f ) / (float)points_cnt;
 
     QPainter painter( this );
-
-    painter.setPen( QPen( chan_colors[ 0 ], 1, Qt::SolidLine) );
-
-    float curX = border;
     QPoint curp( 0, 0 );
-    QPoint prvp( curX, powers[0][left_point] * scalePowers + shiftPowers );
+    QPoint prvp( 0, 0 );
+    float curX = 0;
 
-    for ( int i = left_point + 1; i < right_point; i++ ) {
-        curp.setX( curX );
-        curp.setY( powers[0][i] * scalePowers + shiftPowers );
-        painter.drawLine( prvp, curp );
-        prvp = curp;
-        curX += stepX;
+
+    for ( int ch = 0; ch < 4; ch++ ) {
+        painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
+
+        curX = border;
+        curp = QPoint( 0, 0 );
+        prvp = QPoint( curX, powers[ ch ][left_point] * scalePowers + shiftPowers );
+
+        for ( int i = left_point + 1; i < right_point; i++ ) {
+            curp.setX( curX );
+            curp.setY( powers[ ch ][i] * scalePowers + shiftPowers );
+            painter.drawLine( prvp, curp );
+            prvp = curp;
+            curX += stepX;
+        }
     }
 
 

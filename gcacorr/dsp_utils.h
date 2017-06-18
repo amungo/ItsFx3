@@ -21,6 +21,11 @@ float get_mean( const float* A, int len );
 float_cpx_t* freq_shift(const float_cpx_t *signal, uint32_t samples_count, double SR_hz, double freq_shift_hz);
 float_cpx_t* make_fir(const float_cpx_t *S, const float *fir, int out_len, int fir_len );
 float_cpx_t calc_correlation( float_cpx_t* A, float_cpx_t* B, int len );
+
+inline float_cpx_t calc_correlation( float_cpx_t A, float_cpx_t B ) {
+    return A.mul_cpx_conj_const( B );
+}
+
 void mul_vec( float_cpx_t* A, float_cpx_t k, int len );
 
 template< typename data_t >

@@ -32,7 +32,7 @@ private:
     Ui::PhaseForm *ui;
 
     std::vector< std::vector<float_cpx_t> > fft_out_averaged;
-    std::vector<float_cpx_t> tbuf_fft_out;
+    std::vector<std::vector<std::vector<float_cpx_t>>> tbuf_fft;
     std::vector<float> tbuf_powers;
     std::vector<float> tbuf_phases;
     FFTWrapper fft;
