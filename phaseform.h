@@ -52,6 +52,8 @@ private:
 
     Qt::GlobalColor chan_colors[4];
 
+    int GetCurrentIdx();
+
 private slots:
     void slotRun(int);
 

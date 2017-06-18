@@ -29,6 +29,22 @@
     <string>run</string>
    </property>
   </widget>
+  <widget class="QSpinBox" name="spinBoxChoosenFilter">
+   <property name="geometry">
+    <rect>
+     <x>891</x>
+     <y>20</y>
+     <width>71</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
+   <property name="maximum">
+    <number>8192</number>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

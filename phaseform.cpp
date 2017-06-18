@@ -8,8 +8,8 @@
 
 using namespace std;
 
-const float leftMHz  = 10.0f;
-const float rightMHz = 21.0f;
+const float leftMHz  = 12.1f;
+const float rightMHz = 17.1f;
 const float bandMHz  = 53.0f / 2.0f;
 
 const int fft_len = 8192;
@@ -64,6 +64,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     tick_thr = std::thread( &PhaseForm::Tick, this );
 
     ui->setupUi(this);
+    ui->spinBoxChoosenFilter->setMinimum(left_point);
+    ui->spinBoxChoosenFilter->setMaximum(right_point);
+    ui->spinBoxChoosenFilter->setValue( (left_point + right_point)/2 );
 
     setStyleSheet("background-color: white;");
 
@@ -212,6 +215,11 @@ void PhaseForm::PaintPowers() {
     float curX = 0;
 
 
+    float choosen = GetCurrentIdx();
+    choosen -= left_point;
+    painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->height() );
+
+
     for ( int ch = 0; ch < 4; ch++ ) {
         painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
 
@@ -239,6 +247,7 @@ void PhaseForm::PaintPowers() {
     }
 
 
+    int curIdx = GetCurrentIdx();
     for ( int ch = 1; ch < 4; ch++ ) {
         painter.setPen( QPen( chan_colors[ ch ], 2, Qt::SolidLine) );
         curX = border;
@@ -246,9 +255,20 @@ void PhaseForm::PaintPowers() {
             curp.setX( curX );
             curp.setY( phases[ch][i] * scalePhases + shiftPhases );
             painter.drawPoint( curp );
+
+            if ( i == curIdx ) {
+                curp.setX( curp.x() - 20 * ch );
+                curp.setY( curp.y() - 10 );
+                painter.drawText( curp, QString(" %1 ").arg(QString::number((int)phases[ch][i])) );
+            }
+
             curX += stepX;
         }
     }
+}
+
+int PhaseForm::GetCurrentIdx() {
+    return ui->spinBoxChoosenFilter->value();
 }
 
 
