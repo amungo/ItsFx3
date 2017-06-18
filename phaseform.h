@@ -1,8 +1,9 @@
 #ifndef PHASEFORM_H
 #define PHASEFORM_H
-
+#include <mutex>
 #include <vector>
 #include <list>
+#include <thread>
 
 #include <QWidget>
 
@@ -25,6 +26,9 @@ public:
 
     StreamRouter* router;
 
+protected:
+    void paintEvent(QPaintEvent *event);
+
 private:
     Ui::PhaseForm *ui;
 
@@ -32,8 +36,21 @@ private:
     std::vector<float_cpx_t> tbuf_fft_out;
     std::vector<float> tbuf_powers;
     std::vector<float> tbuf_phases;
-
     FFTWrapper fft;
+
+
+    std::mutex mtx;
+    std::vector< std::vector<float> > powers;
+    std::vector< std::vector<float> > phases;
+    bool pphs_valid;
+    void MakePphs();
+
+    std::thread tick_thr;
+    bool running;
+    bool newTick;
+    void Tick();
+
+    void PaintPowers();
 
 private slots:
     void slotRun(int);
