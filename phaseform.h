@@ -47,10 +47,11 @@ private:
 
     std::thread tick_thr;
     bool running;
-    bool newTick;
     void Tick();
 
     void PaintPowers();
+
+    Qt::GlobalColor chan_colors[4];
 
 private slots:
     void slotRun(int);

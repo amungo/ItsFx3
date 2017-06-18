@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>598</width>
-    <height>501</height>
+    <width>985</width>
+    <height>630</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Phase</string>
   </property>
   <widget class="QCheckBox" name="checkBoxRun">
    <property name="enabled">
@@ -19,8 +19,8 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>550</x>
-     <y>10</y>
+     <x>930</x>
+     <y>0</y>
      <width>51</width>
      <height>17</height>
     </rect>
