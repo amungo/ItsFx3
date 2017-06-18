@@ -26,7 +26,6 @@ PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PhaseForm),
     router( NULL ),
-    fft_out( fft_len ),
     tbuf_fft_out( fft_len ),
     tbuf_powers( fft_len ),
     tbuf_phases( fft_len ),
@@ -43,8 +42,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
         phases.at(i).resize(half_fft_len);
     }
 
-    for ( size_t i = 0; i < fft_out.size(); i++ ) {
-        fft_out.at( i ) = new Averager<float_cpx_t>( fft_len, avg_cnt );
+    fft_out_averaged.resize(4);
+    for ( size_t i = 0; i < fft_out_averaged.size(); i++ ) {
+        fft_out_averaged.at(i).resize(fft_len);
     }
 
     chan_colors[0] = Qt::blue;
@@ -75,9 +75,6 @@ PhaseForm::~PhaseForm()
 
     delete ui;
 
-    for ( size_t i = 0; i < fft_out.size(); i++ ) {
-        delete fft_out.at( i );
-    }
 }
 
 void PhaseForm::paintEvent(QPaintEvent *event) {
@@ -103,24 +100,27 @@ void PhaseForm::HandleADCStreamData(void *, size_t)
 void PhaseForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel)
 {
     //printf( "ch%d=%u  ", channel, pts_cnt );
-    if ( pts_cnt < source_len ) {
+    if ( pts_cnt < source_len * avg_cnt ) {
         return;
     }
 
-    // TODO: make window here
-
-    fft.TransformShort( one_ch_data, tbuf_fft_out.data() );
-
     lock_guard< mutex > lock( mtx );
-    pphs_valid = false;
-    fft_out[ channel ]->PushData( tbuf_fft_out.data() );
+    if ( avg_cnt == 1 ) {
+
+        fft.TransformShort( one_ch_data, fft_out_averaged[ channel ].data() );
+        pphs_valid = false;
+
+    } else {
+
+    }
+
 }
 
 void PhaseForm::MakePphs() {
     lock_guard< mutex > lock( mtx );
     if ( !pphs_valid ) {
         for ( int ch = 0; ch < 4; ch++ ) {
-            const float_cpx_t* avg_data = fft_out[ ch ]->GetData();
+            const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
             vector<float>& pwr = powers[ch];
             vector<float>& phs = phases[ch];
             if ( ch == 0 ) {
@@ -153,10 +153,10 @@ void PhaseForm::Tick()
 void PhaseForm::PaintPowers() {
     lock_guard< mutex > lock( mtx );
 
-    float shiftPowers = 300.0f;
+    float shiftPowers = 400.0f;
     float scalePowers = -6.0f;
 
-    float shiftPhases = 400.0f;
+    float shiftPhases = 450.0f;
     float scalePhases = 0.5f;
 
     const float border = 10.0f;
