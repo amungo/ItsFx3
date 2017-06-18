@@ -7,11 +7,20 @@
 
 using namespace std;
 
-const int fft_len = 512;
-const int visible_len = fft_len / 2;
+const float leftMHz  = 10.0f;
+const float rightMHz = 21.0f;
+const float bandMHz  = 53.0f / 2.0f;
+
+const int fft_len = 8192;
+const int half_fft_len = fft_len / 2;
+
+const int left_point  = leftMHz * half_fft_len / bandMHz;
+const int right_point = rightMHz * half_fft_len / bandMHz;
+const int points_cnt = right_point - left_point;
+
 const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
-const int avg_cnt = 10;
+const int avg_cnt = 1;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
@@ -26,12 +35,12 @@ PhaseForm::PhaseForm(QWidget *parent) :
     pphs_valid = false;
     powers.resize(4);
     for ( size_t i = 0; i < powers.size(); i++ ) {
-        powers.at(i).resize(visible_len);
+        powers.at(i).resize(half_fft_len);
     }
 
     phases.resize(4);
     for ( size_t i = 0; i < phases.size(); i++ ) {
-        phases.at(i).resize(visible_len);
+        phases.at(i).resize(half_fft_len);
     }
 
     for ( size_t i = 0; i < fft_out.size(); i++ ) {
@@ -115,13 +124,13 @@ void PhaseForm::MakePphs() {
             vector<float>& pwr = powers[ch];
             vector<float>& phs = phases[ch];
             if ( ch == 0 ) {
-                for ( int i = 0; i < visible_len; i++ ) {
+                for ( int i = 0; i < half_fft_len; i++ ) {
                     pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
                     phs[ i ] = avg_data[i].angle_deg();
                 }
             } else {
                 vector<float>& phs0 = phases[0];
-                for ( int i = 0; i < visible_len; i++ ) {
+                for ( int i = 0; i < half_fft_len; i++ ) {
                     pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
                     phs[ i ] = avg_data[i].angle_deg() - phs0[i];
                 }
@@ -142,25 +151,26 @@ void PhaseForm::Tick()
 
 
 void PhaseForm::PaintPowers() {
-    //printf( "%f %f %f %f\n", phases[0][0], phases[0][1], phases[0][2], phases[0][10] );
+    lock_guard< mutex > lock( mtx );
 
-    float shiftPowers = 200.0f;
-    float scalePowers = -3.0f;
+    float shiftPowers = 300.0f;
+    float scalePowers = -6.0f;
 
     float shiftPhases = 400.0f;
     float scalePhases = 0.5f;
 
-    float stepX = 4.0f;
+    const float border = 10.0f;
+    float stepX = ( this->width() - border * 2.0f ) / (float)points_cnt;
 
     QPainter painter( this );
 
     painter.setPen( QPen( chan_colors[ 0 ], 1, Qt::SolidLine) );
 
-    float curX = stepX;
+    float curX = border;
     QPoint curp( 0, 0 );
-    QPoint prvp( 2, powers[0][0] * scalePowers + shiftPowers );
+    QPoint prvp( curX, powers[0][left_point] * scalePowers + shiftPowers );
 
-    for ( int i = 1; i < visible_len; i++ ) {
+    for ( int i = left_point + 1; i < right_point; i++ ) {
         curp.setX( curX );
         curp.setY( powers[0][i] * scalePowers + shiftPowers );
         painter.drawLine( prvp, curp );
@@ -171,8 +181,8 @@ void PhaseForm::PaintPowers() {
 
     for ( int ch = 1; ch < 4; ch++ ) {
         painter.setPen( QPen( chan_colors[ ch ], 2, Qt::SolidLine) );
-        curX = stepX;
-        for ( int i = 0; i < visible_len; i++ ) {
+        curX = border;
+        for ( int i = left_point; i < right_point; i++ ) {
             curp.setX( curX );
             curp.setY( phases[ch][i] * scalePhases + shiftPhases );
             painter.drawPoint( curp );
