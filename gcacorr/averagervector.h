@@ -47,7 +47,7 @@ public:
         for ( int i = 0; i < nPnt; i++ ) {
             outbuf[ i ] = 0;
             for ( int k = 0; k < nAvg; k++ ) {
-                outbuf[ i ] += buf[k][i] / static_cast< T >( nAvg );
+                outbuf[ i ] = outbuf[ i ] + buf[k][i] * ( 1.0f / nAvg );
             }
         }
         return outbuf;

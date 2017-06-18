@@ -6,6 +6,7 @@
 #include "datastreams/streamrouter.h"
 #include "gpscorrform.h"
 #include "SpectrumForm.h"
+#include "phaseform.h"
 
 #include "stdio.h"
 #include <QApplication>
@@ -38,10 +39,14 @@ int main(int argc, char *argv[])
     SpectrumForm specForm( &cfg );
     specForm.router = &router;
 
+    PhaseForm phaseForm;
+    phaseForm.router = &router;
+
     ItsMain mainWindow( &cfg );
     mainWindow.rawForm = &rawForm;
     mainWindow.gpsForm = &gpsForm;
     mainWindow.specForm = &specForm;
+    mainWindow.phaseForm = &phaseForm;
 
     HWManager hwm(&cfg);
     hwm.SetRouter(&router);

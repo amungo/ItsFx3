@@ -6,6 +6,7 @@ ItsMain::ItsMain(FX3Config* cfg, QWidget *parent) :
     rawForm( NULL ),
     gpsForm( NULL ),
     specForm( NULL ),
+    phaseForm( NULL ),
     ui(new Ui::ItsMain),
     timer( NULL ),
     hw_inited( false ),
@@ -31,6 +32,7 @@ ItsMain::ItsMain(FX3Config* cfg, QWidget *parent) :
     QObject::connect(ui->buttonRawForm, SIGNAL(clicked(bool)), this, SLOT(onRawForm(bool)));
     QObject::connect(ui->buttonGPSForm, SIGNAL(clicked(bool)), this, SLOT(onGPSForm(bool)));
     QObject::connect(ui->buttonSpectrumForm, SIGNAL(clicked(bool)), this, SLOT(onSpectrumForm(bool)));
+    QObject::connect(ui->buttonPhaseForm, SIGNAL(clicked(bool)), this, SLOT(onPhaseForm(bool)));
     QObject::connect(ui->buttonDeveloperCall, SIGNAL(clicked(bool)), this, SLOT(onButtonCallDeveloperFun(bool)));
     
     att.Clear();
@@ -195,6 +197,12 @@ void ItsMain::onGPSForm(bool) {
 void ItsMain::onSpectrumForm(bool) {
     if ( specForm ) {
         specForm->show();
+    }
+}
+
+void ItsMain::onPhaseForm(bool) {
+    if ( phaseForm ) {
+        phaseForm->show();
     }
 }
 

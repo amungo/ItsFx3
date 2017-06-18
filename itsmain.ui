@@ -131,12 +131,12 @@
       <rect>
        <x>10</x>
        <y>20</y>
-       <width>101</width>
+       <width>41</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
-      <string>Oscilloscope</string>
+      <string>Raw</string>
      </property>
     </widget>
     <widget class="QPushButton" name="buttonGPSForm">
@@ -155,9 +155,9 @@
     <widget class="QPushButton" name="buttonSpectrumForm">
      <property name="geometry">
       <rect>
-       <x>120</x>
+       <x>60</x>
        <y>20</y>
-       <width>81</width>
+       <width>61</width>
        <height>31</height>
       </rect>
      </property>
@@ -176,6 +176,19 @@
      </property>
      <property name="text">
       <string>X</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="buttonPhaseForm">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>20</y>
+       <width>61</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Phase</string>
      </property>
     </widget>
    </widget>
@@ -199,7 +212,7 @@
      <x>0</x>
      <y>0</y>
      <width>721</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

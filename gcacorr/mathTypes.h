@@ -25,6 +25,18 @@ typedef struct float_cpx_t {
         return *this;
     }
 
+    inline float_cpx_t operator*( const float x ) {
+        this->i *= x;
+        this->q *= x;
+        return *this;
+    }
+
+    inline float_cpx_t operator+( const float_cpx_t& A ) {
+        this->i += A.i;
+        this->q += A.q;
+        return *this;
+    }
+
     inline float_cpx_t& mul_cpx( const float_cpx_t& A ) {
         float_cpx_t X = float_cpx_t( i*A.i - q*A.q, i*A.q + q*A.i );
         this->i = X.i;
@@ -62,7 +74,16 @@ typedef struct float_cpx_t {
     inline double angle_deg( const float_cpx_t& A ) const {
          return angle( A ) * 180.0 / M_PI;
     }
-    
+
+    inline float angle() const {
+        return atan2(i,q);
+    }
+
+    inline float angle_deg() const {
+        return angle() * 180.0 / M_PI;;
+    }
+
+
 } float_cpx_t;
 
 static inline float_cpx_t cpx_mul( const float_cpx_t& A, const float_cpx_t& B ) {

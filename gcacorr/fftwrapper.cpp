@@ -32,6 +32,15 @@ void FFTWrapper::Transform( const float *in, float_cpx_t *out ) {
     convert( out, out_complex, N );
 }
 
+void FFTWrapper::TransformShort( const short *in, float_cpx_t *out ) {
+    for ( int i = 0; i < N; i++ ) {
+        in_float[ i ] = (float) in[ i ];
+    }
+    fftwf_execute( plan_real );
+    convert( out, out_complex, N );
+}
+
+
 void FFTWrapper::Transform( const float_cpx_t *in, float_cpx_t *out, bool is_inverse ) {
     t.Start();
     memcpy( in_complex, in, N * sizeof( float_cpx_t ) );

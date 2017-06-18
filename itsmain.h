@@ -22,6 +22,7 @@ public:
     QWidget* rawForm;
     QWidget* gpsForm;
     QWidget* specForm;
+    QWidget* phaseForm;
 private:
     Ui::ItsMain *ui;
     QTimer* timer;
@@ -50,6 +51,7 @@ private slots:
     void onRawForm(bool);
     void onGPSForm(bool);
     void onSpectrumForm(bool);
+    void onPhaseForm(bool);
 public slots:
     void hardwareInitStatus( bool hw_init_status, QString log_message );
     void hardwareCloseStatus( bool hw_close_status, QString log_message );

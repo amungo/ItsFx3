@@ -10,6 +10,7 @@ public:
     FFTWrapper( unsigned int N  );
     ~FFTWrapper();
     void Transform( const float* in,       float_cpx_t* out );
+    void TransformShort( const short* in,       float_cpx_t* out );
     void Transform( const float_cpx_t* in, float_cpx_t* out, bool is_inverse );
 
 private:

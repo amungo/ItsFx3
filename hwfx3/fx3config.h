@@ -132,7 +132,7 @@ struct FX3Config {
             have_submodules = true;
             have_atts       = false;
             have_dbg        = true;
-            fn_hex          = "ConfigSet_all_GPS_L1_patched.hex";
+            fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex";
             fn_img          = "AmungoItsFx3Firmware.img";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
