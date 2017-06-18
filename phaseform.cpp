@@ -92,28 +92,23 @@ void PhaseForm::slotRun(int state)
     }
 }
 
-void PhaseForm::HandleADCStreamData(void *, size_t)
+void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts_cnt )
 {
-    // nop
-}
-
-void PhaseForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel)
-{
-    //printf( "ch%d=%u  ", channel, pts_cnt );
     if ( pts_cnt < source_len * avg_cnt ) {
         return;
     }
 
     lock_guard< mutex > lock( mtx );
-    if ( avg_cnt == 1 ) {
+    for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
 
-        fft.TransformShort( one_ch_data, fft_out_averaged[ channel ].data() );
-        pphs_valid = false;
+        if ( avg_cnt == 1 ) {
+            fft.TransformShort( all_ch_data[ channel ], fft_out_averaged[ channel ].data() );
+            pphs_valid = false;
+        } else {
 
-    } else {
+        }
 
     }
-
 }
 
 void PhaseForm::MakePphs() {

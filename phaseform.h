@@ -2,7 +2,6 @@
 #define PHASEFORM_H
 #include <mutex>
 #include <vector>
-#include <list>
 #include <thread>
 
 #include <QWidget>
@@ -58,8 +57,7 @@ private slots:
 
     // StreamDataHandler interface
 public:
-    void HandleADCStreamData(void*, size_t);
-    void HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel);
+    void HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts_cnt );
 };
 
 #endif // PHASEFORM_H

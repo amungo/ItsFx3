@@ -138,6 +138,7 @@ void StreamRouter::RouteData(void* data, size_t size8) {
     std::set< StreamDataHandler* >::iterator handler = handlers_copy.begin();
     while ( handler != handlers_copy.end() ) {
         (*handler)->HandleADCStreamData(data, size8);
+        (*handler)->HandleAllChansData( chans_data, pts_cnt );
         for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
             uint32_t p_cnt_fixed = pts_cnt;
             if ( adc_type == ADC_AD9361 ) {
