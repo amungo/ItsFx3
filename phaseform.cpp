@@ -132,7 +132,13 @@ void PhaseForm::MakePphs() {
                 vector<float>& phs0 = phases[0];
                 for ( int i = 0; i < half_fft_len; i++ ) {
                     pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
-                    phs[ i ] = avg_data[i].angle_deg() - phs0[i];
+                    float x = avg_data[i].angle_deg() - phs0[i];
+                    if ( x > 180.0f ) {
+                        x -= 360.0f;
+                    } else if ( x < -180.0f ) {
+                        x += 360.0f;
+                    }
+                    phs[ i ] = x;
                 }
             }
         }
@@ -175,6 +181,16 @@ void PhaseForm::PaintPowers() {
         curp.setY( powers[0][i] * scalePowers + shiftPowers );
         painter.drawLine( prvp, curp );
         prvp = curp;
+        curX += stepX;
+    }
+
+
+    painter.setPen( QPen( chan_colors[ 0 ], 2, Qt::SolidLine) );
+    curX = 0;
+    for ( float angle = -180.0f; angle < 181.0; angle += 45.0f ) {
+        curp.setX( curX );
+        curp.setY( angle * scalePhases + shiftPhases );
+        painter.drawText( curp, QString(" %1 ").arg(QString::number((int)angle)) );
         curX += stepX;
     }
 
