@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabSpecPhase">
       <attribute name="title">
@@ -59,7 +59,41 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QCameraViewfinder" name="viewFinder" native="true"/>
+        <widget class="QCameraViewfinder" name="viewFinder" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>320</width>
+           <height>240</height>
+          </size>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="CoverWidget" name="widgetCover" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>320</width>
+              <height>240</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -121,6 +155,12 @@
    <class>SpectrumWidget</class>
    <extends>QWidget</extends>
    <header>spectrumwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CoverWidget</class>
+   <extends>QWidget</extends>
+   <header>coverwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
