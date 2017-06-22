@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>985</width>
-    <height>630</height>
+    <width>505</width>
+    <height>467</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>930</x>
-     <y>0</y>
+     <x>430</x>
+     <y>30</y>
      <width>51</width>
      <height>17</height>
     </rect>
@@ -32,8 +32,8 @@
   <widget class="QSpinBox" name="spinBoxChoosenFilter">
    <property name="geometry">
     <rect>
-     <x>891</x>
-     <y>20</y>
+     <x>430</x>
+     <y>50</y>
      <width>71</width>
      <height>22</height>
     </rect>
@@ -45,41 +45,66 @@
     <number>8192</number>
    </property>
   </widget>
-  <widget class="QCameraViewfinder" name="viewFinder" native="true">
-   <property name="geometry">
-    <rect>
-     <x>740</x>
-     <y>160</y>
-     <width>221</width>
-     <height>121</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="PhaseWidget" name="widgetPhases" native="true">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>300</y>
-     <width>711</width>
-     <height>261</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="SpectrumWidget" name="widgetSpectrum" native="true">
+  <widget class="QTabWidget" name="tabWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>711</width>
-     <height>281</height>
+     <width>411</width>
+     <height>451</height>
     </rect>
    </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tabSpecPhase">
+    <attribute name="title">
+     <string>Tab 1</string>
+    </attribute>
+    <widget class="QSplitter" name="splitterSpecPhase">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>401</width>
+       <height>421</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>200</height>
+      </size>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="SpectrumWidget" name="widgetSpectrum" native="true"/>
+     <widget class="PhaseWidget" name="widgetPhases" native="true"/>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tabCamera">
+    <attribute name="title">
+     <string>Tab 2</string>
+    </attribute>
+    <widget class="QCameraViewfinder" name="viewFinder" native="true">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>20</y>
+       <width>371</width>
+       <height>241</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
   </widget>
-  <zorder>viewFinder</zorder>
-  <zorder>checkBoxRun</zorder>
-  <zorder>spinBoxChoosenFilter</zorder>
-  <zorder>widgetPhases</zorder>
-  <zorder>widgetSpectrum</zorder>
  </widget>
  <customwidgets>
   <customwidget>
