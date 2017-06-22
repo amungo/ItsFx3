@@ -27,7 +27,6 @@ public:
     StreamRouter* router;
 
 protected:
-    void paintEvent(QPaintEvent *event);
 
 private:
     Ui::PhaseForm *ui;
@@ -43,16 +42,17 @@ private:
     std::mutex mtx;
     std::vector< std::vector<float> > powers;
     std::vector< std::vector<float> > phases;
+
+    float powerMin = -20.0f;
+    float powerMax = 100.0f;
+    float powerAvg =   0.0f;
+
     bool pphs_valid;
     void MakePphs();
 
     std::thread tick_thr;
     bool running;
     void Tick();
-
-    void PaintPowers();
-
-    Qt::GlobalColor chan_colors[4];
 
     int GetCurrentIdx();
 

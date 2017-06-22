@@ -48,9 +48,29 @@
   <widget class="QCameraViewfinder" name="viewFinder" native="true">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>260</y>
-     <width>601</width>
+     <x>740</x>
+     <y>160</y>
+     <width>221</width>
+     <height>121</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="PhaseWidget" name="widgetPhases" native="true">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>300</y>
+     <width>711</width>
+     <height>261</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="SpectrumWidget" name="widgetSpectrum" native="true">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>711</width>
      <height>281</height>
     </rect>
    </property>
@@ -58,12 +78,30 @@
   <zorder>viewFinder</zorder>
   <zorder>checkBoxRun</zorder>
   <zorder>spinBoxChoosenFilter</zorder>
+  <zorder>scrollAreaSpectrum</zorder>
+  <zorder>scrollArea_2</zorder>
+  <zorder>scrollAreaSpectrum</zorder>
+  <zorder>scrollAreaPhases</zorder>
+  <zorder>widgetPhases</zorder>
+  <zorder>widgetSpectrum</zorder>
  </widget>
  <customwidgets>
   <customwidget>
    <class>QCameraViewfinder</class>
    <extends>QWidget</extends>
    <header location="global">qcameraviewfinder.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PhaseWidget</class>
+   <extends>QWidget</extends>
+   <header>phasewidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SpectrumWidget</class>
+   <extends>QWidget</extends>
+   <header>spectrumwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

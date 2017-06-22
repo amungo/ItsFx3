@@ -51,7 +51,9 @@ SOURCES += main.cpp \
     hwfx3/ad9361/ad9361_tuner.cpp \
     hwfx3/ad9361/types/filters.cpp \
     gcacorr/lazy_matrix.cpp \
-    phaseform.cpp
+    phaseform.cpp \
+    phasewidget.cpp \
+    spectrumwidget.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -111,7 +113,9 @@ HEADERS  += itsmain.h \
     hwfx3/ad9361/ad9361_synth_lut.h \
     datahandlers/filedumpcallbackifce.h \
     gcacorr/lazy_matrix.h \
-    phaseform.h
+    phaseform.h \
+    phasewidget.h \
+    spectrumwidget.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

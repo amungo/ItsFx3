@@ -1,5 +1,4 @@
 #include <QtGui>
-#include <QPainter>
 #include <QCameraInfo>
 #include <QCameraViewfinder>
 
@@ -58,11 +57,6 @@ PhaseForm::PhaseForm(QWidget *parent) :
         }
     }
 
-    chan_colors[0] = Qt::blue;
-    chan_colors[1] = Qt::red;
-    chan_colors[2] = Qt::green;
-    chan_colors[3] = Qt::black;
-
     running = true;
     tick_thr = std::thread( &PhaseForm::Tick, this );
 
@@ -94,12 +88,6 @@ PhaseForm::~PhaseForm()
 
     delete ui;
 
-}
-
-void PhaseForm::paintEvent(QPaintEvent* event) {
-    //QWidget::paintEvent(event);
-
-    PaintPowers();
 }
 
 void PhaseForm::slotRun(int state)
@@ -169,20 +157,26 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
 
 void PhaseForm::MakePphs() {
     lock_guard< mutex > lock( mtx );
+    float xavg = 0.0f;
+
     if ( !pphs_valid ) {
         for ( int ch = 0; ch < 4; ch++ ) {
             const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
             vector<float>& pwr = powers[ch];
             vector<float>& phs = phases[ch];
             if ( ch == 0 ) {
-                for ( int i = 0; i < half_fft_len; i++ ) {
+                for ( int i = left_point; i < right_point; i++ ) {
                     pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
+                    xavg += pwr[ i ];
+
                     phs[ i ] = avg_data[i].angle_deg();
                 }
             } else {
                 vector<float>& phs0 = phases[0];
-                for ( int i = 0; i < half_fft_len; i++ ) {
+                for ( int i = left_point; i < right_point; i++ ) {
                     pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
+                    xavg += pwr[ i ];
+
                     float x = avg_data[i].angle_deg() - phs0[i];
                     if ( x > 180.0f ) {
                         x -= 360.0f;
@@ -193,6 +187,8 @@ void PhaseForm::MakePphs() {
                 }
             }
         }
+        xavg /= (right_point - left_point) * 4.0f;
+        this->powerAvg = xavg;
         pphs_valid = true;
     }
 }
@@ -202,80 +198,18 @@ void PhaseForm::Tick()
     while (running) {
         this_thread::sleep_for(chrono::milliseconds(100));
         MakePphs();
+
+        ui->widgetPhases->SetPhasesData(   &phases, left_point, points_cnt );
+        ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
+
+        ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx() );
+        ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx() );
+
         update();
     }
 }
 
 
-void PhaseForm::PaintPowers() {
-    lock_guard< mutex > lock( mtx );
-
-    float shiftPowers = 500.0f;
-    float scalePowers = -4.0f;
-
-    float shiftPhases = 450.0f;
-    float scalePhases = 0.5f;
-
-    const float border = 10.0f;
-    float stepX = ( this->width() - border * 2.0f ) / (float)points_cnt;
-
-    QPainter painter( this );
-    QPoint curp( 0, 0 );
-    QPoint prvp( 0, 0 );
-    float curX = 0;
-
-
-    float choosen = GetCurrentIdx();
-    choosen -= left_point;
-    painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->height() );
-
-
-    for ( int ch = 0; ch < 4; ch++ ) {
-        painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
-
-        curX = border;
-        curp = QPoint( 0, 0 );
-        prvp = QPoint( curX, powers[ ch ][left_point] * scalePowers + shiftPowers );
-
-        for ( int i = left_point + 1; i < right_point; i++ ) {
-            curp.setX( curX );
-            curp.setY( powers[ ch ][i] * scalePowers + shiftPowers );
-            painter.drawLine( prvp, curp );
-            prvp = curp;
-            curX += stepX;
-        }
-    }
-
-
-    painter.setPen( QPen( chan_colors[ 0 ], 2, Qt::SolidLine) );
-    curX = 0;
-    for ( float angle = -180.0f; angle < 181.0; angle += 45.0f ) {
-        curp.setX( curX );
-        curp.setY( angle * scalePhases + shiftPhases );
-        painter.drawText( curp, QString(" %1 ").arg(QString::number((int)angle)) );
-        curX += stepX;
-    }
-
-
-    int curIdx = GetCurrentIdx();
-    for ( int ch = 1; ch < 4; ch++ ) {
-        painter.setPen( QPen( chan_colors[ ch ], 2, Qt::SolidLine) );
-        curX = border;
-        for ( int i = left_point; i < right_point; i++ ) {
-            curp.setX( curX );
-            curp.setY( phases[ch][i] * scalePhases + shiftPhases );
-            painter.drawPoint( curp );
-
-            if ( i == curIdx ) {
-                curp.setX( curp.x() - 20 * ch );
-                curp.setY( curp.y() - 10 );
-                painter.drawText( curp, QString(" %1 ").arg(QString::number((int)phases[ch][i])) );
-            }
-
-            curX += stepX;
-        }
-    }
-}
 
 int PhaseForm::GetCurrentIdx() {
     return ui->spinBoxChoosenFilter->value();
