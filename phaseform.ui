@@ -78,10 +78,6 @@
   <zorder>viewFinder</zorder>
   <zorder>checkBoxRun</zorder>
   <zorder>spinBoxChoosenFilter</zorder>
-  <zorder>scrollAreaSpectrum</zorder>
-  <zorder>scrollArea_2</zorder>
-  <zorder>scrollAreaSpectrum</zorder>
-  <zorder>scrollAreaPhases</zorder>
   <zorder>widgetPhases</zorder>
   <zorder>widgetSpectrum</zorder>
  </widget>
