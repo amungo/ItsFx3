@@ -53,7 +53,8 @@ SOURCES += main.cpp \
     gcacorr/lazy_matrix.cpp \
     phaseform.cpp \
     phasewidget.cpp \
-    spectrumwidget.cpp
+    spectrumwidget.cpp \
+    coverwidget.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -115,7 +116,8 @@ HEADERS  += itsmain.h \
     gcacorr/lazy_matrix.h \
     phaseform.h \
     phasewidget.h \
-    spectrumwidget.h
+    spectrumwidget.h \
+    coverwidget.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
