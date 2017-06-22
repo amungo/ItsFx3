@@ -1,5 +1,7 @@
 #include <QtGui>
 #include <QPainter>
+#include <QCameraInfo>
+#include <QCameraViewfinder>
 
 #include <cmath>
 #include "gcacorr/dsp_utils.h"
@@ -26,6 +28,7 @@ const int avg_cnt = 20;
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PhaseForm),
+    camera( NULL ),
     router( NULL ),
     tbuf_powers( fft_len ),
     tbuf_phases( fft_len ),
@@ -71,6 +74,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     setStyleSheet("background-color: white;");
 
     QObject::connect(ui->checkBoxRun, SIGNAL(stateChanged(int)), this, SLOT(slotRun(int)) );
+
+    InitCamera();
+    ui->viewFinder->stackUnder(this);
 }
 
 PhaseForm::~PhaseForm()
@@ -84,11 +90,15 @@ PhaseForm::~PhaseForm()
         tick_thr.join();
     }
 
+    camera->stop();
+
     delete ui;
 
 }
 
-void PhaseForm::paintEvent(QPaintEvent* /*event*/) {
+void PhaseForm::paintEvent(QPaintEvent* event) {
+    //QWidget::paintEvent(event);
+
     PaintPowers();
 }
 
@@ -269,6 +279,22 @@ void PhaseForm::PaintPowers() {
 
 int PhaseForm::GetCurrentIdx() {
     return ui->spinBoxChoosenFilter->value();
+}
+
+void PhaseForm::InitCamera() {
+    for (const QCameraInfo &cameraInfo : QCameraInfo::availableCameras()) {
+        QString desc = cameraInfo.description();
+        fprintf( stderr, "\n*** camera: %s\n", desc.toLatin1().data() );
+        camera = new QCamera(cameraInfo);
+        break;
+    }
+
+    if ( camera ) {
+        camera->setViewfinder( ui->viewFinder );
+        camera->start();
+    } else {
+        fprintf( stderr, "\n\n !!!! NO CAMERA FOUND !!!!\n\n" );
+    }
 }
 
 

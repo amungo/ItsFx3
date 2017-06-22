@@ -5,6 +5,7 @@
 #include <thread>
 
 #include <QWidget>
+#include <QCamera>
 
 #include "datastreams/streamdatahandler.h"
 #include "datastreams/streamrouter.h"
@@ -30,6 +31,7 @@ protected:
 
 private:
     Ui::PhaseForm *ui;
+    QCamera *camera;
 
     std::vector< std::vector<float_cpx_t> > fft_out_averaged;
     std::vector<std::vector<std::vector<float_cpx_t>>> tbuf_fft;
@@ -53,6 +55,8 @@ private:
     Qt::GlobalColor chan_colors[4];
 
     int GetCurrentIdx();
+
+    void InitCamera();
 
 private slots:
     void slotRun(int);
