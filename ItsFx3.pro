@@ -54,7 +54,9 @@ SOURCES += main.cpp \
     phaseform.cpp \
     phasewidget.cpp \
     spectrumwidget.cpp \
-    coverwidget.cpp
+    coverwidget.cpp \
+    gcacorr/etalometr.cpp \
+    gcacorr/convresult.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -117,7 +119,9 @@ HEADERS  += itsmain.h \
     phaseform.h \
     phasewidget.h \
     spectrumwidget.h \
-    coverwidget.h
+    coverwidget.h \
+    gcacorr/etalometr.h \
+    gcacorr/convresult.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

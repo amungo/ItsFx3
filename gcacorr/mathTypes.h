@@ -80,7 +80,7 @@ typedef struct float_cpx_t {
     }
 
     inline float angle_deg() const {
-        return angle() * 180.0 / M_PI;;
+        return angle() * 180.0f / (float)M_PI;;
     }
 
 
