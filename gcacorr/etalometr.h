@@ -18,6 +18,7 @@ public:
     void SetCalib(  float phases[ 3 ] );
     void SetCalibDefault();
     void CalcEtalons( double step_deg, double max_phi_angle_deg );
+    ConvResult* CalcConvolution( float_cpx_t iqs[ 3 ] );
     ConvResult* CalcConvolution( float phases[ 3 ] );
     ConvResult* GetResult();
 

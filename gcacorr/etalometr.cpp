@@ -86,16 +86,8 @@ float_cpx_t Etalometr::GetEtalon(int ant, float alpha, float phi)
     return unit_pt;
 }
 
-
-ConvResult *Etalometr::CalcConvolution(float phases[])
-{
+ConvResult* Etalometr::CalcConvolution(float_cpx_t iqs[] ) {
     result.Flush();
-
-    float_cpx_t measures[3];
-    for ( int i = 0; i < 3; i++ ) {
-        float_cpx_t X( cosf(phases[i]), sinf(phases[i]) );
-        measures[i] = X.conj();
-    }
 
     for ( size_t a = 0; a < etalons.size(); a++ ) {
         std::vector<PhasesDiff_t>& etalons_raw = etalons[a];
@@ -104,9 +96,9 @@ ConvResult *Etalometr::CalcConvolution(float phases[])
 
             PhasesDiff_t& et = etalons_raw[p];
             float_cpx_t conv( 0.0f, 0.0f );
-            conv.add( cpx_mul( measures[0], et.ant_pt[0] ) );
-            conv.add( cpx_mul( measures[1], et.ant_pt[1] ) );
-            conv.add( cpx_mul( measures[2], et.ant_pt[2] ) );
+            conv.add(  et.ant_pt[0].mul_cpx_conj_const( iqs[0] )  );
+            conv.add(  et.ant_pt[1].mul_cpx_conj_const( iqs[1] )  );
+            conv.add(  et.ant_pt[2].mul_cpx_conj_const( iqs[2] )  );
             conv.mul_real(1.0f/3.0f);
             result.data[a][p] = conv.len();
 
@@ -118,6 +110,16 @@ ConvResult *Etalometr::CalcConvolution(float phases[])
     return &result;
 }
 
+ConvResult* Etalometr::CalcConvolution(float phases[])
+{
+    float_cpx_t iqs[3];
+    for ( int i = 0; i < 3; i++ ) {
+        float_cpx_t X( cosf(phases[i]), sinf(phases[i]) );
+        iqs[i] = X;
+    }
+    return CalcConvolution( iqs );
+}
+
 ConvResult *Etalometr::GetResult()
 {
     return &result;
@@ -126,13 +128,13 @@ ConvResult *Etalometr::GetResult()
 void Etalometr::debug()
 {
     float alpha = (float)( M_PI * 45.0 / 180.0 );
-    float phi   = (float)( M_PI * 25.0 / 180.0 );
-    float measures[3] = {
-        GetEtalon(1, alpha, phi).angle(),
-        GetEtalon(2, alpha, phi).angle(),
-        GetEtalon(3, alpha, phi).angle()
+    float phi   = (float)( M_PI * 90.0 / 180.0 );
+    float_cpx_t iqs[3] = {
+        GetEtalon(1, alpha, phi),
+        GetEtalon(2, alpha, phi),
+        GetEtalon(3, alpha, phi)
     };
-    CalcConvolution( measures );
+    CalcConvolution( iqs );
     //result.print_dbg();
 }
 
