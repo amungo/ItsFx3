@@ -34,8 +34,8 @@ void Etalometr::SetCalibDefault()
 
 void Etalometr::CalcEtalons(double step_deg, double max_phi_angle_deg)
 {
-    int alpha_cnt = (int)( (360.0 / step_deg) /*+ 1*/ );
-    int phi_cnt   = (int)( (2.0 * max_phi_angle_deg / step_deg) /*+ 1*/ );
+    int alpha_cnt = (int)(360.0 / step_deg);
+    int phi_cnt   = (int)( max_phi_angle_deg / step_deg);
     etalons.resize( alpha_cnt );
     for ( int a = 0; a < alpha_cnt; a++ ) {
         etalons[a].resize( phi_cnt );
@@ -43,13 +43,11 @@ void Etalometr::CalcEtalons(double step_deg, double max_phi_angle_deg)
     result.SetDimensions( alpha_cnt, phi_cnt );
 
     float step = (float)( M_PI * step_deg / 180.0 );
-    float max_phi = (float)( M_PI * max_phi_angle_deg / 180.0 );
-
 
     for ( int a = 0; a < alpha_cnt; a++ ) {
         float alpha = (float)( -M_PI + a * step );
         for ( int p = 0; p < phi_cnt; p++ ) {
-            float phi = -max_phi + p * step;
+            float phi = p * step;
             PhasesDiff_t& et = etalons[a][p];
             et.ant_pt[0] = GetEtalon(1, alpha, phi);
             et.ant_pt[1] = GetEtalon(2, alpha, phi);
@@ -127,8 +125,8 @@ ConvResult *Etalometr::GetResult()
 
 void Etalometr::debug()
 {
-    float alpha = (float)( M_PI * 45.0 / 180.0 );
-    float phi   = (float)( M_PI * 90.0 / 180.0 );
+    float alpha = (float)( M_PI * 30.0 / 180.0 );
+    float phi   = (float)( M_PI * 10.0 / 180.0 );
     float_cpx_t iqs[3] = {
         GetEtalon(1, alpha, phi),
         GetEtalon(2, alpha, phi),
