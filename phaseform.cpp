@@ -33,7 +33,8 @@ PhaseForm::PhaseForm(QWidget *parent) :
     router( NULL ),
     tbuf_powers( fft_len ),
     tbuf_phases( fft_len ),
-    fft( fft_len )
+    fft( fft_len ),
+    et( 0.052f )
 {
     pphs_valid = false;
     powers.resize(4);
@@ -74,7 +75,6 @@ PhaseForm::PhaseForm(QWidget *parent) :
     InitCamera();
     ui->viewFinder->stackUnder(this);
 
-    Etalometr et( 0.056f );
     et.SetFreq( 1575.42e6 );
     et.SetCalibDefault();
     et.CalcEtalons( 5.0, 60.0 );
@@ -215,6 +215,14 @@ void PhaseForm::Tick()
 
         ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx() );
         ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx() );
+
+        int idx = GetCurrentIdx();
+        float phs[3];
+        phs[0] = phases[1][idx];
+        phs[1] = phases[2][idx];
+        phs[2] = phases[3][idx];
+        et.CalcConvolution( phs );
+        ui->widgetConvolution->SetConvolution( et.GetResult() );
 
         update();
     }

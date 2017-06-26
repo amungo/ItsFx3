@@ -11,6 +11,7 @@
 #include "datastreams/streamrouter.h"
 #include "gcacorr/averagervector.h"
 #include "gcacorr/fftwrapper.h"
+#include "gcacorr/etalometr.h"
 
 namespace Ui {
 class PhaseForm;
@@ -57,6 +58,8 @@ private:
     int GetCurrentIdx();
 
     void InitCamera();
+
+    Etalometr et;
 
 private slots:
     void slotRun(int);
