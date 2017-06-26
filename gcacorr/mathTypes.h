@@ -83,6 +83,10 @@ typedef struct float_cpx_t {
         return angle() * 180.0f / (float)M_PI;;
     }
 
+    inline float_cpx_t conj() const {
+        return float_cpx_t( i, -q );
+    }
+
 
 } float_cpx_t;
 

@@ -24,7 +24,11 @@ void Etalometr::SetCalib(float phases[])
 
 void Etalometr::SetCalibDefault()
 {
-    float default_calib[3] = { (float)M_PI / 2.0f, (float)M_PI, 3.0f * (float)M_PI / 2.0f };
+    float default_calib[3] = {
+        (float)M_PI / 2.0f,
+        (float)M_PI,
+        3.0f * (float)M_PI / 2.0f
+    };
     SetCalib( default_calib );
 }
 
@@ -71,8 +75,9 @@ float_cpx_t Etalometr::GetEtalon(int ant, float alpha, float phi)
     case 3:
         alpha += (float)( M_PI / 2.0f );
         len = base_len;
+        break;
     }
-    float delta_len = len * sinf( alpha ) * cos( phi );
+    float delta_len = -len * cos( alpha ) * sin( phi );
     float phase_diff = 2.0f * (float)M_PI * (delta_len / wave_len);
     phase_diff += calib[ ant - 1 ];
 
@@ -88,7 +93,8 @@ ConvResult *Etalometr::CalcConvolution(float phases[])
 
     float_cpx_t measures[3];
     for ( int i = 0; i < 3; i++ ) {
-        measures[i] = float_cpx_t( cosf(phases[i]), sinf(phases[i]) );
+        float_cpx_t X( cosf(phases[i]), sinf(phases[i]) );
+        measures[i] = X.conj();
     }
 
     for ( size_t a = 0; a < etalons.size(); a++ ) {
@@ -101,6 +107,7 @@ ConvResult *Etalometr::CalcConvolution(float phases[])
             conv.add( cpx_mul( measures[0], et.ant_pt[0] ) );
             conv.add( cpx_mul( measures[1], et.ant_pt[1] ) );
             conv.add( cpx_mul( measures[2], et.ant_pt[2] ) );
+            conv.mul_real(1.0f/3.0f);
             result.data[a][p] = conv.len();
 
         }
@@ -118,15 +125,15 @@ ConvResult *Etalometr::GetResult()
 
 void Etalometr::debug()
 {
-    float alpha = M_PI/4.0;
-    float phi = M_PI/4.0;
+    float alpha = (float)( M_PI * 45.0 / 180.0 );
+    float phi   = (float)( M_PI * 25.0 / 180.0 );
     float measures[3] = {
         GetEtalon(1, alpha, phi).angle(),
         GetEtalon(2, alpha, phi).angle(),
         GetEtalon(3, alpha, phi).angle()
     };
     CalcConvolution( measures );
-    result.print_dbg();
+    //result.print_dbg();
 }
 
 

@@ -5,7 +5,7 @@ using namespace std;
 
 ConvolutionWidget::ConvolutionWidget(QWidget *parent) : QWidget(parent)
 {
-    colors.resize(256);
+    colors.resize(255);
     for ( size_t i = 0; i < colors.size(); i++ ) {
         colors[i] = QColor( i, i, i, 255 );
     }
@@ -19,8 +19,11 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
     this->conv = convolution;
     float min = conv->min;
     float max = conv->max;
+
+    min = max * 0.90;
+
     float len = max - min;
-    float color_range = 256.0;
+    float color_range = 250.0;
     float coef = color_range / len;
 
     conv_paint.resize( conv->data.size() );
@@ -29,7 +32,7 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
         conv_paint[a].resize( raw.size() );
         for( size_t p = 0; p < raw.size(); p++ ) {
             int color_idx = (int)(  (raw[p] - min) * coef  );
-            conv_paint[a][p] = colors[ color_idx ];
+            conv_paint[a][p] = color_idx >= 0 ? colors[ color_idx ] : colors[ 0 ];
         }
     }
 
@@ -61,13 +64,13 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
 
     //fprintf(stderr, "%d %d\n", Xcnt, Ycnt );
 
-    for ( size_t a = 0; a < Xcnt; a++ ) {
+    for ( size_t a = 0; a < Ycnt; a++ ) {
 
         std::vector<QColor>& raw = conv_paint[a];
         int Y0 = Ystep * a;
         int Y1 = Ystep * (a+1);
 
-        for( size_t p = 0; p < Ycnt; p++ ) {
+        for( size_t p = 0; p < Xcnt; p++ ) {
             QColor& color = raw[p];
             painter.setPen( QPen( color, 1, Qt::SolidLine) );
             painter.setBrush( QBrush( color ) );

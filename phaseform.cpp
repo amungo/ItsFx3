@@ -74,10 +74,10 @@ PhaseForm::PhaseForm(QWidget *parent) :
     InitCamera();
     ui->viewFinder->stackUnder(this);
 
-    Etalometr et( 0.19f );
+    Etalometr et( 0.056f );
     et.SetFreq( 1575.42e6 );
     et.SetCalibDefault();
-    et.CalcEtalons( 10.0, 120.0 );
+    et.CalcEtalons( 5.0, 60.0 );
     et.debug();
     ui->widgetConvolution->SetConvolution( et.GetResult() );
 }
