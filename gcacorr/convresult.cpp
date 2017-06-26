@@ -49,7 +49,7 @@ void ConvResult::print_dbg() {
         std::vector<float>& raw = data[a];
         for ( size_t p = 0; p < raw.size(); p++ ) {
             float& x = raw[ p ];
-            fprintf( stderr, "%5.1f ", x );
+            fprintf( stderr, "%4.1f ", x );
         }
         fprintf( stderr, "\n" );
     }

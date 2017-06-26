@@ -7,6 +7,8 @@
 #include "phaseform.h"
 #include "ui_phaseform.h"
 
+#include "gcacorr/etalometr.h"
+
 using namespace std;
 
 const float leftMHz  = 12.1f;
@@ -71,6 +73,13 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     InitCamera();
     ui->viewFinder->stackUnder(this);
+
+    Etalometr et( 0.19f );
+    et.SetFreq( 1575.42e6 );
+    et.SetCalibDefault();
+    et.CalcEtalons( 10.0, 120.0 );
+    et.debug();
+    ui->widgetConvolution->SetConvolution( et.GetResult() );
 }
 
 PhaseForm::~PhaseForm()

@@ -56,7 +56,8 @@ SOURCES += main.cpp \
     spectrumwidget.cpp \
     coverwidget.cpp \
     gcacorr/etalometr.cpp \
-    gcacorr/convresult.cpp
+    gcacorr/convresult.cpp \
+    convolutionwidget.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -121,7 +122,8 @@ HEADERS  += itsmain.h \
     spectrumwidget.h \
     coverwidget.h \
     gcacorr/etalometr.h \
-    gcacorr/convresult.h
+    gcacorr/convresult.h \
+    convolutionwidget.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

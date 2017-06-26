@@ -30,8 +30,8 @@ void Etalometr::SetCalibDefault()
 
 void Etalometr::CalcEtalons(double step_deg, double max_phi_angle_deg)
 {
-    int alpha_cnt = (int)( (360.0 / step_deg) + 1 );
-    int phi_cnt   = (int)( (2.0 * max_phi_angle_deg / step_deg) + 1 );
+    int alpha_cnt = (int)( (360.0 / step_deg) /*+ 1*/ );
+    int phi_cnt   = (int)( (2.0 * max_phi_angle_deg / step_deg) /*+ 1*/ );
     etalons.resize( alpha_cnt );
     for ( int a = 0; a < alpha_cnt; a++ ) {
         etalons[a].resize( phi_cnt );
@@ -119,7 +119,7 @@ ConvResult *Etalometr::GetResult()
 void Etalometr::debug()
 {
     float alpha = M_PI/4.0;
-    float phi = M_PI/2.0;
+    float phi = M_PI/4.0;
     float measures[3] = {
         GetEtalon(1, alpha, phi).angle(),
         GetEtalon(2, alpha, phi).angle(),

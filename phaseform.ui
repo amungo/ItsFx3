@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabSpecPhase">
       <attribute name="title">
@@ -97,6 +97,23 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabConvolution">
+      <attribute name="title">
+       <string>Convolution</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="ConvolutionWidget" name="widgetConvolution" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>180</width>
+           <height>180</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -161,6 +178,12 @@
    <class>CoverWidget</class>
    <extends>QWidget</extends>
    <header>coverwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConvolutionWidget</class>
+   <extends>QWidget</extends>
+   <header>convolutionwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
