@@ -84,7 +84,9 @@ PhaseForm::~PhaseForm()
         tick_thr.join();
     }
 
-    camera->stop();
+    if ( camera ) {
+        camera->stop();
+    }
 
     delete ui;
 
