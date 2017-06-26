@@ -96,13 +96,14 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
     writeGPIO(VCTCXOEN,  1);
     writeGPIO(NT1065EN,  1);
 
-    //writeGPIO(ANTLNAEN,  1);
-    //writeGPIO(ANTFEEDEN, 1);
+    writeGPIO(ANTLNAEN,  1);
+    writeGPIO(ANTFEEDEN, 1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     GetNt1065ChipID();
     readNtReg(0x07);
 
+    pre_init();
 
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
@@ -134,6 +135,7 @@ void FX3DevCyAPI::startRead(DeviceDataHandlerIfce *handler) {
     startTransferData(0, 128, 4, 1500);
     data_handler = handler;
     xfer_thread = std::thread(&FX3DevCyAPI::xfer_loop, this);
+    startGpif();
 }
 
 void FX3DevCyAPI::stopRead() {
@@ -427,6 +429,111 @@ void FX3DevCyAPI::readNtReg(uint32_t reg) {
     res = read16bitSPI(reg, &val);
     fprintf( stderr, "Reg%d (0x%02X), val = 0x%08X\n", reg, reg, val );
     print_bits(val);
+}
+
+void FX3DevCyAPI::pre_init() {
+    unsigned char reg = 0;
+
+    //  SetSingleLO
+    send16bitSPI(0x00, 3);
+    send16bitSPI(0x00, 45);
+
+    // SetPLLTune
+    int npll = 0;
+    read16bitSPI(43+npll*4, &reg);
+    send16bitSPI(reg|1, 43+npll*4);
+
+
+    //PLLstat = NT1065_GetPLLStat(0);
+
+    //AOK
+    readNtReg(0x07);
+
+    // NT1065_SetSideBand( chan, side )
+    int chan = 1;
+    int side = 1;
+    read16bitSPI(13+chan*7, &reg);
+    send16bitSPI((reg&0xFD)|((side&1)<<1), 13+chan*7);
+
+    chan = 2;
+    side = 1;
+    read16bitSPI(13+chan*7, &reg);
+    send16bitSPI((reg&0xFD)|((side&1)<<1), 13+chan*7);
+
+    chan = 3;
+    side = 1;
+    read16bitSPI(13+chan*7, &reg);
+    send16bitSPI((reg&0xFD)|((side&1)<<1), 13+chan*7);
+
+    //AOK
+    readNtReg(0x07);
+
+    // SetOutAnalog_IFMGC
+    send16bitSPI(0x22, 15);
+    send16bitSPI(0x22, 22);
+    send16bitSPI(0x22, 29);
+    send16bitSPI(0x22, 36);
+
+//    // setRFGain
+//    chan = 0;
+//    int gain = 11;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
+
+//    chan = 1;
+//    gain = 11;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
+
+//    chan = 2;
+//    gain = 11;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
+
+//    chan = 3;
+//    gain = 11;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
+
+//    // setIfGain
+//    chan = 0;
+//    int gain_code = 10;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
+//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
+
+//    chan = 1;
+//    gain_code = 10;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
+//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
+
+//    chan = 2;
+//    gain_code = 10;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
+//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
+
+//    chan = 3;
+//    gain_code = 10;
+//    read16bitSPI(17+chan*7, &reg);
+//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
+//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
+
+
+    // SetLPFCalStart
+    send16bitSPI(1, 4);
+
+    // SetOutADC_IFMGC
+    send16bitSPI(0x23, 15);
+    send16bitSPI(0x0B, 19);
+    send16bitSPI(0x23, 22);
+    send16bitSPI(0x0B, 26);
+    send16bitSPI(0x23, 29);
+    send16bitSPI(0x0B, 33);
+    send16bitSPI(0x23, 36);
+    send16bitSPI(0x0B, 40);
+
 }
 
 uint32_t FX3DevCyAPI::GetNt1065ChipID()

@@ -69,6 +69,8 @@ public:
     uint32_t GetNt1065ChipID();
     void readNtReg(uint32_t reg);
 
+    void pre_init();
+
     void writeGPIO( uint32_t gpio, uint32_t value );
     void readGPIO( uint32_t gpio, uint32_t* value );
     void startGpif();
