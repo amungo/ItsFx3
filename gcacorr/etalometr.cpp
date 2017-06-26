@@ -125,8 +125,8 @@ ConvResult *Etalometr::GetResult()
 
 void Etalometr::debug()
 {
-    float alpha = (float)( M_PI * 30.0 / 180.0 );
-    float phi   = (float)( M_PI * 10.0 / 180.0 );
+    float alpha = (float)( M_PI *  0.0 / 180.0 );
+    float phi   = (float)( M_PI * 45.0 / 180.0 );
     float_cpx_t iqs[3] = {
         GetEtalon(1, alpha, phi),
         GetEtalon(2, alpha, phi),
