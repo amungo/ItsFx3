@@ -13,11 +13,11 @@
 
 using namespace std;
 
-const float leftMHz  = 12.45f;
-const float rightMHz = 16.45f;
+const float leftMHz  = 10.0f;
+const float rightMHz = 20.0f;
 const float bandMHz  = 53.0f / 2.0f;
 
-const int fft_len = 8192;
+const int fft_len = 4096;
 const int half_fft_len = fft_len / 2;
 
 const int left_point  = leftMHz * half_fft_len / bandMHz;
@@ -210,6 +210,7 @@ void PhaseForm::MakePphs() {
 
 void PhaseForm::Tick()
 {
+    this_thread::sleep_for(chrono::milliseconds(2000));
     while (running) {
         this_thread::sleep_for(chrono::milliseconds(100));
         MakePphs();
@@ -227,13 +228,14 @@ void PhaseForm::Tick()
         phs[2] = phases[3][idx];
         ConvResult* result = et.CalcConvolution( phs );
         ui->widgetConvolution->SetConvolution( result );
+        ui->widgetCover->SetConvolution( result );
 
         float alpha_deg = (float)result->maxAlphaIdx * deg_prec;
         float phi_deg   = (float)result->maxPhiIdx * deg_prec;
 
         alpha_deg -= 90.0f;
 
-        ui->widgetCover->SetTarget( alpha_deg, phi_deg );
+        //ui->widgetCover->SetTarget( alpha_deg, phi_deg );
 
         update();
     }

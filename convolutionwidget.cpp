@@ -11,7 +11,7 @@ ConvolutionWidget::ConvolutionWidget(QWidget *parent) : QWidget(parent)
 {
     colors.resize(255);
     for ( size_t i = 0; i < colors.size(); i++ ) {
-        colors[i] = QColor( i, i, i, 255 );
+        colors[i] = QColor( i, 0, 0, 64 );
     }
     conv_paint.resize(1);
     conv_paint[0].resize(1);
@@ -45,17 +45,15 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
 void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
 {
     lock_guard<mutex> lock(mtx);
+    if ( !conv ) {
+        return;
+    }
 
     QPainter painter( this );
     float W = width();
     float W2 = W/2.0f;
     float H = height();
     float H2 = H/2.0f;
-
-    painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
-    painter.setBrush( QBrush( Qt::black ) );
-    painter.drawRect( 0, 0, W, H );
-
 
     QPoint Center( W2, H2 );
     float R = W < H ? W2 : H2;
@@ -68,18 +66,19 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
 
         for( size_t p = 0; p < raw.size(); p++ ) {
 
-            if ( conv->data[a][p] < conv->min ) {
+            if ( raw[p] == colors[ 0 ] ) {
                 continue;
+            } else {
+                int shift = 0;
+
+                float Z = R * ( p + shift ) / ((float) raw.size() + shift);
+                QColor& color = raw[p];
+                painter.setPen( QPen( color, 4, Qt::SolidLine) );
+                painter.setBrush( QBrush( color ) );
+
+                painter.drawPoint( Center.x() + Z * cosf(alpha),
+                                   Center.y() - Z * sinf(alpha) );
             }
-            int shift = 2;
-
-            float Z = R * ( p + shift ) / ((float) raw.size() + shift);
-            QColor& color = raw[p];
-            painter.setPen( QPen( color, 4, Qt::SolidLine) );
-            painter.setBrush( QBrush( color ) );
-
-            painter.drawPoint( Center.x() + Z * cosf(alpha),
-                               Center.y() - Z * sinf(alpha) );
         }
     }
 

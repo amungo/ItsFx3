@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabSpecPhase">
       <attribute name="title">
@@ -83,7 +83,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="CoverWidget" name="widgetCover" native="true">
+           <widget class="ConvolutionWidget" name="widgetCover" native="true">
             <property name="minimumSize">
              <size>
               <width>320</width>
@@ -172,12 +172,6 @@
    <class>SpectrumWidget</class>
    <extends>QWidget</extends>
    <header>spectrumwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CoverWidget</class>
-   <extends>QWidget</extends>
-   <header>coverwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
