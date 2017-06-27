@@ -71,8 +71,9 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
             if ( conv->data[a][p] < conv->min ) {
                 continue;
             }
+            int shift = 2;
 
-            float Z = R * ( p + 5 ) / ((float) raw.size() + 5.0f);
+            float Z = R * ( p + shift ) / ((float) raw.size() + shift);
             QColor& color = raw[p];
             painter.setPen( QPen( color, 4, Qt::SolidLine) );
             painter.setBrush( QBrush( color ) );

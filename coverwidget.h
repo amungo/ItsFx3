@@ -9,9 +9,12 @@ class CoverWidget : public QWidget
     Q_OBJECT
 public:
     explicit CoverWidget(QWidget *parent = 0);
+    void SetTarget( float alpha_deg, float phi_deg );
 
 private:
     std::mutex mtx;
+    float alpha_deg;
+    float phi_deg;
 
 signals:
 

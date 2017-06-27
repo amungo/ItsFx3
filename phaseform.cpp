@@ -9,10 +9,12 @@
 
 #include "gcacorr/etalometr.h"
 
+#define MY_PI (3.14159265359f)
+
 using namespace std;
 
-const float leftMHz  = 12.1f;
-const float rightMHz = 17.1f;
+const float leftMHz  = 12.45f;
+const float rightMHz = 16.45f;
 const float bandMHz  = 53.0f / 2.0f;
 
 const int fft_len = 8192;
@@ -25,6 +27,8 @@ const int points_cnt = right_point - left_point;
 const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
 const int avg_cnt = 20;
+
+const double deg_prec = 1.0;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
@@ -77,7 +81,7 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     et.SetFreq( 1575.42e6 );
     et.SetCalibDefault();
-    et.CalcEtalons( 5.0, 60.0 );
+    et.CalcEtalons( deg_prec, 45.0 );
     et.debug();
     ui->widgetConvolution->SetConvolution( et.GetResult() );
 }
@@ -221,8 +225,15 @@ void PhaseForm::Tick()
         phs[0] = phases[1][idx];
         phs[1] = phases[2][idx];
         phs[2] = phases[3][idx];
-        et.CalcConvolution( phs );
-        ui->widgetConvolution->SetConvolution( et.GetResult() );
+        ConvResult* result = et.CalcConvolution( phs );
+        ui->widgetConvolution->SetConvolution( result );
+
+        float alpha_deg = (float)result->maxAlphaIdx * deg_prec;
+        float phi_deg   = (float)result->maxPhiIdx * deg_prec;
+
+        alpha_deg -= 90.0f;
+
+        ui->widgetCover->SetTarget( alpha_deg, phi_deg );
 
         update();
     }

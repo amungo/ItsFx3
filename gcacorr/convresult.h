@@ -17,8 +17,8 @@ public:
     std::vector<std::vector<float>> data;
     float max;
     float min;
-    int maxAlpha;
-    int maxPhi;
+    int maxAlphaIdx;
+    int maxPhiIdx;
 };
 
 #endif // CONVRESULT_H

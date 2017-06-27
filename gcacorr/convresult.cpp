@@ -18,8 +18,8 @@ void ConvResult::Flush()
 {
     max = 1.0f;
     min = 0.0f;
-    maxAlpha = data.size() / 2;
-    maxPhi = data[0].size() / 2;
+    maxAlphaIdx = data.size() / 2;
+    maxPhiIdx = data[0].size() / 2;
 }
 
 void ConvResult::ReCalc()
@@ -32,8 +32,8 @@ void ConvResult::ReCalc()
             float& x = raw[ p ];
             if ( x > max ) {
                 max = x;
-                maxAlpha = a;
-                maxPhi = p;
+                maxAlphaIdx = a;
+                maxPhiIdx = p;
             }
             if ( x < min ) {
                 min = x;
