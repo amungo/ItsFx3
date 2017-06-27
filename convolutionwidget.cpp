@@ -24,7 +24,7 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
     float min = conv->min;
     float max = conv->max;
 
-    min = max * 0.90;
+    min = max * 0.995;
 
     float len = max - min;
     float color_range = 250.0;
@@ -67,6 +67,11 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
         std::vector<QColor>& raw = conv_paint[a];
 
         for( size_t p = 0; p < raw.size(); p++ ) {
+
+            if ( conv->data[a][p] < conv->min ) {
+                continue;
+            }
+
             float Z = R * ( p + 5 ) / ((float) raw.size() + 5.0f);
             QColor& color = raw[p];
             painter.setPen( QPen( color, 4, Qt::SolidLine) );
