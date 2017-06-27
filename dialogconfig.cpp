@@ -36,7 +36,7 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
     } else {
         ui->comboBoxDriverType->setCurrentIndex(libusb_idx);
     }
-    ui->comboBoxDriverType->setCurrentIndex(filesim_idx);
+    //ui->comboBoxDriverType->setCurrentIndex(filesim_idx);
 
     for ( int dtm = 0; dtm < ( int ) ADC_Types_Count; dtm++ ) {
         #ifdef NO_GPS
