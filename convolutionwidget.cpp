@@ -56,31 +56,6 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
     painter.setBrush( QBrush( Qt::black ) );
     painter.drawRect( 0, 0, W, H );
 
-    //painter.setPen( QPen( Qt::green, 1, Qt::DotLine) );
-    //painter.drawLine( W2, 0, W2, H );
-    //painter.drawLine( 0, H2, W, H2 );
-
-//    int Ycnt = conv_paint.size();
-//    int Xcnt = conv_paint[0].size();
-
-//    float Xstep = W / (float)Xcnt;
-//    float Ystep = H / (float)Ycnt;
-
-//    for ( size_t a = 0; a < Ycnt; a++ ) {
-
-//        std::vector<QColor>& raw = conv_paint[a];
-//        int Y0 = Ystep * a;
-//        int Y1 = Ystep * (a+1);
-
-//        for( size_t p = 0; p < Xcnt; p++ ) {
-//            QColor& color = raw[p];
-//            painter.setPen( QPen( color, 1, Qt::SolidLine) );
-//            painter.setBrush( QBrush( color ) );
-
-//            painter.drawRect( Xstep*p, Y0, Xstep*(p+1), Y1 );
-//        }
-//    }
-
 
     QPoint Center( W2, H2 );
     float R = W < H ? W2 : H2;
@@ -101,5 +76,8 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
                                Center.y() - Z * sinf(alpha) );
         }
     }
+
+    painter.setPen( QPen( Qt::green, 3, Qt::SolidLine) );
+    painter.drawText( Center, QString(" %1 ").arg(QString::number((double)conv->max, 'g', 4 )) );
 
 }
