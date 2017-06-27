@@ -76,7 +76,7 @@ typedef struct float_cpx_t {
     }
 
     inline float angle() const {
-        return atan2(i,q);
+        return atan2(q,i);
     }
 
     inline float angle_deg() const {
