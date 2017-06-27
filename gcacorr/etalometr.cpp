@@ -25,9 +25,9 @@ void Etalometr::SetCalib(float phases[])
 void Etalometr::SetCalibDefault()
 {
     float default_calib[3] = {
-        (float)M_PI / 2.0f,
-        (float)M_PI,
-        3.0f * (float)M_PI / 2.0f
+        (float)( M_PI *  -55.0 / 180.0 ),
+        (float)( M_PI * -145.0 / 180.0 ),
+        (float)( M_PI *   90.0 / 180.0 )
     };
     SetCalib( default_calib );
 }
@@ -112,7 +112,8 @@ ConvResult* Etalometr::CalcConvolution(float phases[])
 {
     float_cpx_t iqs[3];
     for ( int i = 0; i < 3; i++ ) {
-        float_cpx_t X( cosf(phases[i]), sinf(phases[i]) );
+        float phase_rad = (float)( M_PI * phases[i] / 180.0 );
+        float_cpx_t X( cosf(phase_rad), sinf(phase_rad) );
         iqs[i] = X;
     }
     return CalcConvolution( iqs );
@@ -125,14 +126,21 @@ ConvResult *Etalometr::GetResult()
 
 void Etalometr::debug()
 {
-    float alpha = (float)( M_PI *  0.0 / 180.0 );
-    float phi   = (float)( M_PI * 45.0 / 180.0 );
-    float_cpx_t iqs[3] = {
-        GetEtalon(1, alpha, phi),
-        GetEtalon(2, alpha, phi),
-        GetEtalon(3, alpha, phi)
+    float alpha = (float)( M_PI * 0.0 / 180.0 );
+    float phi   = (float)( M_PI * 0.0 / 180.0 );
+//    float_cpx_t iqs[3] = {
+//        GetEtalon(1, alpha, phi),
+//        GetEtalon(2, alpha, phi),
+//        GetEtalon(3, alpha, phi)
+//    };
+//    CalcConvolution( iqs );
+
+    float phases[3] = {
+          90.0f,
+        -145.0f,
+         -55.0f
     };
-    CalcConvolution( iqs );
+    CalcConvolution( phases );
     //result.print_dbg();
 }
 
