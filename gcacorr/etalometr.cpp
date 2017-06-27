@@ -45,7 +45,7 @@ void Etalometr::CalcEtalons(double step_deg, double max_phi_angle_deg)
     float step = (float)( M_PI * step_deg / 180.0 );
 
     for ( int a = 0; a < alpha_cnt; a++ ) {
-        float alpha = (float)( -M_PI + a * step );
+        float alpha = (float)( /*-M_PI +*/ a * step );
         for ( int p = 0; p < phi_cnt; p++ ) {
             float phi = p * step;
             PhasesDiff_t& et = etalons[a][p];
