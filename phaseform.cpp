@@ -228,14 +228,6 @@ void PhaseForm::Tick()
         phs[2] = phases[3][idx];
         ConvResult* result = et.CalcConvolution( phs );
         ui->widgetConvolution->SetConvolution( result );
-        ui->widgetCover->SetConvolution( result );
-
-        float alpha_deg = (float)result->maxAlphaIdx * deg_prec;
-        float phi_deg   = (float)result->maxPhiIdx * deg_prec;
-
-        alpha_deg -= 90.0f;
-
-        //ui->widgetCover->SetTarget( alpha_deg, phi_deg );
 
         update();
     }
