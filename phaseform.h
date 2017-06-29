@@ -72,6 +72,10 @@ public slots:
     void CurChangeButtonDownSlow(bool);
     void CurChangeButtonDownFast(bool);
 
+    void CurBandChange( int value );
+    void CurBandChangeUp(bool);
+    void CurBandChangeDown(bool);
+
 private slots:
     void slotRun(int);
 

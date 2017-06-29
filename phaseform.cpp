@@ -29,7 +29,7 @@ const int points_cnt = right_point - left_point;
 
 const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
-const int avg_cnt = 10;
+const int avg_cnt = 20;
 
 const double deg_prec = 1.0;
 
@@ -79,10 +79,16 @@ PhaseForm::PhaseForm(QWidget *parent) :
     QObject::connect(ui->pushButtonDown,       SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownSlow(bool)) );
     QObject::connect(ui->pushButtonDownFast,   SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownFast(bool)) );
 
+    QObject::connect(ui->pushButtonAvgBandUp,   SIGNAL(clicked(bool)), this, SLOT(CurBandChangeUp(bool)) );
+    QObject::connect(ui->pushButtonAvgBandDown, SIGNAL(clicked(bool)), this, SLOT(CurBandChangeDown(bool)) );
+
     ui->pushButtonUp->setStyleSheet(      "background-color: lightGrey");
     ui->pushButtonUpFast->setStyleSheet(  "background-color: lightGrey");
     ui->pushButtonDown->setStyleSheet(    "background-color: lightGrey");
     ui->pushButtonDownFast->setStyleSheet("background-color: lightGrey");
+
+    ui->pushButtonAvgBandUp->setStyleSheet(    "background-color: lightGrey");
+    ui->pushButtonAvgBandDown->setStyleSheet(  "background-color: lightGrey");
 
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
     ui->widgetSpectrum->SetSpectrumParams( nullMHz, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
@@ -189,35 +195,37 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
         }
 
 
-        // Additional averaging for curIdx point.
-        int beg = curIdx - avg_filter_cnt/2;
-        int end = curIdx + avg_filter_cnt/2;
-        if ( beg < 0 ) {
-            beg = 0;
-        }
-        if ( end > half_fft_len - 1 ) {
-            end = half_fft_len - 1;
-        }
-        scale = 1.0f / ((float) avg_cnt * 4.0f * (end - beg) );
+        if ( avg_filter_cnt >= 2 ) {
+            // Additional averaging for curIdx point.
+            int beg = curIdx - avg_filter_cnt/2;
+            int end = curIdx + avg_filter_cnt/2;
+            if ( beg < 0 ) {
+                beg = 0;
+            }
+            if ( end > half_fft_len - 1 ) {
+                end = half_fft_len - 1;
+            }
+            scale = 1.0f / ((float) avg_cnt * 4.0f * (end - beg) );
 
-        corr[0] = float_cpx_t( 0.0f, 0.0f );
-        corr[1] = float_cpx_t( 0.0f, 0.0f );
-        corr[2] = float_cpx_t( 0.0f, 0.0f );
-        corr[3] = float_cpx_t( 0.0f, 0.0f );
-        for ( int pt = beg; pt < end; pt++ ) {
-            for ( int iter = 0; iter < avg_cnt; iter++ ) {
-                for ( int ch = 0; ch < 4; ch++ ) {
-                    corr[ch].add(
-                        calc_correlation(
-                            tbuf_fft[ iter ][ 0  ][ pt ],
-                            tbuf_fft[ iter ][ ch ][ pt ]
-                        )
-                    );
+            corr[0] = float_cpx_t( 0.0f, 0.0f );
+            corr[1] = float_cpx_t( 0.0f, 0.0f );
+            corr[2] = float_cpx_t( 0.0f, 0.0f );
+            corr[3] = float_cpx_t( 0.0f, 0.0f );
+            for ( int pt = beg; pt < end; pt++ ) {
+                for ( int iter = 0; iter < avg_cnt; iter++ ) {
+                    for ( int ch = 0; ch < 4; ch++ ) {
+                        corr[ch].add(
+                            calc_correlation(
+                                tbuf_fft[ iter ][ 0  ][ pt ],
+                                tbuf_fft[ iter ][ ch ][ pt ]
+                            )
+                        );
+                    }
                 }
             }
-        }
-        for ( int ch = 0; ch < 4; ch++ ) {
-            fft_out_averaged[ ch ][ curIdx ] = corr[ ch ].mul_real( scale );
+            for ( int ch = 0; ch < 4; ch++ ) {
+                fft_out_averaged[ ch ][ curIdx ] = corr[ ch ].mul_real( scale );
+            }
         }
     }
 
@@ -366,6 +374,29 @@ void PhaseForm::CurChangeButtonDownSlow(bool)
 void PhaseForm::CurChangeButtonDownFast(bool)
 {
     SetCurrentIdx( GetCurrentIdx() - 10 );
+}
+
+void PhaseForm::CurBandChange(int value)
+{
+    if ( value < 1 ) {
+        value = 1;
+    }
+    if ( value > points_cnt ) {
+        value = points_cnt;
+    }
+    avg_filter_cnt = value;
+    ui->labelAvgBand->setText( QString(" %1 MHz").arg( QString::number(
+        avg_filter_cnt*filterMHz, 'f', 2  ) ));
+}
+
+void PhaseForm::CurBandChangeUp(bool)
+{
+    CurBandChange( avg_filter_cnt + 1 );
+}
+
+void PhaseForm::CurBandChangeDown(bool)
+{
+    CurBandChange( avg_filter_cnt - 1 );
 }
 
 
