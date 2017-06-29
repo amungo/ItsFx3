@@ -61,6 +61,7 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
     for ( size_t a = 0; a < conv_paint.size(); a++ ) {
 
         float alpha = a * 2.0 * MY_PI / (float)conv_paint.size();
+        alpha -= MY_PI/2.0f;
 
         std::vector<QColor>& raw = conv_paint[a];
 
@@ -76,7 +77,7 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
                 painter.setPen( QPen( color, 4, Qt::SolidLine) );
                 painter.setBrush( QBrush( color ) );
 
-                painter.drawPoint( Center.x() + Z * cosf(alpha),
+                painter.drawPoint( Center.x() - Z * cosf(alpha),
                                    Center.y() - Z * sinf(alpha) );
             }
         }
