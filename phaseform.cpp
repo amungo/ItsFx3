@@ -294,6 +294,31 @@ void PhaseForm::Tick()
         ConvResult* result = et.CalcConvolution( phs );
         ui->widgetConvolution->SetConvolution( result );
 
+        ui->labelPhases->setText( QString("%1  %2  %3").arg(
+            QString::number( phs[0], 'f', 0  ),
+            QString::number( phs[1], 'f', 0  ),
+            QString::number( phs[2], 'f', 0  )
+        ));
+
+        float diff12 = phs[0] - phs[1];
+        if ( diff12 > 180.0f ) {
+            diff12 -= 360.0f;
+        } else if ( diff12 < -180.0f ) {
+            diff12 += 360.0f;
+        }
+
+        float diff23 = phs[1] - phs[2];
+        if ( diff23 > 180.0f ) {
+            diff23 -= 360.0f;
+        } else if ( diff23 < -180.0f ) {
+            diff23 += 360.0f;
+        }
+
+        ui->labelPhasesDiff->setText( QString("%1  %2").arg(
+            QString::number( diff12, 'f', 0  ),
+            QString::number( diff23, 'f', 0  )
+        ));
+
         update();
     }
 }
