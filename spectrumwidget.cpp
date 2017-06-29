@@ -17,17 +17,31 @@ void SpectrumWidget::SetPowersData(
         std::vector< std::vector<float> >* powers_data,
         int skip_pts,
         int pts_cnt,
-        float min,
-        float max,
-        float avg )
+        float minval,
+        float maxval,
+        float avgval )
 {
     lock_guard< mutex > lock( mtx );
     this->powers   = powers_data;
     this->skip_pts = skip_pts;
     this->pts_cnt  = pts_cnt;
-    this->min = min;
-    this->max = max;
-    this->avg = avg;
+    this->minval = minval;
+    this->maxval = maxval;
+    this->avgval = avgval;
+
+    if ( maxpowers.size() < pts_cnt ) {
+        maxpowers.resize( pts_cnt + 1 );
+    }
+
+    int right_point = skip_pts + pts_cnt;
+
+    for ( int i = skip_pts; i < right_point; i++ ) {
+        float ch0 = (*powers)[ 0 ][i];
+        float ch1 = (*powers)[ 1 ][i];
+        float ch2 = (*powers)[ 2 ][i];
+        float ch3 = (*powers)[ 3 ][i];
+        maxpowers[i-skip_pts] = max( max(ch0, ch1), max(ch2, ch3) );
+    }
 }
 
 void SpectrumWidget::SetCurrentIdx(int idx)
@@ -59,9 +73,9 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
     const float border = 20.0f;
     float stepX = ( this->width() - border * 2.0f ) / (float)pts_cnt;
 
-    float range = max - min + 5.0f;
+    float range = maxval - minval + 5.0f;
     float scale = height() / range;
-    float shift = -avg;
+    float shift = -avgval;
 
 
 
@@ -81,7 +95,6 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
 
     painter.setPen( QPen( Qt::gray, 1, Qt::DotLine ) );
     painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->height() );
-
 
     for ( int ch = 0; ch < 4; ch++ ) {
         painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
@@ -105,18 +118,58 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
         curp.setY( H2 - ( pwr + shift ) * scale );
         painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
     }
-
-    painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
-    curp.setX( choosen * stepX );
-    curp.setY( 15 );
-    painter.drawText( curp, QString(" %1 MHz").arg(QString::number(
-                                                       ( nullHz - leftHz - choosen*filterHz ) / 1.0e6
-                                                       )) );
 }
 
 void SpectrumWidget::PaintVertical(QPainter &painter)
 {
+    painter.translate( 0, height() );
+    painter.rotate(-90.0);
 
+    const float border = 20.0f;
+    float stepX = ( height() - border * 2.0f ) / (float)pts_cnt;
+
+    float range = maxval - minval + 5.0f;
+    float scale = width() / range;
+    float shift = -avgval;
+
+    painter.setPen( QPen( Qt::gray, 2, Qt::SolidLine) );
+    painter.drawRect( 0, 0, height(), width() );
+
+    QPoint curp( 0, 0 );
+    QPoint prvp( 0, 0 );
+    float curX = 0;
+
+    float H = width();
+    float H2 = H/2.0f;
+
+    float choosen = GetCurrentIdx();
+    choosen -= skip_pts;
+
+    painter.setPen( QPen( Qt::gray, 1, Qt::DotLine ) );
+    painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->width() );
+
+    painter.setPen( QPen( Qt::green, 1, Qt::SolidLine) );
+
+    curX = border;
+    curp = QPoint( 0, 0 );
+    prvp = QPoint( curX, H2 - ( maxpowers[0] + shift ) * scale );
+
+    for ( int i = 0; i < pts_cnt; i++ ) {
+        curp.setX( curX );
+        curp.setY( H2 - ( maxpowers[i] + shift ) * scale );
+        painter.drawLine( prvp, curp );
+        prvp = curp;
+        curX += stepX;
+    }
+
+    painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
+    for ( float pwr = -200.0f; pwr < 200.0; pwr += 10.0f ) {
+        curp.setX( 0 );
+        curp.setY( H2 - ( pwr + shift ) * scale );
+        painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
+    }
+
+    painter.rotate(90.0);
 }
 
 void SpectrumWidget::paintEvent(QPaintEvent *)

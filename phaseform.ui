@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
-    <height>543</height>
+    <width>1014</width>
+    <height>601</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabSpecPhase">
       <attribute name="title">
@@ -54,46 +54,84 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tabCamera">
+      <property name="minimumSize">
+       <size>
+        <width>600</width>
+        <height>500</height>
+       </size>
+      </property>
       <attribute name="title">
        <string>Camera</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
-        <widget class="QCameraViewfinder" name="viewFinder" native="true">
-         <property name="minimumSize">
-          <size>
-           <width>320</width>
-           <height>240</height>
-          </size>
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="4,1">
+         <property name="spacing">
+          <number>0</number>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="ConvolutionWidget" name="widgetConvolution" native="true">
-            <property name="minimumSize">
-             <size>
-              <width>320</width>
-              <height>240</height>
-             </size>
+         <item>
+          <widget class="QCameraViewfinder" name="viewFinder" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>400</width>
+             <height>300</height>
+            </size>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0">
+            <property name="spacing">
+             <number>0</number>
             </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="ConvolutionWidget" name="widgetConvolution" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>400</width>
+                <height>300</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="SpectrumWidget" name="widgetSpectrumVertical" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>200</width>
+             <height>200</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>

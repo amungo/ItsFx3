@@ -14,9 +14,9 @@ public:
             std::vector< std::vector<float> >* powers_data,
             int skip_pts,
             int pts_cnt,
-            float min,
-            float max,
-            float avg );
+            float minval,
+            float maxval,
+            float avgval );
 
     void SetCurrentIdx(int idx);
     int  GetCurrentIdx();
@@ -31,14 +31,15 @@ public:
 private:
     SpecMode_e mode = spec_horiz;
     std::vector< std::vector<float> >* powers;
+    std::vector<float> maxpowers;
     std::mutex mtx;
     int idx      = 1;
     int skip_pts = 0;
     int pts_cnt  = 0;
 
-    float min = -10.0f;
-    float max = 100.0f;
-    float avg =   0.0f;
+    float minval = -10.0f;
+    float maxval = 100.0f;
+    float avgval =   0.0f;
 
     double nullHz   = 1590.0e6;
     double leftHz   =   10.0e6;

@@ -72,6 +72,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
     ui->widgetSpectrum->SetSpectrumParams( 1590.0e6, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
 
+    ui->widgetSpectrumVertical->SetVisualMode( SpectrumWidget::spec_vert );
+    ui->widgetSpectrumVertical->SetSpectrumParams( 1590.0e6, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
+
     ui->spinBoxChoosenFilter->setMinimum(left_point);
     ui->spinBoxChoosenFilter->setMaximum(right_point);
     ui->spinBoxChoosenFilter->setValue( (left_point + right_point)/2 );
@@ -221,9 +224,11 @@ void PhaseForm::Tick()
 
         ui->widgetPhases->SetPhasesData(   &phases, left_point, points_cnt );
         ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
+        ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
 
         ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx() );
         ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx() );
+        ui->widgetSpectrumVertical->SetCurrentIdx( GetCurrentIdx() );
 
         int idx = GetCurrentIdx();
         float phs[3];
