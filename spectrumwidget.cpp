@@ -194,15 +194,27 @@ void SpectrumWidget::mousePressEvent(QMouseEvent *event)
 {
     if ( event->button() & Qt::MouseButton::LeftButton ) {
 
-        float y = event->pos().y();
-        y -= border;
+        if ( mode == spec_horiz ) {
+            float x = event->pos().x();
+            x -= border;
 
-        float stepX = ( height() - border * 2.0f ) / (float)pts_cnt;
-        y /= stepX;
-        y = pts_cnt - y;
-        y += skip_pts;
+            float stepX = ( width() - border * 2.0f ) / (float)pts_cnt;
+            x /= stepX;
+            x += skip_pts;
 
-        emit sendNewCurIdx( y );
+            emit sendNewCurIdx( x );
+
+        } else if ( mode == spec_vert ) {
+            float y = event->pos().y();
+            y -= border;
+
+            float stepX = ( height() - border * 2.0f ) / (float)pts_cnt;
+            y /= stepX;
+            y = pts_cnt - y;
+            y += skip_pts;
+
+            emit sendNewCurIdx( y );
+        }
     }
 }
 

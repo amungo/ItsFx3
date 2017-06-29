@@ -73,6 +73,7 @@ PhaseForm::PhaseForm(QWidget *parent) :
     ui->setupUi(this);
 
     QObject::connect(ui->widgetSpectrumVertical, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
+    QObject::connect(ui->widgetSpectrum,         SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
 
     QObject::connect(ui->pushButtonUp,         SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpSlow(bool)) );
     QObject::connect(ui->pushButtonUpFast,     SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpFast(bool)) );
