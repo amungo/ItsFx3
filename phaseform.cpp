@@ -164,8 +164,9 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
             }
         }
 
+        float scale = 1.0f / ((float) avg_cnt * 4.0f);
+        float_cpx_t corr[4];
         for ( int pt = 0; pt < half_fft_len; pt++ ) {
-            float_cpx_t corr[4];
             corr[0] = float_cpx_t( 0.0f, 0.0f );
             corr[1] = float_cpx_t( 0.0f, 0.0f );
             corr[2] = float_cpx_t( 0.0f, 0.0f );
@@ -183,8 +184,40 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
             }
 
             for ( int ch = 0; ch < 4; ch++ ) {
-                fft_out_averaged[ ch ][ pt ] = corr[ ch ].mul_real( 1.0f / (float) avg_cnt );
+                fft_out_averaged[ ch ][ pt ] = corr[ ch ].mul_real( scale );
             }
+        }
+
+
+        // Additional averaging for curIdx point.
+        int beg = curIdx - avg_filter_cnt/2;
+        int end = curIdx + avg_filter_cnt/2;
+        if ( beg < 0 ) {
+            beg = 0;
+        }
+        if ( end > half_fft_len - 1 ) {
+            end = half_fft_len - 1;
+        }
+        scale = 1.0f / ((float) avg_cnt * 4.0f * (end - beg) );
+
+        corr[0] = float_cpx_t( 0.0f, 0.0f );
+        corr[1] = float_cpx_t( 0.0f, 0.0f );
+        corr[2] = float_cpx_t( 0.0f, 0.0f );
+        corr[3] = float_cpx_t( 0.0f, 0.0f );
+        for ( int pt = beg; pt < end; pt++ ) {
+            for ( int iter = 0; iter < avg_cnt; iter++ ) {
+                for ( int ch = 0; ch < 4; ch++ ) {
+                    corr[ch].add(
+                        calc_correlation(
+                            tbuf_fft[ iter ][ 0  ][ pt ],
+                            tbuf_fft[ iter ][ ch ][ pt ]
+                        )
+                    );
+                }
+            }
+        }
+        for ( int ch = 0; ch < 4; ch++ ) {
+            fft_out_averaged[ ch ][ curIdx ] = corr[ ch ].mul_real( scale );
         }
     }
 
@@ -285,7 +318,17 @@ void PhaseForm::InitCamera() {
     for (const QCameraInfo &cameraInfo : camerasList) {
         QString desc = cameraInfo.description();
         fprintf( stderr, "\n*** camera: %s\n", desc.toLatin1().data() );
+
+        bool gotit = false;
+        if ( cameraInfo.position() == QCamera::BackFace ) {
+            gotit = true;
+        }
+
         if ( ++iter == camerasList.size() ) {
+            gotit = true;
+        }
+
+        if ( gotit ) {
             camera = new QCamera( cameraInfo );
             break;
         }

@@ -59,6 +59,8 @@ private:
     int GetCurrentIdx();
     void SetCurrentIdx( int x );
 
+    int avg_filter_cnt = 50;
+
     void InitCamera();
 
     Etalometr et;
