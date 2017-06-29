@@ -19,6 +19,7 @@ const float bandMHz  = 53.0f / 2.0f;
 
 const int fft_len = 4096;
 const int half_fft_len = fft_len / 2;
+const double filterMHz = bandMHz / ( fft_len );
 
 const int left_point  = leftMHz * half_fft_len / bandMHz;
 const int right_point = rightMHz * half_fft_len / bandMHz;
@@ -26,7 +27,7 @@ const int points_cnt = right_point - left_point;
 
 const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
-const int avg_cnt = 20;
+const int avg_cnt = 10;
 
 const double deg_prec = 1.0;
 
@@ -68,6 +69,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     tick_thr = std::thread( &PhaseForm::Tick, this );
 
     ui->setupUi(this);
+    ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
+    ui->widgetSpectrum->SetSpectrumParams( 1590.0e6, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
+
     ui->spinBoxChoosenFilter->setMinimum(left_point);
     ui->spinBoxChoosenFilter->setMaximum(right_point);
     ui->spinBoxChoosenFilter->setValue( (left_point + right_point)/2 );
@@ -240,11 +244,17 @@ int PhaseForm::GetCurrentIdx() {
 }
 
 void PhaseForm::InitCamera() {
-    for (const QCameraInfo &cameraInfo : QCameraInfo::availableCameras()) {
+
+    QList<QCameraInfo>& camerasList = QCameraInfo::availableCameras();
+
+    int iter = 0;
+    for (const QCameraInfo &cameraInfo : camerasList) {
         QString desc = cameraInfo.description();
         fprintf( stderr, "\n*** camera: %s\n", desc.toLatin1().data() );
-        camera = new QCamera(cameraInfo);
-        break;
+        if ( ++iter == camerasList.size() ) {
+            camera = new QCamera( cameraInfo );
+            break;
+        }
     }
 
     if ( camera ) {

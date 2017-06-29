@@ -40,13 +40,22 @@ int SpectrumWidget::GetCurrentIdx()
     return idx;
 }
 
-void SpectrumWidget::paintEvent(QPaintEvent *)
+void SpectrumWidget::SetSpectrumParams( double nullHz, double leftHz, double rightHz, double filterHz )
 {
-    lock_guard< mutex > lock( mtx );
-    if (!powers) {
-        return;
-    }
+    this->nullHz   = nullHz;
+    this->leftHz   = leftHz;
+    this->rightHz  = rightHz;
+    this->filterHz = filterHz;
+}
 
+void SpectrumWidget::SetVisualMode(SpectrumWidget::SpecMode_e newmode)
+{
+    lock_guard<mutex> lock( mtx );
+    this->mode = newmode;
+}
+
+void SpectrumWidget::PaintHorizontal(QPainter &painter)
+{
     const float border = 20.0f;
     float stepX = ( this->width() - border * 2.0f ) / (float)pts_cnt;
 
@@ -55,7 +64,6 @@ void SpectrumWidget::paintEvent(QPaintEvent *)
     float shift = -avg;
 
 
-    QPainter painter( this );
 
     painter.setPen( QPen( Qt::gray, 2, Qt::SolidLine) );
     painter.drawRect( 0, 0, width(), height() );
@@ -96,6 +104,33 @@ void SpectrumWidget::paintEvent(QPaintEvent *)
         curp.setX( 0 );
         curp.setY( H2 - ( pwr + shift ) * scale );
         painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
+    }
+
+    painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
+    curp.setX( choosen * stepX );
+    curp.setY( 15 );
+    painter.drawText( curp, QString(" %1 MHz").arg(QString::number(
+                                                       ( nullHz - leftHz - choosen*filterHz ) / 1.0e6
+                                                       )) );
+}
+
+void SpectrumWidget::PaintVertical(QPainter &painter)
+{
+
+}
+
+void SpectrumWidget::paintEvent(QPaintEvent *)
+{
+    lock_guard< mutex > lock( mtx );
+    if (!powers) {
+        return;
+    }
+    QPainter painter( this );
+
+    if ( mode == spec_horiz ) {
+        PaintHorizontal(painter);
+    } else if ( mode == spec_vert ) {
+        PaintVertical(painter);
     }
 }
 

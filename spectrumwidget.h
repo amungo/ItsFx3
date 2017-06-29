@@ -20,8 +20,16 @@ public:
 
     void SetCurrentIdx(int idx);
     int  GetCurrentIdx();
+    void SetSpectrumParams( double nullHz, double leftHz, double rightHz, double filterHz );
+
+    enum SpecMode_e {
+        spec_horiz = 0,
+        spec_vert  = 1
+    };
+    void SetVisualMode( SpecMode_e newmode );
 
 private:
+    SpecMode_e mode = spec_horiz;
     std::vector< std::vector<float> >* powers;
     std::mutex mtx;
     int idx      = 1;
@@ -32,7 +40,15 @@ private:
     float max = 100.0f;
     float avg =   0.0f;
 
+    double nullHz   = 1590.0e6;
+    double leftHz   =   10.0e6;
+    double rightHz  =   20.0e6;
+    double filterHz = 12400.0;
+
     Qt::GlobalColor chan_colors[4];
+
+    void PaintHorizontal( QPainter& painter );
+    void PaintVertical( QPainter& painter );
 
 signals:
 
