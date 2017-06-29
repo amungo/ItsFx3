@@ -69,6 +69,13 @@ PhaseForm::PhaseForm(QWidget *parent) :
     tick_thr = std::thread( &PhaseForm::Tick, this );
 
     ui->setupUi(this);
+
+    QObject::connect(ui->spinBoxChoosenFilter, SIGNAL(valueChanged(int)), this, SLOT(CurChangeSpinBox(int)) );
+    QObject::connect(ui->pushButtonUp,         SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpSlow(bool)) );
+    QObject::connect(ui->pushButtonUpFast,     SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpFast(bool)) );
+    QObject::connect(ui->pushButtonDown,       SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownSlow(bool)) );
+    QObject::connect(ui->pushButtonDownFast,   SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownFast(bool)) );
+
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
     ui->widgetSpectrum->SetSpectrumParams( 1590.0e6, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
 
@@ -91,6 +98,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     et.CalcEtalons( deg_prec, 45.0 );
     et.debug();
     ui->widgetConvolution->SetConvolution( et.GetResult() );
+
+
+    SetCurrentIdx( left_point + points_cnt/2 );
 }
 
 PhaseForm::~PhaseForm()
@@ -245,7 +255,22 @@ void PhaseForm::Tick()
 
 
 int PhaseForm::GetCurrentIdx() {
-    return ui->spinBoxChoosenFilter->value();
+    return curIdx;
+}
+
+void PhaseForm::SetCurrentIdx( int x )
+{
+    if ( x < left_point ) {
+        x = left_point;
+    }
+    if ( x > right_point ) {
+        x = right_point;
+    }
+
+    if ( ui->spinBoxChoosenFilter->value() != x ) {
+        ui->spinBoxChoosenFilter->setValue( x );
+    }
+    curIdx = x;
 }
 
 void PhaseForm::InitCamera() {
@@ -268,6 +293,31 @@ void PhaseForm::InitCamera() {
     } else {
         fprintf( stderr, "\n\n !!!! NO CAMERA FOUND !!!!\n\n" );
     }
+}
+
+void PhaseForm::CurChangeSpinBox(int)
+{
+    SetCurrentIdx( ui->spinBoxChoosenFilter->value() );
+}
+
+void PhaseForm::CurChangeButtonUpSlow(bool)
+{
+    SetCurrentIdx( GetCurrentIdx() + 1 );
+}
+
+void PhaseForm::CurChangeButtonUpFast(bool)
+{
+    SetCurrentIdx( GetCurrentIdx() + 10 );
+}
+
+void PhaseForm::CurChangeButtonDownSlow(bool)
+{
+    SetCurrentIdx( GetCurrentIdx()- 1 );
+}
+
+void PhaseForm::CurChangeButtonDownFast(bool)
+{
+    SetCurrentIdx( GetCurrentIdx() - 10 );
 }
 
 

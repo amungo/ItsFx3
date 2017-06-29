@@ -55,11 +55,20 @@ private:
     bool running;
     void Tick();
 
+    int curIdx = 1;
     int GetCurrentIdx();
+    void SetCurrentIdx( int x );
 
     void InitCamera();
 
     Etalometr et;
+
+public slots:
+    void CurChangeSpinBox(int);
+    void CurChangeButtonUpSlow(bool);
+    void CurChangeButtonUpFast(bool);
+    void CurChangeButtonDownSlow(bool);
+    void CurChangeButtonDownFast(bool);
 
 private slots:
     void slotRun(int);
