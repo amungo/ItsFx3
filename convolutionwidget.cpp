@@ -63,6 +63,15 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
         float alpha = a * 2.0 * MY_PI / (float)conv_paint.size();
         alpha -= MY_PI/2.0f;
 
+        if ( abs( tanf( alpha ) ) < H/W ) {
+            R = abs( W / (2.0f * cosf(alpha) ) );
+        } else {
+            R = abs( H / (2.0f * sinf(alpha) ) );
+        }
+
+        float cos_alpha = cosf( alpha );
+        float sin_alpha = sinf( alpha );
+
         std::vector<QColor>& raw = conv_paint[a];
 
         for( size_t p = 0; p < raw.size(); p++ ) {
@@ -72,20 +81,13 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
             } else {
                 int shift = 0;
 
-                float R = 1.0f;
-                if ( abs( tanf( alpha ) ) < H/W ) {
-                    R = abs( W / (2.0f * cosf(alpha) ) );
-                } else {
-                    R = abs( H / (2.0f * sinf(alpha) ) );
-                }
-
                 float Z = R * ( p + shift ) / ((float) raw.size() + shift);
                 QColor& color = raw[p];
                 painter.setPen( QPen( color, 4, Qt::SolidLine) );
                 painter.setBrush( QBrush( color ) );
 
-                painter.drawPoint( Center.x() - Z * cosf(alpha),
-                                   Center.y() - Z * sinf(alpha) );
+                painter.drawPoint( Center.x() - Z * cos_alpha,
+                                   Center.y() - Z * sin_alpha );
             }
         }
     }
