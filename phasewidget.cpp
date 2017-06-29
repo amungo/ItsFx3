@@ -9,7 +9,7 @@ PhaseWidget::PhaseWidget(QWidget *parent) :
 {
     chan_colors[0] = Qt::blue;
     chan_colors[1] = Qt::red;
-    chan_colors[2] = Qt::green;
+    chan_colors[2] = QColor( 18, 92, 40, 255 );
     chan_colors[3] = Qt::black;
 }
 
@@ -21,9 +21,10 @@ void PhaseWidget::SetPhasesData(std::vector<std::vector<float> > *phases_data, i
     this->pts_cnt  = pts_cnt;
 }
 
-void PhaseWidget::SetCurrentIdx(int idx)
+void PhaseWidget::SetCurrentIdx(int idx, int band)
 {
     this->idx = idx;
+    this->idxBand = band;
 }
 
 int PhaseWidget::GetCurrentIdx()
@@ -55,8 +56,6 @@ void PhaseWidget::paintEvent(QPaintEvent *) {
 
     float choosen = GetCurrentIdx();
     choosen -= skip_pts;
-    painter.setPen( QPen( Qt::gray, 1, Qt::DotLine ) );
-    painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->height() );
 
     float H = height();
     float H2 = H/2.0f;
@@ -71,16 +70,21 @@ void PhaseWidget::paintEvent(QPaintEvent *) {
             painter.drawPoint( curp );
 
             if ( i == curIdx ) {
-                curp.setX( curp.x() - 20 * ch );
+                curp.setX( curp.x() + 20 * ch );
                 curp.setY( curp.y() - 10 );
                 painter.drawText( curp, QString(" %1 ").arg(QString::number((int)(*phases)[ch][i])) );
             }
 
             curX += stepX;
-        }
+        }        
     }
 
-    painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
+    painter.setPen(   QPen(   QColor( 64, 64, 64, 255), 1, Qt::DotLine ) );
+    painter.setBrush( QBrush( QColor( 64, 64, 64, 64 ) ) );
+    painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->height() );
+
+
+    painter.setPen( QPen( Qt::black, 4, Qt::SolidLine) );
     for ( float angle = -180.0f; angle < 181.0; angle += 45.0f ) {
         curp.setX( 0 );
         curp.setY( H2  - angle * scalePhases );

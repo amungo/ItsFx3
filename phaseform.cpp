@@ -273,9 +273,9 @@ void PhaseForm::Tick()
         ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
         ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
 
-        ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx() );
-        ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx() );
-        ui->widgetSpectrumVertical->SetCurrentIdx( GetCurrentIdx() );
+        ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx(), avg_filter_cnt );
+        ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
+        ui->widgetSpectrumVertical->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
 
         int idx = GetCurrentIdx();
         float phs[3];

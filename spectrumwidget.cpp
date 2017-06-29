@@ -9,7 +9,7 @@ SpectrumWidget::SpectrumWidget(QWidget *parent) :
 {
     chan_colors[0] = Qt::blue;
     chan_colors[1] = Qt::red;
-    chan_colors[2] = Qt::green;
+    chan_colors[2] = QColor( 18, 92, 40, 255 );
     chan_colors[3] = Qt::black;
 }
 
@@ -44,9 +44,10 @@ void SpectrumWidget::SetPowersData(
     }
 }
 
-void SpectrumWidget::SetCurrentIdx(int idx)
+void SpectrumWidget::SetCurrentIdx(int idx, int band)
 {
     this->idx = idx;
+    this->idxBand = band;
 }
 
 int SpectrumWidget::GetCurrentIdx()
@@ -92,9 +93,6 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
     float choosen = GetCurrentIdx();
     choosen -= skip_pts;
 
-    painter.setPen( QPen( Qt::gray, 1, Qt::DotLine ) );
-    painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->height() );
-
     for ( int ch = 0; ch < 4; ch++ ) {
         painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
 
@@ -110,6 +108,12 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
             curX += stepX;
         }
     }
+
+    painter.setPen(   QPen(   QColor( 64, 64, 64, 255), 1, Qt::DotLine ) );
+    painter.setBrush( QBrush( QColor( 64, 64, 64, 64 ) ) );
+    painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->height() );
+
+
 
     painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
     for ( float pwr = -200.0f; pwr < 200.0; pwr += 10.0f ) {
@@ -143,10 +147,7 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
     float choosen = GetCurrentIdx();
     choosen -= skip_pts;
 
-    painter.setPen( QPen( Qt::gray, 1, Qt::DotLine ) );
-    painter.drawLine( border + choosen * stepX, 0, border + choosen * stepX, this->width() );
-
-    painter.setPen( QPen( Qt::green, 1, Qt::SolidLine) );
+    painter.setPen( QPen( chan_colors[2], 1, Qt::SolidLine) );
 
     curX = border;
     curp = QPoint( 0, 0 );
@@ -159,6 +160,10 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
         prvp = curp;
         curX += stepX;
     }
+
+    painter.setPen(   QPen(   QColor( 64, 64, 64, 255), 1, Qt::DotLine ) );
+    painter.setBrush( QBrush( QColor( 64, 64, 64, 64 ) ) );
+    painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->width() );
 
     painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
     for ( float pwr = -200.0f; pwr < 200.0; pwr += 10.0f ) {

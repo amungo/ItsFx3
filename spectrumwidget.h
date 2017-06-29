@@ -2,6 +2,7 @@
 #define SPECTRUMWIDGET_H
 
 #include <mutex>
+#include <QColor>
 #include <QMouseEvent>
 #include <QWidget>
 
@@ -19,7 +20,7 @@ public:
             float maxval,
             float avgval );
 
-    void SetCurrentIdx(int idx);
+    void SetCurrentIdx(int idx, int band = 1);
     int  GetCurrentIdx();
     void SetSpectrumParams( double nullHz, double leftHz, double rightHz, double filterHz );
 
@@ -35,6 +36,7 @@ private:
     std::vector<float> maxpowers;
     std::mutex mtx;
     int idx      = 1;
+    int idxBand  = 1;
     int skip_pts = 0;
     int pts_cnt  = 0;
 
@@ -47,7 +49,7 @@ private:
     double rightHz  =   20.0e6;
     double filterHz = 12400.0;
 
-    Qt::GlobalColor chan_colors[4];
+    QColor chan_colors[4];
 
     void PaintHorizontal( QPainter& painter );
     void PaintVertical( QPainter& painter );
