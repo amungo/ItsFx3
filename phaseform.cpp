@@ -13,6 +13,8 @@
 
 using namespace std;
 
+const float nullMHz = 1590.0f;
+
 const float leftMHz  = 10.0f;
 const float rightMHz = 20.0f;
 const float bandMHz  = 53.0f / 2.0f;
@@ -70,21 +72,21 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     ui->setupUi(this);
 
-    QObject::connect(ui->spinBoxChoosenFilter, SIGNAL(valueChanged(int)), this, SLOT(CurChangeSpinBox(int)) );
     QObject::connect(ui->pushButtonUp,         SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpSlow(bool)) );
     QObject::connect(ui->pushButtonUpFast,     SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpFast(bool)) );
     QObject::connect(ui->pushButtonDown,       SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownSlow(bool)) );
     QObject::connect(ui->pushButtonDownFast,   SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownFast(bool)) );
 
+    ui->pushButtonUp->setStyleSheet(      "background-color: lightGrey");
+    ui->pushButtonUpFast->setStyleSheet(  "background-color: lightGrey");
+    ui->pushButtonDown->setStyleSheet(    "background-color: lightGrey");
+    ui->pushButtonDownFast->setStyleSheet("background-color: lightGrey");
+
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
-    ui->widgetSpectrum->SetSpectrumParams( 1590.0e6, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
+    ui->widgetSpectrum->SetSpectrumParams( nullMHz, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
 
     ui->widgetSpectrumVertical->SetVisualMode( SpectrumWidget::spec_vert );
-    ui->widgetSpectrumVertical->SetSpectrumParams( 1590.0e6, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
-
-    ui->spinBoxChoosenFilter->setMinimum(left_point);
-    ui->spinBoxChoosenFilter->setMaximum(right_point);
-    ui->spinBoxChoosenFilter->setValue( (left_point + right_point)/2 );
+    ui->widgetSpectrumVertical->SetSpectrumParams( nullMHz, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
 
     setStyleSheet("background-color: white;");
 
@@ -267,10 +269,10 @@ void PhaseForm::SetCurrentIdx( int x )
         x = right_point;
     }
 
-    if ( ui->spinBoxChoosenFilter->value() != x ) {
-        ui->spinBoxChoosenFilter->setValue( x );
-    }
     curIdx = x;
+    ui->labelFreq->setText( QString(" %1 MHz").arg( QString::number(
+        nullMHz - leftMHz - curIdx*filterMHz, 'f', 2  ) ));
+
 }
 
 void PhaseForm::InitCamera() {
@@ -295,10 +297,6 @@ void PhaseForm::InitCamera() {
     }
 }
 
-void PhaseForm::CurChangeSpinBox(int)
-{
-    SetCurrentIdx( ui->spinBoxChoosenFilter->value() );
-}
 
 void PhaseForm::CurChangeButtonUpSlow(bool)
 {
