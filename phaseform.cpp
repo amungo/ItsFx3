@@ -292,7 +292,7 @@ void PhaseForm::InitCamera() {
     }
 
     if ( camera ) {
-        camera->setViewfinder( ui->viewFinder );
+        camera->setViewfinder( ui->viewFinder->videoSurface() );
         camera->start();
     } else {
         fprintf( stderr, "\n\n !!!! NO CAMERA FOUND !!!!\n\n" );

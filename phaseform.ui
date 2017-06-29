@@ -85,7 +85,7 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QCameraViewfinder" name="viewFinder" native="true">
+          <widget class="VideoWidget" name="viewFinder" native="true">
            <property name="minimumSize">
             <size>
              <width>400</width>
@@ -273,12 +273,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QCameraViewfinder</class>
-   <extends>QWidget</extends>
-   <header location="global">qcameraviewfinder.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>PhaseWidget</class>
    <extends>QWidget</extends>
    <header>phasewidget.h</header>
@@ -294,6 +288,12 @@
    <class>ConvolutionWidget</class>
    <extends>QWidget</extends>
    <header>convolutionwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VideoWidget</class>
+   <extends>QWidget</extends>
+   <header>videowidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

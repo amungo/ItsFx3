@@ -57,7 +57,9 @@ SOURCES += main.cpp \
     coverwidget.cpp \
     gcacorr/etalometr.cpp \
     gcacorr/convresult.cpp \
-    convolutionwidget.cpp
+    convolutionwidget.cpp \
+    videowidgetsurface.cpp \
+    videowidget.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -123,7 +125,9 @@ HEADERS  += itsmain.h \
     coverwidget.h \
     gcacorr/etalometr.h \
     gcacorr/convresult.h \
-    convolutionwidget.h
+    convolutionwidget.h \
+    videowidgetsurface.h \
+    videowidget.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
