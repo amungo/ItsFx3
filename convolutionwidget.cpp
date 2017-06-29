@@ -72,6 +72,13 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
             } else {
                 int shift = 0;
 
+                float R = 1.0f;
+                if ( abs( tanf( alpha ) ) < H/W ) {
+                    R = abs( W / (2.0f * cosf(alpha) ) );
+                } else {
+                    R = abs( H / (2.0f * sinf(alpha) ) );
+                }
+
                 float Z = R * ( p + shift ) / ((float) raw.size() + shift);
                 QColor& color = raw[p];
                 painter.setPen( QPen( color, 4, Qt::SolidLine) );
