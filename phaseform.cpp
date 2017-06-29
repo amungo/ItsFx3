@@ -1,6 +1,7 @@
 #include <QtGui>
 #include <QCameraInfo>
 #include <QCameraViewfinder>
+#include <QMessageBox>
 
 #include <cmath>
 #include "gcacorr/dsp_utils.h"
@@ -31,7 +32,8 @@ const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
 const int avg_cnt = 20;
 
-const double deg_prec = 1.0;
+const double deg_prec =  1.0;
+const double deg_wide = 45.0;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
@@ -83,6 +85,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     QObject::connect(ui->pushButtonAvgBandUp,   SIGNAL(clicked(bool)), this, SLOT(CurBandChangeUp(bool)) );
     QObject::connect(ui->pushButtonAvgBandDown, SIGNAL(clicked(bool)), this, SLOT(CurBandChangeDown(bool)) );
 
+    QObject::connect(ui->pushButtonCalibrate, SIGNAL(clicked(bool)), this, SLOT(Calibrate(bool)) );
+    QObject::connect(ui->pushButtonCalibrateDefault, SIGNAL(clicked(bool)), this, SLOT(CalibrateDefault(bool)) );
+
     ui->pushButtonUp->setStyleSheet(      "background-color: lightGrey");
     ui->pushButtonUpFast->setStyleSheet(  "background-color: lightGrey");
     ui->pushButtonDown->setStyleSheet(    "background-color: lightGrey");
@@ -90,6 +95,8 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     ui->pushButtonAvgBandUp->setStyleSheet(    "background-color: lightGrey");
     ui->pushButtonAvgBandDown->setStyleSheet(  "background-color: lightGrey");
+
+    ui->pushButtonCalibrate->setStyleSheet(  "background-color: grey");
 
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
     ui->widgetSpectrum->SetSpectrumParams( nullMHz, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
@@ -106,7 +113,7 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     et.SetFreq( 1575.42e6 );
     et.SetCalibDefault();
-    et.CalcEtalons( deg_prec, 45.0 );
+    et.CalcEtalons( deg_prec, deg_wide );
     et.debug();
     ui->widgetConvolution->SetConvolution( et.GetResult() );
 
@@ -423,6 +430,49 @@ void PhaseForm::CurBandChangeUp(bool)
 void PhaseForm::CurBandChangeDown(bool)
 {
     CurBandChange( avg_filter_cnt - 1 );
+}
+
+void PhaseForm::Calibrate(bool)
+{
+    int idx = GetCurrentIdx();
+    float phs[3];
+    phs[0] = phases[1][idx];
+    phs[1] = phases[2][idx];
+    phs[2] = phases[3][idx];
+
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(
+        this,
+        "Apply new calibration",
+        QString("Phases: %1  %2  %3\nApply as new calibration?").arg(
+            QString::number( phs[0], 'f', 0 ),
+            QString::number( phs[1], 'f', 0 ),
+            QString::number( phs[2], 'f', 0 ) ),
+        QMessageBox::Yes|QMessageBox::No
+    );
+    if (reply == QMessageBox::Yes) {
+        et.SetCalibDegrees( phs );
+        et.CalcEtalons( deg_prec, deg_wide );
+    } else {
+        // nop
+    }
+}
+
+void PhaseForm::CalibrateDefault(bool)
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(
+        this,
+        "Reset to default calibration",
+        "Reset to defaults?",
+        QMessageBox::Yes|QMessageBox::No
+    );
+    if (reply == QMessageBox::Yes) {
+        et.SetCalibDefault();
+        et.CalcEtalons( deg_prec, deg_wide );
+    } else {
+        // nop
+    }
 }
 
 

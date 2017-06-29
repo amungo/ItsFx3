@@ -15,7 +15,8 @@ public:
 
     Etalometr(float base_len );
     void SetFreq( double freq );
-    void SetCalib(  float phases[ 3 ] );
+    void SetCalibRadians(  float phases[ 3 ] );
+    void SetCalibDegrees(  float phases[ 3 ] );
     void SetCalibDefault();
     void CalcEtalons( double step_deg, double max_phi_angle_deg );
     ConvResult* CalcConvolution( float_cpx_t iqs[ 3 ] );

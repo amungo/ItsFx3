@@ -15,21 +15,32 @@ void Etalometr::SetFreq(double freq)
     this->wave_len = (float)( 3e8 / freq );
 }
 
-void Etalometr::SetCalib(float phases[])
+void Etalometr::SetCalibRadians(float phases[])
 {
     for ( int i = 0; i < 3; i++ ) {
         calib[ i ] = phases[ i ];
     }
 }
 
+void Etalometr::SetCalibDegrees(float phases[])
+{
+    float calib[3] = {
+        (float)( M_PI * phases[0] / 180.0 ),
+        (float)( M_PI * phases[1] / 180.0 ),
+        (float)( M_PI * phases[2] / 180.0 )
+    };
+    SetCalibRadians( calib );
+
+}
+
 void Etalometr::SetCalibDefault()
 {
     float default_calib[3] = {
-        (float)( M_PI *  -55.0 / 180.0 ),
-        (float)( M_PI * -145.0 / 180.0 ),
-        (float)( M_PI *   90.0 / 180.0 )
+         -55.0f,
+        -145.0f,
+          90.0f
     };
-    SetCalib( default_calib );
+    SetCalibDegrees( default_calib );
 }
 
 void Etalometr::CalcEtalons(double step_deg, double max_phi_angle_deg)

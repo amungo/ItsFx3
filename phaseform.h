@@ -59,7 +59,7 @@ private:
     int GetCurrentIdx();
     void SetCurrentIdx( int x );
 
-    int avg_filter_cnt = 50;
+    int avg_filter_cnt = 25;
 
     void InitCamera();
 
@@ -75,6 +75,9 @@ public slots:
     void CurBandChange( int value );
     void CurBandChangeUp(bool);
     void CurBandChangeDown(bool);
+
+    void Calibrate(bool);
+    void CalibrateDefault(bool);
 
 private slots:
     void slotRun(int);
