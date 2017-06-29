@@ -70,7 +70,6 @@ void SpectrumWidget::SetVisualMode(SpectrumWidget::SpecMode_e newmode)
 
 void SpectrumWidget::PaintHorizontal(QPainter &painter)
 {
-    const float border = 20.0f;
     float stepX = ( this->width() - border * 2.0f ) / (float)pts_cnt;
 
     float range = maxval - minval + 5.0f;
@@ -125,7 +124,6 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
     painter.translate( 0, height() );
     painter.rotate(-90.0);
 
-    const float border = 20.0f;
     float stepX = ( height() - border * 2.0f ) / (float)pts_cnt;
 
     float range = maxval - minval + 5.0f;
@@ -184,6 +182,22 @@ void SpectrumWidget::paintEvent(QPaintEvent *)
         PaintHorizontal(painter);
     } else if ( mode == spec_vert ) {
         PaintVertical(painter);
+    }
+}
+
+void SpectrumWidget::mousePressEvent(QMouseEvent *event)
+{
+    if ( event->button() & Qt::MouseButton::LeftButton ) {
+
+        float y = event->pos().y();
+        y -= border;
+
+        float stepX = ( height() - border * 2.0f ) / (float)pts_cnt;
+        y /= stepX;
+        y = pts_cnt - y;
+        y += skip_pts;
+
+        emit sendNewCurIdx( y );
     }
 }
 

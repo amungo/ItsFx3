@@ -64,6 +64,7 @@ private:
     Etalometr et;
 
 public slots:
+    void CurChangeOutside( int value );
     void CurChangeButtonUpSlow(bool);
     void CurChangeButtonUpFast(bool);
     void CurChangeButtonDownSlow(bool);

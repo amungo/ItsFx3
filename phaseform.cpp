@@ -72,6 +72,8 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     ui->setupUi(this);
 
+    QObject::connect(ui->widgetSpectrumVertical, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
+
     QObject::connect(ui->pushButtonUp,         SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpSlow(bool)) );
     QObject::connect(ui->pushButtonUpFast,     SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonUpFast(bool)) );
     QObject::connect(ui->pushButtonDown,       SIGNAL(clicked(bool)),     this, SLOT(CurChangeButtonDownSlow(bool)) );
@@ -295,6 +297,11 @@ void PhaseForm::InitCamera() {
     } else {
         fprintf( stderr, "\n\n !!!! NO CAMERA FOUND !!!!\n\n" );
     }
+}
+
+void PhaseForm::CurChangeOutside(int value)
+{
+    SetCurrentIdx( value );
 }
 
 

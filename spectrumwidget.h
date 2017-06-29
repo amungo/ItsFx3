@@ -2,6 +2,7 @@
 #define SPECTRUMWIDGET_H
 
 #include <mutex>
+#include <QMouseEvent>
 #include <QWidget>
 
 class SpectrumWidget : public QWidget
@@ -51,13 +52,19 @@ private:
     void PaintHorizontal( QPainter& painter );
     void PaintVertical( QPainter& painter );
 
-signals:
+    const float border = 20.0f;
 
+signals:
+    void sendNewCurIdx( int );
 public slots:
 
     // QWidget interface
 protected:
     void paintEvent(QPaintEvent *);
+
+    // QWidget interface
+protected:
+    void mousePressEvent(QMouseEvent *event);
 };
 
 #endif // SPECTRUMWIDGET_H
