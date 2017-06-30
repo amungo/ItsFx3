@@ -11,7 +11,7 @@ ConvolutionWidget::ConvolutionWidget(QWidget *parent) : QWidget(parent)
 {
     colors.resize(255);
     for ( size_t i = 0; i < colors.size(); i++ ) {
-        colors[i] = QColor( i, 0, 0, 64 );
+        colors[i] = QColor( 0, i, 0, 64 );
     }
     conv_paint.resize(1);
     conv_paint[0].resize(1);
