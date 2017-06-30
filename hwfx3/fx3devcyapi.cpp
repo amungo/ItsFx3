@@ -14,7 +14,20 @@ FX3DevCyAPI::FX3DevCyAPI() :
 }
 
 FX3DevCyAPI::~FX3DevCyAPI() {
+    stopRead();
 
+    std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+
+    if ( resetFx3Chip() == FX3_ERR_OK ) {
+        fprintf( stderr, "Fx3 is going to reset. Please wait\n" );
+        for ( int i = 0; i < 20; i++ ) {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+            fprintf( stderr, "*" );
+        }
+        fprintf( stderr, " done\n" );
+    } else {
+        fprintf( stderr, "__error__ FX3 CHIP RESET failed\n" );
+    }
 }
 
 fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additionalFirmwareFileName) {
@@ -60,7 +73,7 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
     }
 
     if ( need_fw_load ) {
-        int PAUSE_AFTER_FLASH_SECONDS = 2;
+        int PAUSE_AFTER_FLASH_SECONDS = 7;
         fprintf( stderr, "FX3DevCyAPI::Init() flash completed!\nPlease wait for %d seconds\n", PAUSE_AFTER_FLASH_SECONDS );
         for ( int i = 0; i < PAUSE_AFTER_FLASH_SECONDS * 2; i++ ) {
             #ifdef WIN32
@@ -91,7 +104,7 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
     writeGPIO(ANTLNAEN,  0);
     writeGPIO(ANTFEEDEN, 0);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(800));
 
     writeGPIO(VCTCXOEN,  1);
     writeGPIO(NT1065EN,  1);
@@ -99,7 +112,7 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
     writeGPIO(ANTLNAEN,  1);
     writeGPIO(ANTFEEDEN, 1);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(800));
     GetNt1065ChipID();
     readNtReg(0x07);
 
@@ -160,6 +173,26 @@ void FX3DevCyAPI::sendAttCommand5bits(uint32_t bits) {
         fprintf( stderr, "__error__ FX3DevCyAPI::sendAttCommand5bits() BulkOutEndPt->XferData return FALSE\n" );
     }
     
+}
+
+fx3_dev_err_t FX3DevCyAPI::resetFx3Chip()
+{
+    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    fprintf( stderr, "FX3Dev::resetFx3Chip( )\n" );
+
+    CCyControlEndPoint* CtrlEndPt;
+    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
+    CtrlEndPt->Target = TGT_DEVICE;
+    CtrlEndPt->ReqType = REQ_VENDOR;
+    CtrlEndPt->Direction = DIR_TO_DEVICE;
+    CtrlEndPt->ReqCode = CMD_CYPRESS_RESET;
+    CtrlEndPt->Value = 0;
+    CtrlEndPt->Index = 0;
+    long len = 16;
+    int success = CtrlEndPt->XferData(&buf[0], len);
+
+    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_debug_info_t FX3DevCyAPI::getDebugInfoFromBoard(bool ask_speed_only) {
@@ -604,6 +637,9 @@ fx3_dev_err_t FX3DevCyAPI::read16bitSPI(unsigned char addr, unsigned char* data)
 }
 
 void FX3DevCyAPI::writeGPIO( uint32_t gpio, uint32_t value ) {
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
     UCHAR buf[16];
 
     fprintf( stderr, "writeGPIO( %d, %d )\n", gpio, value );
@@ -850,8 +886,8 @@ void FX3DevCyAPI::xfer_loop() {
 
         BytesXferred = max(BytesXferred, 0);
 
-        //int hacked_len = 4096 * sizeof( short ) * 20;
-        int hacked_len = len;
+        int hacked_len = 4096 * sizeof( short ) * 20;
+        //int hacked_len = len;
 
         size_tx_mb += ( ( double ) hacked_len ) / ( 1024.0 * 1024.0 );
         if ( data_handler ) {

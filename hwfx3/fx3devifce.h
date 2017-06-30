@@ -20,6 +20,8 @@ public:
     virtual fx3_dev_err_t init( const char* firmwareFileName,
                                 const char* additionalFirmwareFileName ) = 0;
 
+    fx3_dev_err_t resetFx3Chip() {}
+
     // Starts reading of signal from device and sends data to handler.
     // If handler is NULL, data will be read and skipped
     virtual void startRead( DeviceDataHandlerIfce* handler ) = 0;

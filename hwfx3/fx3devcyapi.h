@@ -64,6 +64,8 @@ public:
     void startRead(DeviceDataHandlerIfce *handler);
     void stopRead();
     void sendAttCommand5bits(uint32_t bits);
+    fx3_dev_err_t resetFx3Chip();
+
     fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false );
     void fx3_development_call();
     uint32_t GetNt1065ChipID();
@@ -120,6 +122,7 @@ private:
 public:
     uint8_t peek8(uint32_t register_address24);
     void poke8(uint32_t register_address24, uint8_t value);
+
 };
 
 
