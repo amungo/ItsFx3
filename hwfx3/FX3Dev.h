@@ -61,9 +61,18 @@ private:
     
     static const uint32_t MAX_UPLOAD_BLOCK_SIZE8 = 2048; // For firmware flashing.
     static const uint8_t  CMD_FW_LOAD   = 0xA0;          // Vendor command for firmware flashing.
-    static const uint8_t  CMD_REG_WRITE = 0xB3;          // Vendor command for register writing.
-    static const uint8_t  CMD_READ_DBG  = 0xB4;          // Vendor command for reading debug data from device.
     
+    static const uint8_t  CMD_GET_VERSION     = ( 0xB0 );
+    static const uint8_t  CMD_INIT_PROJECT    = ( 0xB1 );
+    static const uint8_t  CMD_REG_WRITE       = ( 0xB3 );
+    static const uint8_t  CMD_READ_DEBUG_INFO = ( 0xB4 );
+    static const uint8_t  CMD_REG_READ        = ( 0xB5 );
+    static const uint8_t  CMD_CYPRESS_RESET   = ( 0xBF );
+
+    static const uint8_t  CMD_START       = ( 0xC0 );
+    static const uint8_t  CMD_WRITE_GPIO  = ( 0xC1 );
+    static const uint8_t  CMD_READ_GPIO   = ( 0xC2 );
+
     //static const int32_t  FX3_DEBUG_LEVEL_DEFAULT   = LIBUSB_LOG_LEVEL_NONE;
     //static const int32_t  FX3_DEBUG_LEVEL_DEFAULT   = LIBUSB_LOG_LEVEL_ERROR;
     static const int32_t  FX3_DEBUG_LEVEL_DEFAULT   = LIBUSB_LOG_LEVEL_WARNING;

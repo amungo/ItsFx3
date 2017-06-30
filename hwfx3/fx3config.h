@@ -129,12 +129,12 @@ struct FX3Config {
             drv_type        = DrvTypeCypress;
             chan_count      = 4;
             signal_type     = SigTypeRealPartOnly;
-            have_submodules = true;
+            have_submodules = false;
             have_atts       = false;
             have_dbg        = true;
             fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex";
             //fn_img          = "D://work//raw_signal.img";
-            fn_img          = "AmungoItsFx3Firmware17050700.img";
+            fn_img          = "AmungoItsFx3Firmware_NEWINIT.img";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
             break;
