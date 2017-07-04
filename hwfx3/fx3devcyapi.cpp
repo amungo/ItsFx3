@@ -611,8 +611,8 @@ void FX3DevCyAPI::xfer_loop() {
 
         BytesXferred = max(BytesXferred, 0);
 
-        //int hacked_len = 4096 * sizeof( short ) * 20;
-        int hacked_len = len;
+        int hacked_len = 4096 * sizeof( short ) * 20;
+        //int hacked_len = len;
 
         size_tx_mb += ( ( double ) hacked_len ) / ( 1024.0 * 1024.0 );
         if ( data_handler ) {
