@@ -476,7 +476,7 @@ void PhaseForm::Calibrate(bool)
     );
     if (reply == QMessageBox::Yes) {
         et.SetCalibIqs( iqss );
-        et.CalcEtalons( deg_prec, deg_wide, deg_wide );
+        et.ReCalculateEtalons();
     } else {
         // nop
     }

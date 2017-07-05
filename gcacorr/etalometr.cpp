@@ -18,17 +18,35 @@ void Etalometr::SetFreq(double freq)
 
 void Etalometr::SetCalibIqs(float_cpx_t iqss[])
 {
-    for ( int i = 0; i < 4; i++ ) {
-        calib[ i ] = iqss[ i ];
+    fprintf( stderr, "SetCalibIqs()\n" );
+    if ( etalon_source == EtalonsFromFile ) {
+
+        int tcenter = etalons.size()/2;
+        int pcenter = etalons[0].size()/2;
+        PhasesDiff_t et = etalons[tcenter][pcenter];
+
+        for ( int a = 0; a < 4; a++ ) {
+            double angle = et.ant_pt[a].angle(iqss[a]);
+            calib[ a ] = float_cpx_t( cosf(angle), sinf(angle) );
+            fprintf( stderr, "angle[%d]: etalon: %4.0f, measured: %4.0f, for calib: %4.0f\n",
+                     a, et.ant_pt[a].angle_deg(), iqss[a].angle_deg(), calib[a].angle_deg() );
+        }
+    } else {
+        for ( int a = 0; a < 4; a++ ) {
+            calib[ a ] = iqss[ a ];
+        }
     }
 }
 
 void Etalometr::SetCalibRadians(float phases[])
 {
-    for ( int i = 0; i < 4; i++ ) {
-        float_cpx_t pt( cosf(phases[ i ]), sinf(phases[ i ]) );
-        calib[ i ] = pt;
-    }
+    float_cpx_t iqss[ 4 ] = {
+        float_cpx_t( cosf(phases[0]), sinf(phases[0]) ),
+        float_cpx_t( cosf(phases[1]), sinf(phases[1]) ),
+        float_cpx_t( cosf(phases[2]), sinf(phases[2]) ),
+        float_cpx_t( cosf(phases[3]), sinf(phases[3]) )
+    };
+    SetCalibIqs( iqss );
 }
 
 void Etalometr::SetCalibDegrees(float phases[])
@@ -124,12 +142,18 @@ int Etalometr::LoadEtalonsFromFiles()
 
     float null_calib[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     SetCalibDegrees( null_calib );
+
+    etalon_source = EtalonsFromFile;
     return 0;
 }
 
 
 void Etalometr::CalcEtalons(double step_deg, double max_thetta_angle_deg, double max_phi_angle_deg)
 {
+    fprintf( stderr, "CalcEtalons()\n" );
+
+    this->max_thetta_angle_deg = max_thetta_angle_deg;
+    this->max_phi_angle_deg = max_phi_angle_deg;
     startThettaIdx = (int)round(90.0 - max_thetta_angle_deg);
     startPhiIdx    = (int)round(90.0 - max_phi_angle_deg);
     etalonStep     = (int)round( step_deg );
@@ -157,6 +181,25 @@ void Etalometr::CalcEtalons(double step_deg, double max_thetta_angle_deg, double
             et.ant_pt[1] = GetEtalon(1, thetta, phi);
             et.ant_pt[2] = GetEtalon(2, thetta, phi);
             et.ant_pt[3] = GetEtalon(3, thetta, phi);
+        }
+    }
+    etalon_source = EtalonsCalculated;
+}
+
+void Etalometr::ReCalculateEtalons()
+{
+    if ( etalon_source == EtalonsCalculated ) {
+        CalcEtalons( etalonStep, max_thetta_angle_deg, max_phi_angle_deg );
+    } else {
+        for ( size_t th_idx = 0; th_idx < etalons.size(); th_idx++ ) {
+            std::vector<PhasesDiff_t>& raw = etalons[th_idx];
+            for ( size_t ph_idx = 0; ph_idx < raw.size(); ph_idx++ ) {
+                PhasesDiff_t& x = raw[ph_idx];
+                x.ant_pt[0].mul_cpx(calib[0]);
+                x.ant_pt[1].mul_cpx(calib[1]);
+                x.ant_pt[2].mul_cpx(calib[2]);
+                x.ant_pt[3].mul_cpx(calib[3]);
+            }
         }
     }
 }

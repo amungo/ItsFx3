@@ -21,11 +21,18 @@ public:
     void SetCalibDefault();
     int LoadEtalonsFromFiles();
     void CalcEtalons( double step_deg, double max_thetta_angle_deg, double max_phi_angle_deg );
+    void ReCalculateEtalons();
     ConvResult* CalcConvolution( float_cpx_t iqs[ 4 ] );
     ConvResult* CalcConvolution( float phases[ 4 ] );
     ConvResult* GetResult();
 
     void debug();
+
+    enum EtalonSource_e {
+        EtalonsNotReady = 0,
+        EtalonsFromFile,
+        EtalonsCalculated
+    };
 
 private:
 
@@ -39,6 +46,10 @@ private:
     int startThettaIdx = 0;
     int startPhiIdx    = 0;
     int etalonStep     = 1;
+    double max_thetta_angle_deg;
+    double max_phi_angle_deg;
+
+    EtalonSource_e etalon_source = EtalonsNotReady;
 
     ConvResult result;
 };
