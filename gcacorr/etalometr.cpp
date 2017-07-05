@@ -56,6 +56,8 @@ void Etalometr::SetCalibDefault()
 
 void Etalometr::CalcEtalons(double step_deg, double max_thetta_angle_deg, double max_phi_angle_deg)
 {
+    float thetta_range_rad = (float)( max_thetta_angle_deg * M_PI / 180.0 );
+    float phi_range_rad    = (float)( max_phi_angle_deg    * M_PI / 180.0 );
     int thetta_cnt = 2 * (int)(max_thetta_angle_deg / step_deg);
     int phi_cnt    = 2 * (int)(max_phi_angle_deg    / step_deg);
     etalons.resize( thetta_cnt );
@@ -67,11 +69,11 @@ void Etalometr::CalcEtalons(double step_deg, double max_thetta_angle_deg, double
     float step = (float)( M_PI * step_deg / 180.0 );
 
     for ( int th_idx = 0; th_idx < thetta_cnt; th_idx++ ) {
-        float thetta = (float)( (float)-M_PI_2 + th_idx * step );
+        float thetta = -thetta_range_rad + th_idx * step;
 
         for ( int ph_idx = 0; ph_idx < phi_cnt; ph_idx++ ) {
 
-            float phi = (float)( (float)-M_PI_2 + ph_idx * step );
+            float phi = -phi_range_rad + ph_idx * step;
             PhasesDiff_t& et = etalons[th_idx][ph_idx];
             et.ant_pt[0] = GetEtalon(0, thetta, phi);
             et.ant_pt[1] = GetEtalon(1, thetta, phi);
