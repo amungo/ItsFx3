@@ -85,8 +85,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     QObject::connect(ui->pushButtonAvgBandUp,   SIGNAL(clicked(bool)), this, SLOT(CurBandChangeUp(bool)) );
     QObject::connect(ui->pushButtonAvgBandDown, SIGNAL(clicked(bool)), this, SLOT(CurBandChangeDown(bool)) );
 
-    QObject::connect(ui->pushButtonCalibrate, SIGNAL(clicked(bool)), this, SLOT(Calibrate(bool)) );
-    QObject::connect(ui->pushButtonCalibrateDefault, SIGNAL(clicked(bool)), this, SLOT(CalibrateDefault(bool)) );
+    QObject::connect(ui->pushButtonCalibrate,         SIGNAL(clicked(bool)), this, SLOT(Calibrate(bool)) );
+    QObject::connect(ui->pushButtonCalibrateDefault,  SIGNAL(clicked(bool)), this, SLOT(CalibrateDefault(bool)) );
+    QObject::connect(ui->pushButtonCalibrateFromFile, SIGNAL(clicked(bool)), this, SLOT(CalibrateFromFile(bool)) );
 
     ui->pushButtonUp->setStyleSheet(      "background-color: lightGrey");
     ui->pushButtonUpFast->setStyleSheet(  "background-color: lightGrey");
@@ -96,7 +97,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
     ui->pushButtonAvgBandUp->setStyleSheet(    "background-color: lightGrey");
     ui->pushButtonAvgBandDown->setStyleSheet(  "background-color: lightGrey");
 
-    ui->pushButtonCalibrate->setStyleSheet(  "background-color: grey");
+    ui->pushButtonCalibrate->setStyleSheet(         "background-color: grey");
+    ui->pushButtonCalibrateDefault->setStyleSheet(  "background-color: grey");
+    ui->pushButtonCalibrateFromFile->setStyleSheet( "background-color: grey");
 
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
     ui->widgetSpectrum->SetSpectrumParams( nullMHz, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
@@ -491,6 +494,35 @@ void PhaseForm::CalibrateDefault(bool)
     if (reply == QMessageBox::Yes) {
         et.SetCalibDefault();
         et.CalcEtalons( deg_prec, deg_wide, deg_wide );
+    } else {
+        // nop
+    }
+}
+
+void PhaseForm::CalibrateFromFile(bool)
+{
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(
+        this,
+        "Calibration from files",
+        "Load calibration from files?",
+        QMessageBox::Yes|QMessageBox::No
+    );
+    if (reply == QMessageBox::Yes) {
+        int res = et.LoadEtalonsFromFiles();
+        if ( res ) {
+            QMessageBox::StandardButton warning;
+            warning = QMessageBox::warning(
+                this,
+                "Error",
+                "There was an error while loading calbration from files.\n"
+                "Check console log for details\n"
+                "Will use DEFAULT calibration.",
+                QMessageBox::Ok
+            );
+            et.SetCalibDefault();
+            et.CalcEtalons( deg_prec, deg_wide, deg_wide );
+        }
     } else {
         // nop
     }

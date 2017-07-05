@@ -19,6 +19,7 @@ public:
     void SetCalibRadians(  float phases[ 4 ] );
     void SetCalibDegrees(  float phases[ 4 ] );
     void SetCalibDefault();
+    int LoadEtalonsFromFiles();
     void CalcEtalons( double step_deg, double max_thetta_angle_deg, double max_phi_angle_deg );
     ConvResult* CalcConvolution( float_cpx_t iqs[ 4 ] );
     ConvResult* CalcConvolution( float phases[ 4 ] );
@@ -35,6 +36,9 @@ private:
     float base_len;
     double freq;
     float wave_len;
+    int startThettaIdx = 0;
+    int startPhiIdx    = 0;
+    int etalonStep     = 1;
 
     ConvResult result;
 };

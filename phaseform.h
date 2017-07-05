@@ -79,6 +79,7 @@ public slots:
 
     void Calibrate(bool);
     void CalibrateDefault(bool);
+    void CalibrateFromFile(bool);
 
 private slots:
     void slotRun(int);
