@@ -111,14 +111,14 @@ int Etalometr::LoadEtalonsFromFiles()
     fprintf( stderr, "thetta: %d ... %d  (by %d)\n", startThettaIdx, 180 - startThettaIdx, etalonStep );
     fprintf( stderr, "phi   : %d ... %d  (by %d)\n", startPhiIdx,    180 - startPhiIdx,    etalonStep );
 
-    for ( int th_idx = startThettaIdx; th_idx < 180 - startThettaIdx; th_idx += etalonStep ) {
-        for ( int ph_idx = startPhiIdx; ph_idx < 180 - startPhiIdx; ph_idx += etalonStep ) {
+    for ( int th_idx = startThettaIdx, tidx = 0; th_idx < 180 - startThettaIdx; th_idx += etalonStep, tidx++ ) {
+        for ( int ph_idx = startPhiIdx, pidx = 0; ph_idx < 180 - startPhiIdx; ph_idx += etalonStep, pidx++ ) {
             PhasesDiff_t x;
             x.ant_pt[0] = newet[th_idx][ph_idx].ant_pt[3];
             x.ant_pt[1] = newet[th_idx][ph_idx].ant_pt[2];
             x.ant_pt[2] = newet[th_idx][ph_idx].ant_pt[1];
             x.ant_pt[3] = newet[th_idx][ph_idx].ant_pt[0];
-            etalons[th_idx - startThettaIdx][ph_idx - startPhiIdx] = x;
+            etalons[tidx][pidx] = x;
         }
     }
 
