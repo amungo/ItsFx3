@@ -31,6 +31,11 @@ QSize VideoWidget::sizeHint() const
     return surface->surfaceFormat().sizeHint();
 }
 
+QSize VideoWidget::getFrameSize() const
+{
+    return surface->getFrameSize();
+}
+
 void VideoWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);

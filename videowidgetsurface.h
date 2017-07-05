@@ -26,6 +26,7 @@ public:
     void updateVideoRect();
 
     void paint(QPainter *painter);
+    QSize getFrameSize() const;
 
  private:
     QWidget *widget;

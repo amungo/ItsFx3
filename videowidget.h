@@ -17,9 +17,10 @@ public:
     explicit VideoWidget(QWidget *parent = 0);
     ~VideoWidget();
 
-    QAbstractVideoSurface *videoSurface() const { return surface; }
+    VideoWidgetSurface *videoSurface() const { return surface; }
 
     QSize sizeHint() const;
+    QSize getFrameSize() const;
 
 protected:
     void paintEvent(QPaintEvent *event);

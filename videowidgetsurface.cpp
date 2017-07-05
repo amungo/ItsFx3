@@ -118,3 +118,9 @@ void VideoWidgetSurface::paint(QPainter *painter)
         currentFrame.unmap();
     }
 }
+
+QSize VideoWidgetSurface::getFrameSize() const
+{
+    //return currentFrame.size();
+    return targetRect.size();
+}

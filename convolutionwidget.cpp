@@ -1,4 +1,5 @@
 #include <QPainter>
+#include "videowidget.h"
 #include "convolutionwidget.h"
 
 #include <cmath>
@@ -42,6 +43,26 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
 
 }
 
+QSize ConvolutionWidget::getFrameSize()
+{
+    bool is_set = false;
+    QObject* prnt = this->parent();
+    if ( prnt ) {
+        VideoWidget* videoWidget = dynamic_cast<VideoWidget*>( prnt );
+        if ( videoWidget ) {
+            this->frameSize = videoWidget->getFrameSize();
+            if ( frameSize.width() > 10 ) {
+                is_set = true;
+            }
+        }
+    }
+    if ( !is_set ) {
+        this->frameSize.setHeight( this->height() );
+        this->frameSize.setWidth( this->width() );
+    }
+    return this->frameSize;
+}
+
 void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
 {
     lock_guard<mutex> lock(mtx);
@@ -50,10 +71,12 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
     }
 
     QPainter painter( this );
-    float W = width();
+    getFrameSize();
+    float W = frameSize.width();
     float W2 = W/2.0f;
-    float H = height();
+    float H = frameSize.height();
     float H2 = H/2.0f;
+    painter.translate((width() - W)/2, (height() - H)/2);
 
     float conv_xsize = (float)conv_paint.size();
     float conv_ysize = (float)conv_paint.at(0).size();
@@ -85,9 +108,10 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
     }
 
     painter.setTransform( originalTransform );
-    painter.setPen( QPen( Qt::red, 3, Qt::DotLine ) );
+    painter.setPen( QPen( Qt::red, 1, Qt::SolidLine ) );
     painter.drawLine( W2, 0, W2, H );
     painter.drawLine( 0, H2, W, H2 );
+
 
     //painter.setPen( QPen( Qt::red, 1, Qt::SolidLine) );
     //painter.drawText( Center, QString(" %1 ").arg(QString::number((double)conv->max, 'g', 4 )) );

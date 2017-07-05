@@ -19,6 +19,8 @@ private:
     ConvResult* conv = nullptr;
     std::vector<QColor> colors;
     std::vector<std::vector<QColor>> conv_paint;
+    QSize getFrameSize();
+    QSize frameSize;
 
 signals:
 
