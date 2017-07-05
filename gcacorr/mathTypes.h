@@ -44,6 +44,12 @@ typedef struct float_cpx_t {
         return *this;
     }
 
+    inline float_cpx_t& mul_cpx_conj( const float_cpx_t& A ) {
+        float_cpx_t X = float_cpx_t( i*A.i - q*-A.q, i*-A.q + q*A.i );
+        this->i = X.i;
+        this->q = X.q;
+        return *this;
+    }
 
     inline float_cpx_t mul_real_const( const float x ) const {
         return float_cpx_t( this->i * x, this->q * x );
