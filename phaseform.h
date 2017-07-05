@@ -43,6 +43,7 @@ private:
     std::mutex mtx;
     std::vector< std::vector<float> > powers;
     std::vector< std::vector<float> > phases;
+    float_cpx_t cur_iqss[4];
 
     float powerMin = -20.0f;
     float powerMax = 100.0f;

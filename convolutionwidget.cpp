@@ -11,7 +11,7 @@ ConvolutionWidget::ConvolutionWidget(QWidget *parent) : QWidget(parent)
 {
     colors.resize(255);
     for ( size_t i = 0; i < colors.size(); i++ ) {
-        colors[i] = QColor( i, 0, 0, 64 );
+        colors[i] = QColor( 0, i, 0, 64 );
     }
     conv_paint.resize(1);
     conv_paint[0].resize(1);
@@ -24,7 +24,7 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
     float min = conv->min;
     float max = conv->max;
 
-    min = max * 0.995;
+    min = max * 0.95;
 
     float len = max - min;
     float color_range = 250.0;
@@ -55,44 +55,41 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
     float H = height();
     float H2 = H/2.0f;
 
-    QPoint Center( W2, H2 );
-    float R = W < H ? W2 : H2;
+    float conv_xsize = (float)conv_paint.size();
+    float conv_ysize = (float)conv_paint.at(0).size();
+    float xscale = (float)W/conv_xsize;
+    float yscale = (float)H/conv_ysize;
+    QPoint Center( conv_xsize/2, conv_ysize/2 );
 
-    for ( size_t a = 0; a < conv_paint.size(); a++ ) {
 
-        float alpha = a * 2.0 * MY_PI / (float)conv_paint.size();
-        alpha -= MY_PI/2.0f;
+    const QTransform originalTransform = painter.transform();
+    //painter.translate(Center);
+    painter.scale(xscale, yscale);
 
-        if ( abs( tanf( alpha ) ) < H/W ) {
-            R = abs( W / (2.0f * cosf(alpha) ) );
-        } else {
-            R = abs( H / (2.0f * sinf(alpha) ) );
-        }
+    for ( size_t th_idx = 0; th_idx < conv_paint.size(); th_idx++ ) {
 
-        float cos_alpha = cosf( alpha );
-        float sin_alpha = sinf( alpha );
+        std::vector<QColor>& raw = conv_paint[th_idx];
 
-        std::vector<QColor>& raw = conv_paint[a];
+        for( size_t ph_idx = 0; ph_idx < raw.size(); ph_idx++ ) {
 
-        for( size_t p = 0; p < raw.size(); p++ ) {
-
-            if ( raw[p] == colors[ 0 ] ) {
+            if ( raw[ph_idx] == colors[ 0 ] ) {
                 continue;
             } else {
-                int shift = 0;
-
-                float Z = R * ( p + shift ) / ((float) raw.size() + shift);
-                QColor& color = raw[p];
+                QColor& color = raw[ph_idx];
                 painter.setPen( QPen( color, 4, Qt::SolidLine) );
                 painter.setBrush( QBrush( color ) );
 
-                painter.drawPoint( Center.x() - Z * cos_alpha,
-                                   Center.y() - Z * sin_alpha );
+                painter.drawPoint( ph_idx, conv_ysize - th_idx - 1 );
             }
         }
     }
 
-    painter.setPen( QPen( Qt::green, 3, Qt::SolidLine) );
-    painter.drawText( Center, QString(" %1 ").arg(QString::number((double)conv->max, 'g', 4 )) );
+    painter.setTransform( originalTransform );
+    painter.setPen( QPen( Qt::red, 3, Qt::DotLine ) );
+    painter.drawLine( W2, 0, W2, H );
+    painter.drawLine( 0, H2, W, H2 );
+
+    //painter.setPen( QPen( Qt::red, 1, Qt::SolidLine) );
+    //painter.drawText( Center, QString(" %1 ").arg(QString::number((double)conv->max, 'g', 4 )) );
 
 }

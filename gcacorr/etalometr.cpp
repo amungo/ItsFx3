@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <cstdio>
+#include "gcacorr/point3d_t.h"
 #include "etalometr.h"
 
 Etalometr::Etalometr( float base_len ) :
@@ -15,19 +16,28 @@ void Etalometr::SetFreq(double freq)
     this->wave_len = (float)( 3e8 / freq );
 }
 
+void Etalometr::SetCalibIqs(float_cpx_t iqss[])
+{
+    for ( int i = 0; i < 4; i++ ) {
+        calib[ i ] = iqss[ i ];
+    }
+}
+
 void Etalometr::SetCalibRadians(float phases[])
 {
-    for ( int i = 0; i < 3; i++ ) {
-        calib[ i ] = phases[ i ];
+    for ( int i = 0; i < 4; i++ ) {
+        float_cpx_t pt( cosf(phases[ i ]), sinf(phases[ i ]) );
+        calib[ i ] = pt;
     }
 }
 
 void Etalometr::SetCalibDegrees(float phases[])
 {
-    float calib[3] = {
+    float calib[4] = {
         (float)( M_PI * phases[0] / 180.0 ),
         (float)( M_PI * phases[1] / 180.0 ),
-        (float)( M_PI * phases[2] / 180.0 )
+        (float)( M_PI * phases[2] / 180.0 ),
+        (float)( M_PI * phases[3] / 180.0 )
     };
     SetCalibRadians( calib );
 
@@ -35,7 +45,8 @@ void Etalometr::SetCalibDegrees(float phases[])
 
 void Etalometr::SetCalibDefault()
 {
-    float default_calib[3] = {
+    float default_calib[4] = {
+           0.0f,
          -55.0f,
         -145.0f,
           90.0f
@@ -43,56 +54,66 @@ void Etalometr::SetCalibDefault()
     SetCalibDegrees( default_calib );
 }
 
-void Etalometr::CalcEtalons(double step_deg, double max_phi_angle_deg)
+void Etalometr::CalcEtalons(double step_deg, double max_thetta_angle_deg, double max_phi_angle_deg)
 {
-    int alpha_cnt = (int)(360.0 / step_deg);
-    int phi_cnt   = (int)( max_phi_angle_deg / step_deg);
-    etalons.resize( alpha_cnt );
-    for ( int a = 0; a < alpha_cnt; a++ ) {
+    int thetta_cnt = 2 * (int)(max_thetta_angle_deg / step_deg);
+    int phi_cnt    = 2 * (int)(max_phi_angle_deg    / step_deg);
+    etalons.resize( thetta_cnt );
+    for ( int a = 0; a < thetta_cnt; a++ ) {
         etalons[a].resize( phi_cnt );
     }
-    result.SetDimensions( alpha_cnt, phi_cnt );
+    result.SetDimensions( thetta_cnt, phi_cnt );
 
     float step = (float)( M_PI * step_deg / 180.0 );
 
-    for ( int a = 0; a < alpha_cnt; a++ ) {
-        float alpha = (float)( /*-M_PI +*/ a * step );
-        for ( int p = 0; p < phi_cnt; p++ ) {
-            float phi = p * step;
-            PhasesDiff_t& et = etalons[a][p];
-            et.ant_pt[0] = GetEtalon(1, alpha, phi);
-            et.ant_pt[1] = GetEtalon(2, alpha, phi);
-            et.ant_pt[2] = GetEtalon(3, alpha, phi);
+    for ( int th_idx = 0; th_idx < thetta_cnt; th_idx++ ) {
+        float thetta = (float)( (float)-M_PI_2 + th_idx * step );
+
+        for ( int ph_idx = 0; ph_idx < phi_cnt; ph_idx++ ) {
+
+            float phi = (float)( (float)-M_PI_2 + ph_idx * step );
+            PhasesDiff_t& et = etalons[th_idx][ph_idx];
+            et.ant_pt[0] = GetEtalon(0, thetta, phi);
+            et.ant_pt[1] = GetEtalon(1, thetta, phi);
+            et.ant_pt[2] = GetEtalon(2, thetta, phi);
+            et.ant_pt[3] = GetEtalon(3, thetta, phi);
         }
     }
 }
 
-float_cpx_t Etalometr::GetEtalon(int ant, float alpha, float phi)
+float_cpx_t Etalometr::GetEtalon(int ant, float thetta, float phi)
 {
-    float len = base_len;
+    point3d_t E( 0.0f, 0.0f, 0.0f );
+
     switch ( ant ) {
     case 0:
-        return 0.0f;
+        E.x = -base_len / 2.0f;
+        E.y = -base_len / 2.0f;
+        break;
     case 1:
-        alpha += 0.0f;
-        len = base_len;
+        E.x = -base_len / 2.0f;
+        E.y =  base_len / 2.0f;
         break;
     case 2:
-        alpha += (float)( M_PI / 4.0f );
-        len = base_len * sqrtf(2.0f);
+        E.x =  base_len / 2.0f;
+        E.y =  base_len / 2.0f;
         break;
     case 3:
-        alpha += (float)( M_PI / 2.0f );
-        len = base_len;
+        E.x =  base_len / 2.0f;
+        E.y = -base_len / 2.0f;
         break;
     }
-    float delta_len = -len * cos( alpha ) * sin( phi );
+
+    E.rotateOX( -phi );
+    E.rotateOY( -thetta );
+
+    float delta_len = E.z;
     float phase_diff = 2.0f * (float)M_PI * (delta_len / wave_len);
-    phase_diff += calib[ ant - 1 ];
 
-    float_cpx_t unit_pt( cosf(phase_diff), sinf(phase_diff) );
+    float_cpx_t pt( cosf(phase_diff), sinf(phase_diff) );
+    pt.mul_cpx( calib[ ant ] );
 
-    return unit_pt;
+    return pt;
 }
 
 ConvResult* Etalometr::CalcConvolution(float_cpx_t iqs[] ) {
@@ -108,7 +129,8 @@ ConvResult* Etalometr::CalcConvolution(float_cpx_t iqs[] ) {
             conv.add(  et.ant_pt[0].mul_cpx_conj_const( iqs[0] )  );
             conv.add(  et.ant_pt[1].mul_cpx_conj_const( iqs[1] )  );
             conv.add(  et.ant_pt[2].mul_cpx_conj_const( iqs[2] )  );
-            conv.mul_real(1.0f/3.0f);
+            conv.add(  et.ant_pt[3].mul_cpx_conj_const( iqs[3] )  );
+            conv.mul_real(1.0f/4.0f);
             result.data[a][p] = conv.len();
 
         }
@@ -121,8 +143,8 @@ ConvResult* Etalometr::CalcConvolution(float_cpx_t iqs[] ) {
 
 ConvResult* Etalometr::CalcConvolution(float phases[])
 {
-    float_cpx_t iqs[3];
-    for ( int i = 0; i < 3; i++ ) {
+    float_cpx_t iqs[4];
+    for ( int i = 0; i < 4; i++ ) {
         float phase_rad = (float)( M_PI * phases[i] / 180.0 );
         float_cpx_t X( cosf(phase_rad), sinf(phase_rad) );
         iqs[i] = X;
@@ -137,21 +159,23 @@ ConvResult *Etalometr::GetResult()
 
 void Etalometr::debug()
 {
-    float alpha = (float)( M_PI * 0.0 / 180.0 );
-    float phi   = (float)( M_PI * 0.0 / 180.0 );
-//    float_cpx_t iqs[3] = {
-//        GetEtalon(1, alpha, phi),
-//        GetEtalon(2, alpha, phi),
-//        GetEtalon(3, alpha, phi)
-//    };
-//    CalcConvolution( iqs );
-
-    float phases[3] = {
-          90.0f,
-        -145.0f,
-         -55.0f
+    float thetta = (float)( M_PI *   30.0 / 180.0 );
+    float phi    = (float)( M_PI *    5.0 / 180.0 );
+    float_cpx_t iqs[4] = {
+        GetEtalon(0, thetta, phi),
+        GetEtalon(1, thetta, phi),
+        GetEtalon(2, thetta, phi),
+        GetEtalon(3, thetta, phi)
     };
-    CalcConvolution( phases );
+    CalcConvolution( iqs );
+
+//    float phases[3] = {
+//           0.0f,
+//          90.0f,
+//        -145.0f,
+//         -55.0f
+//    };
+//    CalcConvolution( phases );
     //result.print_dbg();
 }
 

@@ -33,7 +33,7 @@ const int source_len = fft_len * win_cnt;
 const int avg_cnt = 20;
 
 const double deg_prec =  1.0;
-const double deg_wide = 45.0;
+const double deg_wide = 90.0;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
@@ -113,7 +113,7 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     et.SetFreq( 1575.42e6 );
     et.SetCalibDefault();
-    et.CalcEtalons( deg_prec, deg_wide );
+    et.CalcEtalons( deg_prec, deg_wide, deg_wide );
     et.debug();
     ui->widgetConvolution->SetConvolution( et.GetResult() );
 
@@ -232,7 +232,9 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
                 }
             }
             for ( int ch = 0; ch < 4; ch++ ) {
-                fft_out_averaged[ ch ][ curIdx ] = corr[ ch ].mul_real( scale );
+                float_cpx_t x = corr[ ch ].mul_real( scale );
+                fft_out_averaged[ ch ][ curIdx ] = x;
+                cur_iqss[ ch ] = x;
             }
         }
     }
@@ -294,11 +296,21 @@ void PhaseForm::Tick()
         ui->widgetSpectrumVertical->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
 
         int idx = GetCurrentIdx();
+        float_cpx_t iqss[4];
         float phs[3];
-        phs[0] = phases[1][idx];
-        phs[1] = phases[2][idx];
-        phs[2] = phases[3][idx];
-        ConvResult* result = et.CalcConvolution( phs );
+        {
+            lock_guard< mutex > lock( mtx );
+            iqss[0] = cur_iqss[0];
+            iqss[1] = cur_iqss[1];
+            iqss[2] = cur_iqss[2];
+            iqss[3] = cur_iqss[3];
+
+            phs[0] = phases[1][idx];
+            phs[1] = phases[2][idx];
+            phs[2] = phases[3][idx];
+        }
+
+        ConvResult* result = et.CalcConvolution( iqss );
         ui->widgetConvolution->SetConvolution( result );
 
         ui->labelPhases->setText( QString("%1  %2  %3").arg(
@@ -435,10 +447,19 @@ void PhaseForm::CurBandChangeDown(bool)
 void PhaseForm::Calibrate(bool)
 {
     int idx = GetCurrentIdx();
+    float_cpx_t iqss[4];
     float phs[3];
-    phs[0] = phases[1][idx];
-    phs[1] = phases[2][idx];
-    phs[2] = phases[3][idx];
+    {
+        lock_guard< mutex > lock( mtx );
+        iqss[0] = cur_iqss[0];
+        iqss[1] = cur_iqss[1];
+        iqss[2] = cur_iqss[2];
+        iqss[3] = cur_iqss[3];
+
+        phs[0] = phases[1][idx];
+        phs[1] = phases[2][idx];
+        phs[2] = phases[3][idx];
+    }
 
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(
@@ -451,8 +472,8 @@ void PhaseForm::Calibrate(bool)
         QMessageBox::Yes|QMessageBox::No
     );
     if (reply == QMessageBox::Yes) {
-        et.SetCalibDegrees( phs );
-        et.CalcEtalons( deg_prec, deg_wide );
+        et.SetCalibIqs( iqss );
+        et.CalcEtalons( deg_prec, deg_wide, deg_wide );
     } else {
         // nop
     }
@@ -469,7 +490,7 @@ void PhaseForm::CalibrateDefault(bool)
     );
     if (reply == QMessageBox::Yes) {
         et.SetCalibDefault();
-        et.CalcEtalons( deg_prec, deg_wide );
+        et.CalcEtalons( deg_prec, deg_wide, deg_wide );
     } else {
         // nop
     }

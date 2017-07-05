@@ -1,15 +1,15 @@
 #include <cstdio>
 #include "convresult.h"
 
-ConvResult::ConvResult(int alpha_cnt, int phi_cnt)
+ConvResult::ConvResult(int thetta_cnt, int phi_cnt)
 {
-    SetDimensions(alpha_cnt, phi_cnt);
+    SetDimensions(thetta_cnt, phi_cnt);
 }
 
-void ConvResult::SetDimensions(int alpha_cnt, int phi_cnt)
+void ConvResult::SetDimensions(int thetta_cnt, int phi_cnt)
 {
-    data.resize(alpha_cnt);
-    for ( int a = 0; a < alpha_cnt; a++ ) {
+    data.resize(thetta_cnt);
+    for ( int a = 0; a < thetta_cnt; a++ ) {
         data[a].resize(phi_cnt);
     }
 }
@@ -18,7 +18,7 @@ void ConvResult::Flush()
 {
     max = 1.0f;
     min = 0.0f;
-    maxAlphaIdx = data.size() / 2;
+    maxThettaIdx = data.size() / 2;
     maxPhiIdx = data[0].size() / 2;
 }
 
@@ -32,7 +32,7 @@ void ConvResult::ReCalc()
             float& x = raw[ p ];
             if ( x > max ) {
                 max = x;
-                maxAlphaIdx = a;
+                maxThettaIdx = a;
                 maxPhiIdx = p;
             }
             if ( x < min ) {
