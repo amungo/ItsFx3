@@ -25,7 +25,7 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
     float min = conv->min;
     float max = conv->max;
 
-    min = max * 0.95;
+    min = max * 0.995;
 
     float len = max - min;
     float color_range = 250.0;
