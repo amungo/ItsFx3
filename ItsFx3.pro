@@ -59,7 +59,8 @@ SOURCES += main.cpp \
     gcacorr/convresult.cpp \
     convolutionwidget.cpp \
     videowidgetsurface.cpp \
-    videowidget.cpp
+    videowidget.cpp \
+    gcacorr/point3d_t.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -127,7 +128,8 @@ HEADERS  += itsmain.h \
     gcacorr/convresult.h \
     convolutionwidget.h \
     videowidgetsurface.h \
-    videowidget.h
+    videowidget.h \
+    gcacorr/point3d_t.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
