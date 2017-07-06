@@ -65,22 +65,27 @@ QSize ConvolutionWidget::getFrameSize()
 
 void ConvolutionWidget::recalcTransform()
 {
+    if ( !conv ) {
+        return;
+    }
     if ( lastFrameSize.height() != frameSize.height() ||
          lastFrameSize.width()  != frameSize.width()  ||
-         lastXSize != conv_paint.size() ||
-         lastYSize != conv_paint.at(0).size() )
+         lastYSize != conv_paint.size() ||
+         lastXSize != conv_paint.at(0).size() )
     {
-        fprintf( stderr, "ConvolutionWidget::recalcTransform()\n" );
         lastFrameSize = frameSize;
-        lastXSize = conv_paint.size();
-        lastYSize = conv_paint.at(0).size();
-        stepDeg = (int)round( lastXSize / ( 2.0f * conv->maxPhiIdx) );
+        lastYSize = conv_paint.size(); // thetta
+        lastXSize = conv_paint.at(0).size(); // phi
+        stepDeg = (int)round( lastXSize / ( 2.0f * conv->rangePhi) );
 
         float W = frameSize.width();
         float H = frameSize.height();
 
         float xscale = (float)W/(float)lastXSize;
         float yscale = (float)H/(float)lastYSize;
+        fprintf( stderr, "ConvolutionWidget::recalcTransform(): "
+                         "%d x %d   %.0f x %.0f    %d\n",
+                 lastXSize, lastYSize, W, H, stepDeg );
 
         if ( xtr.size() != lastXSize && lastXSize != 0 ) {
             xtr.resize(lastXSize);

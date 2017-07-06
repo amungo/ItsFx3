@@ -34,7 +34,8 @@ const int source_len = fft_len * win_cnt;
 const int avg_cnt = 20;
 
 const int deg_prec = 1;
-const double deg_wide = 60.0;
+const double deg_wide_X = 60.0;
+const double deg_wide_Y = 45.0;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
@@ -119,8 +120,8 @@ PhaseForm::PhaseForm(QWidget *parent) :
     ui->viewFinder->stackUnder(this);
 
 
-    et_geo.SetBaseParams(  0.052f, 1575.42e6, deg_wide, deg_wide, deg_prec );
-    et_file.SetBaseParams( 0.052f, 1575.42e6, deg_wide, deg_wide, deg_prec );
+    et_geo.SetBaseParams(  0.052f, 1575.42e6, deg_wide_Y, deg_wide_X, deg_prec );
+    et_file.SetBaseParams( 0.052f, 1575.42e6, deg_wide_Y, deg_wide_X, deg_prec );
 
     ui->radioButtonEtalonsFile->setChecked(false);
     ui->radioButtonEtalonsGeo->setChecked(true);
