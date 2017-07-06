@@ -19,6 +19,8 @@ public:
     float min;
     int maxThettaIdx;
     int maxPhiIdx;
+    float rangeThetta = 60.0f;
+    float rangePhi = 60.0f;
 };
 
 #endif // CONVRESULT_H

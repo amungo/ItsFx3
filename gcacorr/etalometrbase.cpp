@@ -36,6 +36,8 @@ void EtalometrBase::SetBaseParams(
         etalons[a].resize( phi_cnt );
     }
     result.SetDimensions( thetta_cnt, phi_cnt );
+    result.rangePhi = max_phi_angle_deg;
+    result.rangeThetta = max_thetta_angle_deg;
 
 }
 

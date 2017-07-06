@@ -63,6 +63,41 @@ QSize ConvolutionWidget::getFrameSize()
     return this->frameSize;
 }
 
+void ConvolutionWidget::recalcTransform()
+{
+    if ( lastFrameSize.height() != frameSize.height() ||
+         lastFrameSize.width()  != frameSize.width()  ||
+         lastXSize != conv_paint.size() ||
+         lastYSize != conv_paint.at(0).size() )
+    {
+        fprintf( stderr, "ConvolutionWidget::recalcTransform()\n" );
+        lastFrameSize = frameSize;
+        lastXSize = conv_paint.size();
+        lastYSize = conv_paint.at(0).size();
+        stepDeg = (int)round( lastXSize / ( 2.0f * conv->maxPhiIdx) );
+
+        float W = frameSize.width();
+        float H = frameSize.height();
+
+        float xscale = (float)W/(float)lastXSize;
+        float yscale = (float)H/(float)lastYSize;
+
+        if ( xtr.size() != lastXSize && lastXSize != 0 ) {
+            xtr.resize(lastXSize);
+        }
+        for ( int i = 0; i < xtr.size(); i++ ) {
+            xtr[i] = i * xscale;
+        }
+
+        if ( ytr.size() != lastYSize && lastYSize != 0 ) {
+            ytr.resize(lastYSize);
+        }
+        for ( int i = 0; i < ytr.size(); i++ ) {
+            ytr[i] = H - i * yscale - 1;
+        }
+    }
+}
+
 void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
 {
     lock_guard<mutex> lock(mtx);
@@ -70,24 +105,15 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
         return;
     }
 
-    QPainter painter( this );
     getFrameSize();
+    recalcTransform();
+    QPainter painter( this );
+
     float W = frameSize.width();
     float W2 = W/2.0f;
     float H = frameSize.height();
     float H2 = H/2.0f;
     painter.translate((width() - W)/2, (height() - H)/2);
-
-    float conv_xsize = (float)conv_paint.size();
-    float conv_ysize = (float)conv_paint.at(0).size();
-    float xscale = (float)W/conv_xsize;
-    float yscale = (float)H/conv_ysize;
-    QPoint Center( conv_xsize/2, conv_ysize/2 );
-
-
-    const QTransform originalTransform = painter.transform();
-    //painter.translate(Center);
-    painter.scale(xscale, yscale);
 
     for ( size_t th_idx = 0; th_idx < conv_paint.size(); th_idx++ ) {
 
@@ -102,18 +128,21 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
                 painter.setPen( QPen( color, 4, Qt::SolidLine) );
                 painter.setBrush( QBrush( color ) );
 
-                painter.drawPoint( ph_idx, conv_ysize - th_idx - 1 );
+                painter.drawPoint( xtr[ph_idx], ytr[th_idx] );
             }
         }
     }
 
-    painter.setTransform( originalTransform );
     painter.setPen( QPen( Qt::red, 1, Qt::SolidLine ) );
-    painter.drawLine( W2, 0, W2, H );
-    painter.drawLine( 0, H2, W, H2 );
+//    painter.drawLine( W2, 0, W2, H );
+//    painter.drawLine( 0, H2, W, H2 );
 
+    int idx_step = 10 / stepDeg;
+    for ( int i = 0; i <= lastXSize; i += idx_step ) {
+        painter.drawLine(xtr[i], H2-5, xtr[i], H2+5);
+    }
 
-    //painter.setPen( QPen( Qt::red, 1, Qt::SolidLine) );
-    //painter.drawText( Center, QString(" %1 ").arg(QString::number((double)conv->max, 'g', 4 )) );
-
+    for ( int i = 0; i <= lastYSize; i += idx_step ) {
+        painter.drawLine(W2-5, ytr[i], W2+5, ytr[i]);
+    }
 }

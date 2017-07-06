@@ -22,6 +22,14 @@ private:
     QSize getFrameSize();
     QSize frameSize;
 
+    std::vector<int> xtr;
+    std::vector<int> ytr;
+    int lastXSize = 0;
+    int lastYSize = 0;
+    int stepDeg = 1;
+    QSize lastFrameSize;
+    void recalcTransform();
+
 signals:
 
 public slots:
