@@ -4,6 +4,15 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
+static inline float deg2rad( float angle_deg ) {
+    return angle_deg * ( ((float)M_PI) / 180.0f );
+}
+
+static inline float rad2deg( float angle_rad ) {
+    return angle_rad * ( 180.0f / ((float)M_PI) );
+}
+
 typedef struct float_cpx_t {
     float i;
     float q;
@@ -78,7 +87,7 @@ typedef struct float_cpx_t {
         return angle;
     }
     inline double angle_deg( const float_cpx_t& A ) const {
-         return angle( A ) * 180.0 / M_PI;
+         return rad2deg( angle(A) );
     }
 
     inline float angle() const {
@@ -86,7 +95,7 @@ typedef struct float_cpx_t {
     }
 
     inline float angle_deg() const {
-        return angle() * 180.0f / (float)M_PI;;
+        return rad2deg( angle() );
     }
 
     inline float_cpx_t conj() const {
@@ -113,6 +122,14 @@ static inline float_cpx_t operator- ( const float_cpx_t& A, const float_cpx_t& B
 
 static inline float_cpx_t operator+ ( const float_cpx_t& A, const float_cpx_t& B ) {
     return A.add_const( B );
+}
+
+static inline float_cpx_t float_cpx_from_angle_rad( float angle_rad ) {
+    return float_cpx_t( cosf(angle_rad), sinf(angle_rad) );
+}
+
+static inline float_cpx_t float_cpx_from_angle_deg( float angle_deg ) {
+    return float_cpx_t( cosf(deg2rad(angle_deg)), sinf(deg2rad(angle_deg)) );
 }
 
 
