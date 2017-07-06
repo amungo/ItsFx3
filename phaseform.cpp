@@ -45,7 +45,7 @@ PhaseForm::PhaseForm(QWidget *parent) :
     fft( fft_len ),
     et( 0.052f )
 {
-    pphs_valid = false;
+    data_valid = false;
     powers.resize(4);
     for ( size_t i = 0; i < powers.size(); i++ ) {
         powers.at(i).resize(half_fft_len);
@@ -131,6 +131,8 @@ PhaseForm::~PhaseForm()
     }
 
     running = false;
+    data_valid = false;
+    event_data.Notify();
     if ( tick_thr.joinable() ) {
         tick_thr.join();
     }
@@ -141,6 +143,23 @@ PhaseForm::~PhaseForm()
 
     delete ui;
 
+}
+
+bool PhaseForm::TryLockData()
+{
+    lock_guard<mutex> lock(mtx_data);
+    if ( data_is_busy ) {
+        return false;
+    } else {
+        data_is_busy = true;
+        return true;
+    }
+}
+
+void PhaseForm::UnlockData()
+{
+    lock_guard<mutex> lock(mtx_data);
+    data_is_busy = false;
 }
 
 void PhaseForm::slotRun(int state)
@@ -154,20 +173,38 @@ void PhaseForm::slotRun(int state)
     }
 }
 
-void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts_cnt )
+void PhaseForm::HandleAllChansData( std::vector<short*>& new_all_ch_data, size_t pts_cnt )
 {
     if ( pts_cnt < source_len * avg_cnt ) {
         return;
     }
-    if ( all_ch_data.size() != 4 ) {
+    if ( new_all_ch_data.size() != 4 ) {
         return;
     }
 
-    lock_guard< mutex > lock( mtx );
+    if ( TryLockData() ) {
+        if ( all_ch_data.size() != 4 ) {
+            all_ch_data.resize(4);
+        }
+        for ( int ch = 0; ch < 4; ch++ ) {
+            if ( all_ch_data[ch].size() != pts_cnt ) {
+                all_ch_data[ch].resize(pts_cnt);
+            }
+            memcpy( all_ch_data[ch].data(), new_all_ch_data[ch], sizeof(short)*pts_cnt);
+        }
+        data_valid = true;
+        UnlockData();
+        fprintf( stderr, "HandleAllChansData(): notifying\n" );
+        event_data.Notify();
+    }
+}
+
+void PhaseForm::MakeFFTs()
+{
     if ( avg_cnt == 1 ) {
 
         for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
-            fft.TransformShort( all_ch_data[ channel ], fft_out_averaged[ channel ].data() );
+            fft.TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data() );
         }
 
     } else {
@@ -175,7 +212,7 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
         for ( int iter = 0; iter < avg_cnt; iter++ ) {
             for ( size_t channel = 0; channel < 4; channel++ ) {
                 fft.TransformShort(
-                            all_ch_data[ channel ] + fft_len * iter,
+                            all_ch_data[ channel ].data() + fft_len * iter,
                             tbuf_fft[ iter ][ channel ].data()
                             );
             }
@@ -241,108 +278,130 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts
             }
         }
     }
-
-    pphs_valid = false;
+    data_valid = false;
 }
 
+
 void PhaseForm::MakePphs() {
-    lock_guard< mutex > lock( mtx );
     float xavg = 0.0f;
 
-    if ( !pphs_valid ) {
-        for ( int ch = 0; ch < 4; ch++ ) {
-            const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
-            vector<float>& pwr = powers[ch];
-            vector<float>& phs = phases[ch];
-            if ( ch == 0 ) {
-                for ( int i = left_point; i < right_point; i++ ) {
-                    pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
-                    xavg += pwr[ i ];
+    for ( int ch = 0; ch < 4; ch++ ) {
+        const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
+        vector<float>& pwr = powers[ch];
+        vector<float>& phs = phases[ch];
+        if ( ch == 0 ) {
+            for ( int i = left_point; i < right_point; i++ ) {
+                pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
+                xavg += pwr[ i ];
 
-                    phs[ i ] = avg_data[i].angle_deg();
-                }
-            } else {
-                vector<float>& phs0 = phases[0];
-                for ( int i = left_point; i < right_point; i++ ) {
-                    pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
-                    xavg += pwr[ i ];
+                phs[ i ] = avg_data[i].angle_deg();
+            }
+        } else {
+            vector<float>& phs0 = phases[0];
+            for ( int i = left_point; i < right_point; i++ ) {
+                pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
+                xavg += pwr[ i ];
 
-                    float x = avg_data[i].angle_deg() - phs0[i];
-                    if ( x > 180.0f ) {
-                        x -= 360.0f;
-                    } else if ( x < -180.0f ) {
-                        x += 360.0f;
-                    }
-                    phs[ i ] = x;
+                float x = avg_data[i].angle_deg() - phs0[i];
+                if ( x > 180.0f ) {
+                    x -= 360.0f;
+                } else if ( x < -180.0f ) {
+                    x += 360.0f;
                 }
+                phs[ i ] = x;
             }
         }
-        xavg /= (right_point - left_point) * 4.0f;
-        this->powerAvg = xavg;
-        pphs_valid = true;
     }
+    xavg /= (right_point - left_point) * 4.0f;
+    this->powerAvg = xavg;
+}
+
+void PhaseForm::SetWidgetsData()
+{
+    ui->widgetPhases->SetPhasesData(   &phases, left_point, points_cnt );
+    ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
+    ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
+
+    ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx(), avg_filter_cnt );
+    ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
+    ui->widgetSpectrumVertical->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
+}
+
+void PhaseForm::CalcConvolution()
+{
+    lock_guard< mutex > lock( mtx_convolution );
+    int idx = GetCurrentIdx();
+    float_cpx_t iqss[4];
+    float phs[3];
+    {
+        iqss[0] = cur_iqss[0];
+        iqss[1] = cur_iqss[1];
+        iqss[2] = cur_iqss[2];
+        iqss[3] = cur_iqss[3];
+
+        phs[0] = phases[1][idx];
+        phs[1] = phases[2][idx];
+        phs[2] = phases[3][idx];
+    }
+
+    ConvResult* result = et.CalcConvolution( iqss );
+    ui->widgetConvolution->SetConvolution( result );
+
+    ui->labelPhases->setText( QString("%1  %2  %3").arg(
+        QString::number( phs[0], 'f', 0  ),
+        QString::number( phs[1], 'f', 0  ),
+        QString::number( phs[2], 'f', 0  )
+    ));
+
+    float diff12 = phs[0] - phs[1];
+    if ( diff12 > 180.0f ) {
+        diff12 -= 360.0f;
+    } else if ( diff12 < -180.0f ) {
+        diff12 += 360.0f;
+    }
+
+    float diff23 = phs[1] - phs[2];
+    if ( diff23 > 180.0f ) {
+        diff23 -= 360.0f;
+    } else if ( diff23 < -180.0f ) {
+        diff23 += 360.0f;
+    }
+
+    ui->labelPhasesDiff->setText( QString("%1  %2").arg(
+        QString::number( diff12, 'f', 0  ),
+        QString::number( diff23, 'f', 0  )
+    ));
 }
 
 void PhaseForm::Tick()
 {
     this_thread::sleep_for(chrono::milliseconds(2000));
     while (running) {
-        this_thread::sleep_for(chrono::milliseconds(100));
-        MakePphs();
+        fprintf( stderr, "Tick(): wait\n" );
+        event_data.WaitAndFlush();
+        fprintf( stderr, "Tick():     notified!\n" );
 
-        ui->widgetPhases->SetPhasesData(   &phases, left_point, points_cnt );
-        ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
-        ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
+        if ( TryLockData() ) {
+            if ( data_valid ) {
+                // have new data
 
-        ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx(), avg_filter_cnt );
-        ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
-        ui->widgetSpectrumVertical->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
+                MakeFFTs();
+                UnlockData();
 
-        int idx = GetCurrentIdx();
-        float_cpx_t iqss[4];
-        float phs[3];
-        {
-            lock_guard< mutex > lock( mtx );
-            iqss[0] = cur_iqss[0];
-            iqss[1] = cur_iqss[1];
-            iqss[2] = cur_iqss[2];
-            iqss[3] = cur_iqss[3];
+                MakePphs();
+                SetWidgetsData();
 
-            phs[0] = phases[1][idx];
-            phs[1] = phases[2][idx];
-            phs[2] = phases[3][idx];
-        }
+                CalcConvolution();
 
-        ConvResult* result = et.CalcConvolution( iqss );
-        ui->widgetConvolution->SetConvolution( result );
+                update();
+            } else {
+                // no new data
+                UnlockData();
+            }
 
-        ui->labelPhases->setText( QString("%1  %2  %3").arg(
-            QString::number( phs[0], 'f', 0  ),
-            QString::number( phs[1], 'f', 0  ),
-            QString::number( phs[2], 'f', 0  )
-        ));
+        } // if TryLockData()
 
-        float diff12 = phs[0] - phs[1];
-        if ( diff12 > 180.0f ) {
-            diff12 -= 360.0f;
-        } else if ( diff12 < -180.0f ) {
-            diff12 += 360.0f;
-        }
-
-        float diff23 = phs[1] - phs[2];
-        if ( diff23 > 180.0f ) {
-            diff23 -= 360.0f;
-        } else if ( diff23 < -180.0f ) {
-            diff23 += 360.0f;
-        }
-
-        ui->labelPhasesDiff->setText( QString("%1  %2").arg(
-            QString::number( diff12, 'f', 0  ),
-            QString::number( diff23, 'f', 0  )
-        ));
-
-        update();
-    }
+    } // while running
 }
 
 
@@ -453,7 +512,7 @@ void PhaseForm::Calibrate(bool)
     float_cpx_t iqss[4];
     float phs[3];
     {
-        lock_guard< mutex > lock( mtx );
+        lock_guard< mutex > lock( mtx_convolution );
         iqss[0] = cur_iqss[0];
         iqss[1] = cur_iqss[1];
         iqss[2] = cur_iqss[2];
@@ -475,6 +534,7 @@ void PhaseForm::Calibrate(bool)
         QMessageBox::Yes|QMessageBox::No
     );
     if (reply == QMessageBox::Yes) {
+        lock_guard< mutex > lock( mtx_convolution );
         et.SetCalibIqs( iqss );
         et.ReCalculateEtalons();
     } else {
@@ -492,6 +552,7 @@ void PhaseForm::CalibrateDefault(bool)
         QMessageBox::Yes|QMessageBox::No
     );
     if (reply == QMessageBox::Yes) {
+        lock_guard< mutex > lock( mtx_convolution );
         et.SetCalibDefault();
         et.CalcEtalons( deg_prec, deg_wide, deg_wide );
     } else {
@@ -508,24 +569,30 @@ void PhaseForm::CalibrateFromFile(bool)
         "Load calibration from files?",
         QMessageBox::Yes|QMessageBox::No
     );
+    bool show_warning = false;
     if (reply == QMessageBox::Yes) {
-        int res = et.LoadEtalonsFromFiles();
-        if ( res ) {
-            QMessageBox::StandardButton warning;
-            warning = QMessageBox::warning(
-                this,
-                "Error",
-                "There was an error while loading calbration from files.\n"
-                "Check console log for details\n"
-                "Will use DEFAULT calibration.",
-                QMessageBox::Ok
-            );
+        lock_guard< mutex > lock( mtx_convolution );
+        if ( et.LoadEtalonsFromFiles() ) {
+            show_warning = true;
+        } else {
             et.SetCalibDefault();
             et.CalcEtalons( deg_prec, deg_wide, deg_wide );
         }
     } else {
         // nop
     }
+    if ( show_warning ) {
+        QMessageBox::StandardButton warning;
+        warning = QMessageBox::warning(
+            this,
+            "Error",
+            "There was an error while loading calbration from files.\n"
+            "Check console log for details\n"
+            "Will use DEFAULT calibration.",
+            QMessageBox::Ok
+        );
+    }
+
 }
 
 

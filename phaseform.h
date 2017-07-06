@@ -9,6 +9,7 @@
 
 #include "datastreams/streamdatahandler.h"
 #include "datastreams/streamrouter.h"
+#include "datastreams/singleevent.h"
 #include "gcacorr/averagervector.h"
 #include "gcacorr/fftwrapper.h"
 #include "gcacorr/etalometr.h"
@@ -39,8 +40,15 @@ private:
     std::vector<float> tbuf_phases;
     FFTWrapper fft;
 
+    SingleEvent event_data;
+    std::mutex mtx_data;
+    bool data_is_busy = false;
+    bool data_valid = false;
+    std::vector<std::vector<short>> all_ch_data;
+    bool TryLockData();
+    void UnlockData();
 
-    std::mutex mtx;
+    std::mutex mtx_convolution;
     std::vector< std::vector<float> > powers;
     std::vector< std::vector<float> > phases;
     float_cpx_t cur_iqss[4];
@@ -49,8 +57,10 @@ private:
     float powerMax = 100.0f;
     float powerAvg =   0.0f;
 
-    bool pphs_valid;
+    void MakeFFTs();
     void MakePphs();
+    void SetWidgetsData();
+    void CalcConvolution();
 
     std::thread tick_thr;
     bool running;
@@ -86,7 +96,7 @@ private slots:
 
     // StreamDataHandler interface
 public:
-    void HandleAllChansData( std::vector<short*>& all_ch_data, size_t pts_cnt );
+    void HandleAllChansData(std::vector<short*>& new_all_ch_data, size_t pts_cnt );
 };
 
 #endif // PHASEFORM_H
