@@ -54,22 +54,23 @@ float_cpx_t EtalometrGeo::GetEtalon(int ant, float thetta, float phi)
 {
     point3d_t E( 0.0f, 0.0f, 0.0f );
 
+
     switch ( ant ) {
     case 0:
         E.x = -base_len / 2.0f;
         E.y = -base_len / 2.0f;
         break;
     case 1:
-        E.x = -base_len / 2.0f;
-        E.y =  base_len / 2.0f;
+        E.x =  base_len / 2.0f;
+        E.y = -base_len / 2.0f;
         break;
     case 2:
         E.x =  base_len / 2.0f;
         E.y =  base_len / 2.0f;
         break;
     case 3:
-        E.x =  base_len / 2.0f;
-        E.y = -base_len / 2.0f;
+        E.x = -base_len / 2.0f;
+        E.y =  base_len / 2.0f;
         break;
     }
 
