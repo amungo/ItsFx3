@@ -34,8 +34,8 @@ const int source_len = fft_len * win_cnt;
 const int avg_cnt = 20;
 
 const int deg_prec = 1;
-const double deg_wide_X = 60.0;
-const double deg_wide_Y = 45.0;
+const double deg_wide_X = 45.0;
+const double deg_wide_Y = 30.0;
 
 PhaseForm::PhaseForm(QWidget *parent) :
     QWidget(parent),
