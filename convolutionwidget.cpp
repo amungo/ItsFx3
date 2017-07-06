@@ -138,11 +138,17 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
 //    painter.drawLine( 0, H2, W, H2 );
 
     int idx_step = 10 / stepDeg;
-    for ( int i = 0; i <= lastXSize; i += idx_step ) {
-        painter.drawLine(xtr[i], H2-5, xtr[i], H2+5);
+    for ( int i = 0; i < lastXSize/2; i += idx_step ) {
+        int idx = lastXSize/2 - i;
+        painter.drawLine(xtr[idx], H2-5, xtr[idx], H2+5);
+        idx = lastXSize/2 + i;
+        painter.drawLine(xtr[idx], H2-5, xtr[idx], H2+5);
     }
 
-    for ( int i = 0; i <= lastYSize; i += idx_step ) {
-        painter.drawLine(W2-5, ytr[i], W2+5, ytr[i]);
+    for ( int i = 0; i < lastYSize/2; i += idx_step ) {
+        int idx = lastYSize/2 - i;
+        painter.drawLine(W2-5, ytr[idx], W2+5, ytr[idx]);
+        idx = lastYSize/2 + i;
+        painter.drawLine(W2-5, ytr[idx], W2+5, ytr[idx]);
     }
 }
