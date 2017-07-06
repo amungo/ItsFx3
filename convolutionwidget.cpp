@@ -31,10 +31,15 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
     float color_range = 250.0;
     float coef = color_range / len;
 
-    conv_paint.resize( conv->data.size() );
+    if ( conv_paint.size() != conv->data.size() ) {
+        conv_paint.resize( conv->data.size() );
+    }
+
     for ( size_t a = 0; a < conv->data.size(); a++ ) {
         std::vector<float>& raw = conv->data[a];
-        conv_paint[a].resize( raw.size() );
+        if ( conv_paint[a].size() != raw.size() ) {
+            conv_paint[a].resize( raw.size() );
+        }
         for( size_t p = 0; p < raw.size(); p++ ) {
             int color_idx = (int)(  (raw[p] - min) * coef  );
             conv_paint[a][p] = color_idx >= 0 ? colors[ color_idx ] : colors[ 0 ];
