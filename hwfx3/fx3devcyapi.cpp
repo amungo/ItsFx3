@@ -611,12 +611,9 @@ void FX3DevCyAPI::xfer_loop() {
 
         BytesXferred = max(BytesXferred, 0);
 
-        int hacked_len = 4096 * sizeof( short ) * 20;
-        //int hacked_len = len;
-
-        size_tx_mb += ( ( double ) hacked_len ) / ( 1024.0 * 1024.0 );
+        size_tx_mb += ( ( double ) len ) / ( 1024.0 * 1024.0 );
         if ( data_handler ) {
-            data_handler->HandleDeviceData(buffers[i], hacked_len);
+            data_handler->HandleDeviceData(buffers[i], len);
         }
 
         // Re-submit this queue element to keep the queue full

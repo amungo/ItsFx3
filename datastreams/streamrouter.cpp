@@ -2,6 +2,8 @@
 #include "string.h"
 #include "util/Chan2bitParser.h"
 
+//const int hack_len = 0; // no data cut
+const int hack_len = 4096 * sizeof( short ) * 20; // cut data len for performance
 
 StreamRouter::StreamRouter( ADCType type ) :
     loop_running( true ),
@@ -59,6 +61,9 @@ void StreamRouter::HandleStreamDataOneChan(short*, size_t, int) {
 
 static double ctr_fl = 0.0f;
 void StreamRouter::RouteData(void* data, size_t size8) {
+    if ( hack_len ) {
+        size8 = hack_len;
+    }
 
     std::vector< int16_t* > chans_data;
     chans_data.resize( 0 );
