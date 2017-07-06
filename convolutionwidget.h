@@ -27,6 +27,8 @@ private:
     int lastXSize = 0;
     int lastYSize = 0;
     int stepDeg = 1;
+    float xscale = 1.0f;
+    float yscale = 1.0f;
     QSize lastFrameSize;
     void recalcTransform();
 

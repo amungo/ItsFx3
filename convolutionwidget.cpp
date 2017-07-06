@@ -14,7 +14,7 @@ ConvolutionWidget::ConvolutionWidget(QWidget *parent) : QWidget(parent)
 {
     colors.resize(255);
     for ( size_t i = 0; i < colors.size(); i++ ) {
-        colors[i] = QColor( 0, i, 0, 64 );
+        colors[i] = QColor( 0, i, 0, 100 );
     }
     conv_paint.resize(1);
     conv_paint[0].resize(1);
@@ -88,11 +88,11 @@ void ConvolutionWidget::recalcTransform()
         float W = frameSize.width();
         float H = frameSize.height();
 
-        float xscale = (float)W/(float)lastXSize;
-        float yscale = (float)H/(float)lastYSize;
+        xscale = (float)W/(float)lastXSize;
+        yscale = (float)H/(float)lastYSize;
         fprintf( stderr, "ConvolutionWidget::recalcTransform(): "
-                         "%d x %d   %.0f x %.0f    %d\n",
-                 lastXSize, lastYSize, W, H, stepDeg );
+                         "%d x %d   %.0f x %.0f  %.1f, %.1f  %d\n",
+                 lastXSize, lastYSize, W, H, xscale, yscale, stepDeg );
 
         if ( xtr.size() != lastXSize && lastXSize != 0 ) {
             xtr.resize(lastXSize);
@@ -149,7 +149,7 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
                 continue;
             } else {
                 QColor& color = raw[ph_idx];
-                painter.setPen( QPen( color, 4, Qt::SolidLine) );
+                painter.setPen( QPen( color, 1 * xscale, Qt::SolidLine) );
                 painter.setBrush( QBrush( color ) );
 
                 painter.drawPoint( xtr[ph_idx], ytr[th_idx] );
