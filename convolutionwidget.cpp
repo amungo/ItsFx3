@@ -1,6 +1,8 @@
 #include <QPainter>
+#include "gcacorr/mathTypes.h"
 #include "videowidget.h"
 #include "convolutionwidget.h"
+
 
 #include <cmath>
 
@@ -95,15 +97,27 @@ void ConvolutionWidget::recalcTransform()
         if ( xtr.size() != lastXSize && lastXSize != 0 ) {
             xtr.resize(lastXSize);
         }
-        for ( int i = 0; i < xtr.size(); i++ ) {
-            xtr[i] = i * xscale;
-        }
-
         if ( ytr.size() != lastYSize && lastYSize != 0 ) {
             ytr.resize(lastYSize);
         }
+
+
+        float angle = 0.0f;
+        float stepRad = deg2rad(stepDeg);
+        float X2 = lastXSize/2.0f;
+        float Y2 = lastYSize/2.0f;
+        float XcamCoef = 1.0f / sinf( deg2rad(conv->rangePhi) );
+        float YcamCoef = 1.0f / sinf( deg2rad(conv->rangeThetta) );
+        for ( int i = 0; i < xtr.size(); i++ ) {
+            //xtr[i] = i * xscale; // linear variant
+            angle = (i - X2)*stepRad;
+            xtr[i] = ( sinf(angle) * XcamCoef * X2 + X2 ) * xscale;
+        }
+
         for ( int i = 0; i < ytr.size(); i++ ) {
-            ytr[i] = H - i * yscale - 1;
+            //ytr[i] = H - i * yscale - 1; // linear variant
+            angle = (i - Y2)*stepRad;
+            ytr[i] = H - ( sinf(angle) * YcamCoef * Y2 + Y2 ) * yscale - 1;
         }
     }
 }
