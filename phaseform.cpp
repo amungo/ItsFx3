@@ -574,7 +574,6 @@ void PhaseForm::CalibrateFromFile(bool)
         lock_guard< mutex > lock( mtx_convolution );
         if ( et.LoadEtalonsFromFiles() ) {
             show_warning = true;
-        } else {
             et.SetCalibDefault();
             et.CalcEtalons( deg_prec, deg_wide, deg_wide );
         }
