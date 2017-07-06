@@ -8,7 +8,8 @@
 #include "phaseform.h"
 #include "ui_phaseform.h"
 
-#include "gcacorr/etalometr.h"
+#include "gcacorr/etalometrgeo.h"
+#include "gcacorr/etalometrfile.h"
 
 #define MY_PI (3.14159265359f)
 
@@ -32,7 +33,7 @@ const int win_cnt = 1;
 const int source_len = fft_len * win_cnt;
 const int avg_cnt = 20;
 
-const double deg_prec =  1.0;
+const int deg_prec = 1;
 const double deg_wide = 60.0;
 
 PhaseForm::PhaseForm(QWidget *parent) :
@@ -42,8 +43,7 @@ PhaseForm::PhaseForm(QWidget *parent) :
     router( NULL ),
     tbuf_powers( fft_len ),
     tbuf_phases( fft_len ),
-    fft( fft_len ),
-    et( 0.052f )
+    fft( fft_len )
 {
     data_valid = false;
     powers.resize(4);
@@ -74,6 +74,9 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     ui->setupUi(this);
 
+    ui->radioButtonEtalonsGeo->setChecked(true);
+    ui->radioButtonEtalonsFile->setChecked(false);
+
     QObject::connect(ui->widgetSpectrumVertical, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
     QObject::connect(ui->widgetSpectrum,         SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
 
@@ -85,9 +88,11 @@ PhaseForm::PhaseForm(QWidget *parent) :
     QObject::connect(ui->pushButtonAvgBandUp,   SIGNAL(clicked(bool)), this, SLOT(CurBandChangeUp(bool)) );
     QObject::connect(ui->pushButtonAvgBandDown, SIGNAL(clicked(bool)), this, SLOT(CurBandChangeDown(bool)) );
 
-    QObject::connect(ui->pushButtonCalibrate,         SIGNAL(clicked(bool)), this, SLOT(Calibrate(bool)) );
+    QObject::connect(ui->pushButtonCalibrate,         SIGNAL(clicked(bool)), this, SLOT(CalibrateApplyPhases(bool)) );
     QObject::connect(ui->pushButtonCalibrateDefault,  SIGNAL(clicked(bool)), this, SLOT(CalibrateDefault(bool)) );
-    QObject::connect(ui->pushButtonCalibrateFromFile, SIGNAL(clicked(bool)), this, SLOT(CalibrateFromFile(bool)) );
+
+    QObject::connect(ui->radioButtonEtalonsGeo,  SIGNAL(clicked(bool)), this, SLOT(ChangeEtalons(bool)) );
+    QObject::connect(ui->radioButtonEtalonsFile, SIGNAL(clicked(bool)), this, SLOT(ChangeEtalons(bool)) );
 
     ui->pushButtonUp->setStyleSheet(      "background-color: lightGrey");
     ui->pushButtonUpFast->setStyleSheet(  "background-color: lightGrey");
@@ -99,7 +104,6 @@ PhaseForm::PhaseForm(QWidget *parent) :
 
     ui->pushButtonCalibrate->setStyleSheet(         "background-color: grey");
     ui->pushButtonCalibrateDefault->setStyleSheet(  "background-color: grey");
-    ui->pushButtonCalibrateFromFile->setStyleSheet( "background-color: grey");
 
     ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
     ui->widgetSpectrum->SetSpectrumParams( nullMHz, leftMHz * 1e6, rightMHz * 1e6, filterMHz * 1e6 );
@@ -114,12 +118,14 @@ PhaseForm::PhaseForm(QWidget *parent) :
     InitCamera();
     ui->viewFinder->stackUnder(this);
 
-    et.SetFreq( 1575.42e6 );
-    et.SetCalibDefault();
-    et.CalcEtalons( deg_prec, deg_wide, deg_wide );
-    et.debug();
-    ui->widgetConvolution->SetConvolution( et.GetResult() );
 
+    et_geo.SetBaseParams(  0.052f, 1575.42e6, deg_wide, deg_wide, deg_prec );
+    et_file.SetBaseParams( 0.052f, 1575.42e6, deg_wide, deg_wide, deg_prec );
+
+    ui->radioButtonEtalonsFile->setChecked(false);
+    ui->radioButtonEtalonsGeo->setChecked(true);
+    et = &et_geo;
+    et->MakeEtalons();
 
     SetCurrentIdx( left_point + points_cnt/2 );
 }
@@ -194,7 +200,6 @@ void PhaseForm::HandleAllChansData( std::vector<short*>& new_all_ch_data, size_t
         }
         data_valid = true;
         UnlockData();
-        fprintf( stderr, "HandleAllChansData(): notifying\n" );
         event_data.Notify();
     }
 }
@@ -344,7 +349,7 @@ void PhaseForm::CalcConvolution()
         phs[2] = phases[3][idx];
     }
 
-    ConvResult* result = et.CalcConvolution( iqss );
+    ConvResult* result = et->CalcConvolution( iqss );
     ui->widgetConvolution->SetConvolution( result );
 
     ui->labelPhases->setText( QString("%1  %2  %3").arg(
@@ -377,9 +382,7 @@ void PhaseForm::Tick()
 {
     this_thread::sleep_for(chrono::milliseconds(2000));
     while (running) {
-        fprintf( stderr, "Tick(): wait\n" );
         event_data.WaitAndFlush();
-        fprintf( stderr, "Tick():     notified!\n" );
 
         if ( TryLockData() ) {
             if ( data_valid ) {
@@ -506,7 +509,7 @@ void PhaseForm::CurBandChangeDown(bool)
     CurBandChange( avg_filter_cnt - 1 );
 }
 
-void PhaseForm::Calibrate(bool)
+void PhaseForm::CalibrateApplyPhases(bool)
 {
     int idx = GetCurrentIdx();
     float_cpx_t iqss[4];
@@ -535,11 +538,12 @@ void PhaseForm::Calibrate(bool)
     );
     if (reply == QMessageBox::Yes) {
         lock_guard< mutex > lock( mtx_convolution );
-        et.SetCalibIqs( iqss );
-        et.ReCalculateEtalons();
+        et->SetNewCalibration(iqss);
     } else {
         // nop
     }
+    update();
+
 }
 
 void PhaseForm::CalibrateDefault(bool)
@@ -553,44 +557,42 @@ void PhaseForm::CalibrateDefault(bool)
     );
     if (reply == QMessageBox::Yes) {
         lock_guard< mutex > lock( mtx_convolution );
-        et.SetCalibDefault();
-        et.CalcEtalons( deg_prec, deg_wide, deg_wide );
+        et->ResetCalibration();
     } else {
         // nop
     }
+    update();
+
 }
 
-void PhaseForm::CalibrateFromFile(bool)
+void PhaseForm::ChangeEtalons(bool)
 {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(
-        this,
-        "Calibration from files",
-        "Load calibration from files?",
-        QMessageBox::Yes|QMessageBox::No
-    );
-    bool show_warning = false;
-    if (reply == QMessageBox::Yes) {
-        lock_guard< mutex > lock( mtx_convolution );
-        if ( et.LoadEtalonsFromFiles() ) {
-            show_warning = true;
-            et.SetCalibDefault();
-            et.CalcEtalons( deg_prec, deg_wide, deg_wide );
-        }
+    if ( ui->radioButtonEtalonsFile->isChecked() ) {
+        ui->radioButtonEtalonsGeo->setChecked(false);
+        et = &et_file;
     } else {
-        // nop
+        ui->radioButtonEtalonsFile->setChecked(false);
+        et = &et_geo;
+    }
+
+
+    bool show_warning = false;
+    lock_guard< mutex > lock( mtx_convolution );
+    if ( et->MakeEtalons() ) {
+        show_warning = true;
     }
     if ( show_warning ) {
         QMessageBox::StandardButton warning;
         warning = QMessageBox::warning(
             this,
             "Error",
-            "There was an error while loading calbration from files.\n"
-            "Check console log for details\n"
-            "Will use DEFAULT calibration.",
+            "There was an error while making etalons.\n"
+            "Check console log for details\n",
             QMessageBox::Ok
         );
     }
+
+    update();
 
 }
 

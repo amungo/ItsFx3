@@ -55,13 +55,15 @@ SOURCES += main.cpp \
     phasewidget.cpp \
     spectrumwidget.cpp \
     coverwidget.cpp \
-    gcacorr/etalometr.cpp \
     gcacorr/convresult.cpp \
+    gcacorr/etalometrbase.cpp \
+    gcacorr/etalometrgeo.cpp \
     convolutionwidget.cpp \
     videowidgetsurface.cpp \
     videowidget.cpp \
     gcacorr/point3d_t.cpp \
-    datastreams/singleevent.cpp
+    datastreams/singleevent.cpp \
+    gcacorr/etalometrfile.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -125,13 +127,15 @@ HEADERS  += itsmain.h \
     phasewidget.h \
     spectrumwidget.h \
     coverwidget.h \
-    gcacorr/etalometr.h \
     gcacorr/convresult.h \
+    gcacorr/etalometrbase.h \
+    gcacorr/etalometrgeo.h \
     convolutionwidget.h \
     videowidgetsurface.h \
     videowidget.h \
     gcacorr/point3d_t.h \
-    datastreams/singleevent.h
+    datastreams/singleevent.h \
+    gcacorr/etalometrfile.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

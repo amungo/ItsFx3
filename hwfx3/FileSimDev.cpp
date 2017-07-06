@@ -82,7 +82,7 @@ void FileSimDev::run() {
                 current_offset8 = 0;
                 fseek_cross( file, 0, SEEK_SET );
             }
-            fprintf( stderr, "current_offset8 %12lld, %5.0f ms\n", current_offset8, 1000.0 * ((double)current_offset8/1) / SR );
+            //fprintf( stderr, "current_offset8 %12lld, %5.0f ms\n", current_offset8, 1000.0 * ((double)current_offset8/1) / SR );
             fread( buf_file, 1, block_pts, file );
             current_offset8 += block_pts;
 

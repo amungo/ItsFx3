@@ -12,7 +12,8 @@
 #include "datastreams/singleevent.h"
 #include "gcacorr/averagervector.h"
 #include "gcacorr/fftwrapper.h"
-#include "gcacorr/etalometr.h"
+#include "gcacorr/etalometrgeo.h"
+#include "gcacorr/etalometrfile.h"
 
 namespace Ui {
 class PhaseForm;
@@ -74,7 +75,9 @@ private:
 
     void InitCamera();
 
-    Etalometr et;
+    EtalometrGeo  et_geo;
+    EtalometrFile et_file;
+    EtalometrBase* et;
 
 public slots:
     void CurChangeOutside( int value );
@@ -87,9 +90,9 @@ public slots:
     void CurBandChangeUp(bool);
     void CurBandChangeDown(bool);
 
-    void Calibrate(bool);
+    void CalibrateApplyPhases(bool);
     void CalibrateDefault(bool);
-    void CalibrateFromFile(bool);
+    void ChangeEtalons(bool);
 
 private slots:
     void slotRun(int);

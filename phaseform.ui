@@ -149,8 +149,11 @@
          <pointsize>12</pointsize>
         </font>
        </property>
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
        <property name="text">
-        <string>run</string>
+        <string>Run</string>
        </property>
       </widget>
      </item>
@@ -166,7 +169,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>50</height>
+         <height>30</height>
         </size>
        </property>
        <property name="font">
@@ -187,7 +190,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>50</height>
+         <height>40</height>
         </size>
        </property>
        <property name="font">
@@ -208,7 +211,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>50</height>
+         <height>40</height>
         </size>
        </property>
        <property name="font">
@@ -229,7 +232,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>50</height>
+         <height>40</height>
         </size>
        </property>
        <property name="font">
@@ -253,7 +256,7 @@
        <property name="minimumSize">
         <size>
          <width>0</width>
-         <height>50</height>
+         <height>40</height>
         </size>
        </property>
        <property name="font">
@@ -325,51 +328,75 @@
       </widget>
      </item>
      <item>
-      <widget class="Line" name="line_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QGroupBox" name="groupBoxEtalons">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
        </property>
+       <property name="title">
+        <string>Etalons</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QRadioButton" name="radioButtonEtalonsGeo">
+          <property name="text">
+           <string>Geometric etalons</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButtonEtalonsFile">
+          <property name="text">
+           <string>From File</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="labelPhases">
-       <property name="text">
-        <string>90  -180  -270</string>
+      <widget class="QGroupBox" name="groupBoxCalibration">
+       <property name="title">
+        <string>Calibration</string>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="labelPhasesDiff">
-       <property name="text">
-        <string>90  90</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonCalibrate">
-       <property name="text">
-        <string>Calibrate</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonCalibrateDefault">
-       <property name="text">
-        <string>Default Calibration</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButtonCalibrateFromFile">
-       <property name="text">
-        <string>Calibrate from file</string>
-       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QLabel" name="labelPhases">
+          <property name="text">
+           <string>90  -180  -270</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelPhasesDiff">
+          <property name="text">
+           <string>90  90</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonCalibrate">
+          <property name="text">
+           <string>Apply phases</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButtonCalibrateDefault">
+          <property name="text">
+           <string>Reset defaults</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
