@@ -23,20 +23,21 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
     int cypress_idx = 0;
 #ifndef NO_CY_API
     have_cypress = true;
-    cypress_idx = dtm;
+    drivers_combobox_map[DrvTypeCypress] = dtm;
     ui->comboBoxDriverType->insertItem( dtm++, "Cypress API", QVariant(DrvTypeCypress));
 #endif
-    int libusb_idx = dtm;
+    drivers_combobox_map[DrvTypeLibUsb] = dtm;
     ui->comboBoxDriverType->insertItem( dtm++, "LibUsb API", QVariant(DrvTypeLibUsb));
-    int filesim_idx = dtm;
+
+    drivers_combobox_map[DrvTypeFileSim] = dtm;
     ui->comboBoxDriverType->insertItem( dtm++, "File Sim", QVariant(DrvTypeFileSim));
 
     if ( have_cypress ) {
-        ui->comboBoxDriverType->setCurrentIndex(cypress_idx);
+        ui->comboBoxDriverType->setCurrentIndex(drivers_combobox_map[DrvTypeCypress]);
     } else {
-        ui->comboBoxDriverType->setCurrentIndex(libusb_idx);
+        ui->comboBoxDriverType->setCurrentIndex(drivers_combobox_map[DrvTypeLibUsb]);
     }
-    //ui->comboBoxDriverType->setCurrentIndex(filesim_idx);
+    //ui->comboBoxDriverType->setCurrentIndex(drivers_combobox_map[DrvTypeFileSim]);
 
     for ( int dtm = 0; dtm < ( int ) ADC_Types_Count; dtm++ ) {
         #ifdef NO_GPS
@@ -82,6 +83,7 @@ void DialogConfig::reSetFields() {
     ui->lineEditAdditionalImageFileName->setText( cfg->fn_hex.c_str() );
     ui->checkBoxAutoStart->setChecked( cfg->auto_start_streams );
     changedSubs( cfg->have_submodules );
+    ui->comboBoxDriverType->setCurrentIndex(drivers_combobox_map[cfg->drv_type]);
 }
 
 void DialogConfig::openFileImg(bool) {

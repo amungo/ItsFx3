@@ -65,7 +65,7 @@ void StreamRouter::RouteData(void* data, size_t size8) {
     bool need_delete = false;
 
     uint32_t pts_cnt;
-    if ( adc_type == ADC_NT1065 || adc_type == ADC_SE4150 ) {
+    if ( adc_type == ADC_NT1065 || adc_type == ADC_SE4150 || adc_type == ADC_NT1065_File ) {
         pts_cnt = size8 / sizeof( uint8_t );
         chans_data.resize( 4 );
 

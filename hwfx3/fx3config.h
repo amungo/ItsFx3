@@ -28,6 +28,7 @@
 
 enum ADCType {
     ADC_NT1065,
+    ADC_NT1065_File,
     ADC_SE4150,
     ADC_AD9361,
     ADC_1ch_16bit,
@@ -74,6 +75,7 @@ struct FX3Config {
         case ADC_1ch_16bit: return "ADC_1ch_16bit";
         case ADC_SE4150:    return "SE4150";
         case ADC_NT1065:    return "NT1065";
+        case ADC_NT1065_File:    return "NT1065_File";
         case ADC_AD9361:    return "AD9361";
         default: return "Unknown ADC type";
         }
@@ -135,6 +137,19 @@ struct FX3Config {
             fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex";
             //fn_img          = "D://work//raw_signal.img";
             fn_img          = "AmungoItsFx3Firmware17050700.img";
+            adc_sample_rate_hz = 53.0e6;
+            inter_freq_hz      = 1590.0e6;
+            break;
+        case ADC_NT1065_File:
+            adc_type        = ADC_NT1065_File;
+            drv_type        = DrvTypeFileSim;
+            chan_count      = 4;
+            signal_type     = SigTypeRealPartOnly;
+            have_submodules = false;
+            have_atts       = false;
+            have_dbg        = false;
+            fn_hex          = "nofile.hex";
+            fn_img          = "D://work//raw_signal.img";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
             break;

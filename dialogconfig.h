@@ -2,6 +2,7 @@
 #define DIALOGCONFIG_H
 
 #include <QDialog>
+#include <map>
 #include "hwfx3/fx3config.h"
 
 namespace Ui {
@@ -19,6 +20,7 @@ public:
 private:
     Ui::DialogConfig *ui;
     FX3Config* cfg;
+    std::map<DriverType_t, int> drivers_combobox_map;
 private slots:
     void boardChanged(int);
     void reSetFields();
