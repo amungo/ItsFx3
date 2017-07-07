@@ -60,6 +60,8 @@ private:
     void  SetThresholdNorm( float normValue );
 
     QColor chan_colors[4];
+    QColor colorActive;
+    QColor colorPassive;
 
     void PaintHorizontal( QPainter& painter );
     void PaintVertical( QPainter& painter );

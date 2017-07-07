@@ -11,6 +11,9 @@ SpectrumWidget::SpectrumWidget(QWidget *parent) :
     chan_colors[1] = Qt::red;
     chan_colors[2] = QColor( 18, 92, 40, 255 );
     chan_colors[3] = Qt::black;
+
+    colorActive  = QColor( 18, 92, 40, 255 );
+    colorPassive = QColor( 128, 128, 128, 255 );
 }
 
 void SpectrumWidget::SetPowersData(
@@ -160,15 +163,21 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
     choosen -= skip_pts;
     float choosenPower = maxpowers[ choosen ];
 
-    painter.setPen( QPen( chan_colors[2], 1, Qt::SolidLine) );
+    painter.setPen( QPen( colorPassive, 1, Qt::SolidLine) );
 
     curX = border;
     curp = QPoint( 0, 0 );
     prvp = QPoint( curX, H - ( maxpowers[0] + powerShift ) * scale );
 
     for ( int i = 0; i < pts_cnt; i++ ) {
+        float pwr = maxpowers[i];
+        if ( pwr > thresholdDb ) {
+            painter.setPen( colorActive );
+        } else {
+            painter.setPen( colorPassive );
+        }
         curp.setX( curX );
-        curp.setY( H - ( maxpowers[i] + powerShift ) * scale );
+        curp.setY( H - ( pwr + powerShift ) * scale );
         painter.drawLine( prvp, curp );
         prvp = curp;
         curX += stepX;

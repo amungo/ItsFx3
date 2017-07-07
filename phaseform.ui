@@ -362,14 +362,14 @@
         <item>
          <widget class="QRadioButton" name="radioButtonEtalonsGeo">
           <property name="text">
-           <string>Geometric etalons</string>
+           <string>Geometric</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="radioButtonEtalonsFile">
           <property name="text">
-           <string>From File</string>
+           <string>E-Mag</string>
           </property>
          </widget>
         </item>
