@@ -79,6 +79,7 @@ int EtalometrFile::MakeEtalons()
                     fprintf( stderr, "File format error, sign is invalid: '%c'\n", im_sign );
                 }
                 float_cpx_t e( re, im );
+                //e = float_cpx_from_angle_rad( e.angle() ); uncomment this for etalons with len=1.
                 newet[th_idx][ph_idx].ant_pt[a] = e;
             }
             c = 27;
