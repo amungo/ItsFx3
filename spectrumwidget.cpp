@@ -138,6 +138,7 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
     float range = 40.0f;
     float scale = width() / range;
     float shift = -20.0f;
+    float powerThreshold = threshold * range - shift;
 
     painter.setPen( QPen( Qt::gray, 2, Qt::SolidLine) );
     painter.drawRect( 0, 0, height(), width() );
@@ -181,6 +182,9 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
         curp.setY( H - ( pwr + shift ) * scale );
         painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
     }
+
+    painter.setPen( QPen( Qt::black, 2, Qt::DotLine) );
+    painter.drawLine(0, width() - threshold*width(), height(), width() - threshold*width() );
 
     painter.rotate(90.0);
 }
