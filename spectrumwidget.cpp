@@ -19,7 +19,8 @@ void SpectrumWidget::SetPowersData(
         int pts_cnt,
         float minval,
         float maxval,
-        float avgval )
+        float avgval,
+        float maxval_cur )
 {
     lock_guard< mutex > lock( mtx );
     this->powers   = powers_data;
@@ -28,6 +29,7 @@ void SpectrumWidget::SetPowersData(
     this->minval = minval;
     this->maxval = maxval;
     this->avgval = avgval;
+    this->maxval_cur = maxval_cur;
 
     if ( maxpowers.size() < pts_cnt ) {
         maxpowers.resize( pts_cnt + 1 );
@@ -42,6 +44,7 @@ void SpectrumWidget::SetPowersData(
         float ch3 = (*powers)[ 3 ][i];
         maxpowers[i-skip_pts] = max( max(ch0, ch1), max(ch2, ch3) );
     }
+    //fprintf( stderr, "%3.0f %3.0f %3.0f %3.0f\n", minval, avgval, maxval, maxval_cur );
 }
 
 void SpectrumWidget::SetCurrentIdx(int idx, int band)

@@ -18,7 +18,8 @@ public:
             int pts_cnt,
             float minval,
             float maxval,
-            float avgval );
+            float avgval,
+            float maxval_cur );
 
     void SetCurrentIdx(int idx, int band = 1);
     int  GetCurrentIdx();
@@ -43,6 +44,7 @@ private:
     float minval = -10.0f;
     float maxval = 100.0f;
     float avgval =   0.0f;
+    float maxval_cur = 25.0f;
 
     double nullHz   = 1590.0e6;
     double leftHz   =   10.0e6;

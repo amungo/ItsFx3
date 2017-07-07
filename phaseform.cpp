@@ -277,11 +277,16 @@ void PhaseForm::MakeFFTs()
                     }
                 }
             }
+            float cur_power = 0.0f;
             for ( int ch = 0; ch < 4; ch++ ) {
                 float_cpx_t x = corr[ ch ].mul_real( scale );
                 fft_out_averaged[ ch ][ curIdx ] = x;
                 cur_iqss[ ch ] = x;
+                cur_power += x.len();
             }
+            cur_power *= 0.25f;
+            cur_power = 10.0f * log10f( cur_power );
+            powerMaxCur = cur_power;
         }
     }
     data_valid = false;
@@ -290,6 +295,8 @@ void PhaseForm::MakeFFTs()
 
 void PhaseForm::MakePphs() {
     float xavg = 0.0f;
+    float xmax = -1000.0f;
+    float xmin = 1000.0f;
 
     for ( int ch = 0; ch < 4; ch++ ) {
         const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
@@ -297,16 +304,20 @@ void PhaseForm::MakePphs() {
         vector<float>& phs = phases[ch];
         if ( ch == 0 ) {
             for ( int i = left_point; i < right_point; i++ ) {
-                pwr[ i ] = 10.0f * log10f( avg_data[i].len_squared() );
-                xavg += pwr[ i ];
-
+                float p = 5.0f * log10f( avg_data[i].len_squared() );
+                pwr[ i ] = p;
                 phs[ i ] = avg_data[i].angle_deg();
+
+                xavg += p;
+                if ( p > xmax ) { xmax = p; }
+                if ( p < xmin ) { xmin = p; }
+
             }
         } else {
             vector<float>& phs0 = phases[0];
             for ( int i = left_point; i < right_point; i++ ) {
-                pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
-                xavg += pwr[ i ];
+                float p = 5.0f * log10f( avg_data[i].len_squared() );
+                pwr[ i ] = p;
 
                 float x = avg_data[i].angle_deg() - phs0[i];
                 if ( x > 180.0f ) {
@@ -314,19 +325,26 @@ void PhaseForm::MakePphs() {
                 } else if ( x < -180.0f ) {
                     x += 360.0f;
                 }
-                phs[ i ] = x;
+                phs[ i ] = p;
+
+                xavg += p;
+                if ( p > xmax ) { xmax = p; }
+                if ( p < xmin ) { xmin = p; }
+
             }
         }
     }
     xavg /= (right_point - left_point) * 4.0f;
     this->powerAvg = xavg;
+    this->powerMax = xmax;
+    this->powerMin = xmin;
 }
 
 void PhaseForm::SetWidgetsData()
 {
     ui->widgetPhases->SetPhasesData(   &phases, left_point, points_cnt );
-    ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
-    ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg );
+    ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur );
+    ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur );
 
     ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx(), avg_filter_cnt );
     ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );
