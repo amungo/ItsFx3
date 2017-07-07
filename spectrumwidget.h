@@ -20,7 +20,7 @@ public:
             float maxval,
             float avgval,
             float maxval_cur,
-            float threshold );
+            float norm_threshold );
 
     void SetCurrentIdx(int idx, int band = 1);
     int  GetCurrentIdx();
@@ -31,6 +31,7 @@ public:
         spec_vert  = 1
     };
     void SetVisualMode( SpecMode_e newmode );
+    float GetThresholdDb();
 
 private:
     SpecMode_e mode = spec_horiz;
@@ -46,12 +47,17 @@ private:
     float maxval = 100.0f;
     float avgval =   0.0f;
     float maxval_cur = 25.0f;
-    float threshold = 10.0f;
 
     double nullHz   = 1590.0e6;
     double leftHz   =   10.0e6;
     double rightHz  =   20.0e6;
     double filterHz = 12400.0;
+
+    float powerRange =  42.0f;
+    float powerShift = -18.0f;
+    float thresholdNorm  = 0.95f;
+    float thresholdDb    = 58.0f;
+    void  SetThresholdNorm( float normValue );
 
     QColor chan_colors[4];
 
