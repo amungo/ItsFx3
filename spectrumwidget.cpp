@@ -164,6 +164,11 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
         curX += stepX;
     }
 
+    int colshade = 64 + ( maxval_cur - 10.0f ) * 2;
+    painter.setPen(   QPen(   QColor( colshade, 0, 0, colshade ), 1, Qt::SolidLine ) );
+    painter.setBrush( QBrush( QColor( colshade, 0, 0, colshade ) ) );
+    painter.drawRect( 0, 1, ( maxval_cur - 10.0f ) * (height() / 60.0f), 30 );
+
     painter.setPen(   QPen(   QColor( 64, 64, 64, 255), 1, Qt::DotLine ) );
     painter.setBrush( QBrush( QColor( 64, 64, 64, 64 ) ) );
     painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->width() );
