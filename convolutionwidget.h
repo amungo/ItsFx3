@@ -13,6 +13,7 @@ class ConvolutionWidget : public QWidget
 public:
     explicit ConvolutionWidget(QWidget *parent = 0);
     void SetConvolution( ConvResult* convolution );
+    void SetUnderThreshold( bool is_under_threshold );
 
 private:
     std::mutex mtx;
@@ -31,6 +32,8 @@ private:
     float yscale = 1.0f;
     QSize lastFrameSize;
     void recalcTransform();
+
+    bool is_under_threshold;
 
 signals:
 

@@ -381,6 +381,11 @@ void PhaseForm::CalcConvolution()
     }
 
     ConvResult* result = et->CalcConvolution( iqss );
+    if ( powerMaxCur > ui->widgetSpectrumVertical->GetThresholdDb() ) {
+        ui->widgetConvolution->SetUnderThreshold( false );
+    } else {
+        ui->widgetConvolution->SetUnderThreshold( true );
+    }
     ui->widgetConvolution->SetConvolution( result );
 
     ui->labelPhases->setText( QString("%1  %2  %3").arg(

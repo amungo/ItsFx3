@@ -50,6 +50,11 @@ void ConvolutionWidget::SetConvolution(ConvResult *convolution)
 
 }
 
+void ConvolutionWidget::SetUnderThreshold(bool is_under_threshold)
+{
+    this->is_under_threshold = is_under_threshold;
+}
+
 QSize ConvolutionWidget::getFrameSize()
 {
     bool is_set = false;
@@ -139,23 +144,37 @@ void ConvolutionWidget::paintEvent(QPaintEvent* /*event*/)
     float H2 = H/2.0f;
     painter.translate((width() - W)/2, (height() - H)/2);
 
-    for ( size_t th_idx = 0; th_idx < conv_paint.size(); th_idx++ ) {
+    if ( is_under_threshold ) {
 
-        std::vector<QColor>& raw = conv_paint[th_idx];
+        QRect textRect( W2 - 30, H2 - 40, 60, 30 );
+        painter.setPen( QPen( Qt::black, 1, Qt::SolidLine ) );
+        painter.setBrush( QBrush( QColor( 200, 200, 200, 200 ) ) );
+        painter.drawRect( textRect );
 
-        for( size_t ph_idx = 0; ph_idx < raw.size(); ph_idx++ ) {
+        painter.setPen( QPen( QColor( 32, 32, 32, 255 ), 24, Qt::SolidLine) );
+        painter.drawText( W2 - 20, H2 - 20, QString( "Low level" ) );
 
-            if ( raw[ph_idx] == colors[ 0 ] ) {
-                continue;
-            } else {
-                QColor& color = raw[ph_idx];
-                painter.setPen( QPen( color, 1 * xscale, Qt::SolidLine) );
-                painter.setBrush( QBrush( color ) );
+    } else {
 
-                painter.drawPoint( xtr[ph_idx], ytr[th_idx] );
+        for ( size_t th_idx = 0; th_idx < conv_paint.size(); th_idx++ ) {
+
+            std::vector<QColor>& raw = conv_paint[th_idx];
+
+            for( size_t ph_idx = 0; ph_idx < raw.size(); ph_idx++ ) {
+
+                if ( raw[ph_idx] == colors[ 0 ] ) {
+                    continue;
+                } else {
+                    QColor& color = raw[ph_idx];
+                    painter.setPen( QPen( color, 1 * xscale, Qt::SolidLine) );
+                    painter.setBrush( QBrush( color ) );
+
+                    painter.drawPoint( xtr[ph_idx], ytr[th_idx] );
+                }
             }
         }
-    }
+
+    } // is_under_threshold
 
     painter.setPen( QPen( Qt::red, 1, Qt::SolidLine ) );
 //    painter.drawLine( W2, 0, W2, H );
