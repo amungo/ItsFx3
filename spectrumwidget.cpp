@@ -104,6 +104,7 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
     int right_point = skip_pts + pts_cnt;
     float choosen = GetCurrentIdx();
     choosen -= skip_pts;
+    float choosenPower = maxpowers[ choosen ];
 
     for ( int ch = 0; ch < 4; ch++ ) {
         painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
@@ -121,8 +122,9 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
         }
     }
 
-    painter.setPen(   QPen(   QColor( 64, 64, 64, 255), 1, Qt::DotLine ) );
-    painter.setBrush( QBrush( QColor( 64, 64, 64, 64 ) ) );
+    QColor choosenColor = ( choosenPower > thresholdDb ) ? QColor( 64, 255, 64, 64 ) : QColor( 64, 64, 64, 64 );
+    painter.setPen( QPen( choosenColor , 1, Qt::DotLine ) );
+    painter.setBrush( QBrush( choosenColor ) );
     painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->height() );
 
 
@@ -156,6 +158,7 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
 
     float choosen = GetCurrentIdx();
     choosen -= skip_pts;
+    float choosenPower = maxpowers[ choosen ];
 
     painter.setPen( QPen( chan_colors[2], 1, Qt::SolidLine) );
 
@@ -176,8 +179,9 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
     painter.setBrush( QBrush( QColor( colshade, 0, 0, colshade ) ) );
     painter.drawRect( 0, 0, ( maxval_cur - 10.0f ) * (height() / 60.0f), 30 );
 
-    painter.setPen(   QPen(   QColor( 64, 64, 64, 255), 1, Qt::DotLine ) );
-    painter.setBrush( QBrush( QColor( 64, 64, 64, 64 ) ) );
+    QColor choosenColor = ( choosenPower > thresholdDb ) ? QColor( 64, 255, 64, 64 ) : QColor( 64, 64, 64, 64 );
+    painter.setPen( QPen( choosenColor , 1, Qt::DotLine ) );
+    painter.setBrush( QBrush( choosenColor ) );
     painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->width() );
 
     painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );

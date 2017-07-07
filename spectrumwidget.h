@@ -55,8 +55,8 @@ private:
 
     float powerRange =  42.0f;
     float powerShift = -18.0f;
-    float thresholdNorm  = 0.95f;
-    float thresholdDb    = 58.0f;
+    float thresholdNorm  = 0.05f;
+    float thresholdDb    = 20.0f;
     void  SetThresholdNorm( float normValue );
 
     QColor chan_colors[4];
