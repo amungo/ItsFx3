@@ -297,7 +297,7 @@ void PhaseForm::MakePphs() {
         vector<float>& phs = phases[ch];
         if ( ch == 0 ) {
             for ( int i = left_point; i < right_point; i++ ) {
-                pwr[ i ] = 10.0 * log10( avg_data[i].len_squared() );
+                pwr[ i ] = 10.0f * log10f( avg_data[i].len_squared() );
                 xavg += pwr[ i ];
 
                 phs[ i ] = avg_data[i].angle_deg();
