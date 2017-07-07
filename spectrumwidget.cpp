@@ -76,9 +76,9 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
 {
     float stepX = ( this->width() - border * 2.0f ) / (float)pts_cnt;
 
-    float range = maxval - minval + 5.0f;
+    float range = 40.0f;
     float scale = height() / range;
-    float shift = -avgval;
+    float shift = -20.0f;
 
 
 
@@ -101,11 +101,11 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
 
         curX = border;
         curp = QPoint( 0, 0 );
-        prvp = QPoint( curX, H2 - ( (*powers)[ ch ][skip_pts] + shift ) * scale );
+        prvp = QPoint( curX, H - ( (*powers)[ ch ][skip_pts] + shift ) * scale );
 
         for ( int i = skip_pts + 1; i < right_point; i++ ) {
             curp.setX( curX );
-            curp.setY( H2 - ( (*powers)[ ch ][i] + shift ) * scale );
+            curp.setY( H - ( (*powers)[ ch ][i] + shift ) * scale );
             painter.drawLine( prvp, curp );
             prvp = curp;
             curX += stepX;
@@ -119,9 +119,9 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
 
 
     painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
-    for ( float pwr = -200.0f; pwr < 200.0; pwr += 10.0f ) {
+    for ( float pwr = -40.0f; pwr < 120.0; pwr += 10.0f ) {
         curp.setX( 0 );
-        curp.setY( H2 - ( pwr + shift ) * scale );
+        curp.setY( H - ( pwr + shift ) * scale );
         painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
     }
 }
@@ -133,9 +133,9 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
 
     float stepX = ( height() - border * 2.0f ) / (float)pts_cnt;
 
-    float range = maxval - minval + 5.0f;
+    float range = 40.0f;
     float scale = width() / range;
-    float shift = -avgval;
+    float shift = -20.0f;
 
     painter.setPen( QPen( Qt::gray, 2, Qt::SolidLine) );
     painter.drawRect( 0, 0, height(), width() );
@@ -154,11 +154,11 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
 
     curX = border;
     curp = QPoint( 0, 0 );
-    prvp = QPoint( curX, H2 - ( maxpowers[0] + shift ) * scale );
+    prvp = QPoint( curX, H - ( maxpowers[0] + shift ) * scale );
 
     for ( int i = 0; i < pts_cnt; i++ ) {
         curp.setX( curX );
-        curp.setY( H2 - ( maxpowers[i] + shift ) * scale );
+        curp.setY( H - ( maxpowers[i] + shift ) * scale );
         painter.drawLine( prvp, curp );
         prvp = curp;
         curX += stepX;
@@ -169,9 +169,9 @@ void SpectrumWidget::PaintVertical(QPainter &painter)
     painter.drawRect( border + ( choosen - idxBand/2 )* stepX, 0, idxBand * stepX, this->width() );
 
     painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
-    for ( float pwr = -200.0f; pwr < 200.0; pwr += 10.0f ) {
+    for ( float pwr = -40.0f; pwr < 120.0; pwr += 10.0f ) {
         curp.setX( 0 );
-        curp.setY( H2 - ( pwr + shift ) * scale );
+        curp.setY( H - ( pwr + shift ) * scale );
         painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
     }
 
