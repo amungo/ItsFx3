@@ -58,6 +58,7 @@ private:
     float powerMax = 100.0f;
     float powerAvg =   0.0f;
     float powerMaxCur = 25.0f;
+    float GetThreshold();
 
     void MakeFFTs();
     void MakePphs();

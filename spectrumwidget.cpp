@@ -20,7 +20,8 @@ void SpectrumWidget::SetPowersData(
         float minval,
         float maxval,
         float avgval,
-        float maxval_cur )
+        float maxval_cur,
+        float threshold )
 {
     lock_guard< mutex > lock( mtx );
     this->powers   = powers_data;
@@ -30,6 +31,7 @@ void SpectrumWidget::SetPowersData(
     this->maxval = maxval;
     this->avgval = avgval;
     this->maxval_cur = maxval_cur;
+    this->threshold = threshold;
 
     if ( maxpowers.size() < pts_cnt ) {
         maxpowers.resize( pts_cnt + 1 );

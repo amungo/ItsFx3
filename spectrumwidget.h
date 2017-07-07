@@ -19,7 +19,8 @@ public:
             float minval,
             float maxval,
             float avgval,
-            float maxval_cur );
+            float maxval_cur,
+            float threshold );
 
     void SetCurrentIdx(int idx, int band = 1);
     int  GetCurrentIdx();
@@ -45,6 +46,7 @@ private:
     float maxval = 100.0f;
     float avgval =   0.0f;
     float maxval_cur = 25.0f;
+    float threshold = 10.0f;
 
     double nullHz   = 1590.0e6;
     double leftHz   =   10.0e6;

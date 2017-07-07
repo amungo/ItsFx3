@@ -169,6 +169,14 @@ void PhaseForm::UnlockData()
     data_is_busy = false;
 }
 
+float PhaseForm::GetThreshold()
+{
+    float xmax = ui->horizontalSliderPowerThreshold->maximum();
+    float x = ui->horizontalSliderPowerThreshold->value();
+    x = 1.0f - x / xmax;
+    return x;
+}
+
 void PhaseForm::slotRun(int state)
 {
     if ( router ) {
@@ -343,8 +351,12 @@ void PhaseForm::MakePphs() {
 void PhaseForm::SetWidgetsData()
 {
     ui->widgetPhases->SetPhasesData(   &phases, left_point, points_cnt );
-    ui->widgetSpectrum->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur );
-    ui->widgetSpectrumVertical->SetPowersData( &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur );
+
+    ui->widgetSpectrum->SetPowersData(
+        &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur, GetThreshold() );
+
+    ui->widgetSpectrumVertical->SetPowersData(
+        &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur, GetThreshold() );
 
     ui->widgetPhases->SetCurrentIdx(   GetCurrentIdx(), avg_filter_cnt );
     ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), avg_filter_cnt );

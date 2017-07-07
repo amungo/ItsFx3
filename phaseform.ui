@@ -80,7 +80,7 @@
         <number>0</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="4,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="4,0">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -122,14 +122,31 @@
           </widget>
          </item>
          <item>
-          <widget class="SpectrumWidget" name="widgetSpectrumVertical" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>200</width>
-             <height>200</height>
-            </size>
-           </property>
-          </widget>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <widget class="SpectrumWidget" name="widgetSpectrumVertical" native="true">
+             <property name="minimumSize">
+              <size>
+               <width>200</width>
+               <height>200</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="horizontalSliderPowerThreshold">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>99</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
