@@ -325,7 +325,7 @@ void PhaseForm::MakePphs() {
                 } else if ( x < -180.0f ) {
                     x += 360.0f;
                 }
-                phs[ i ] = p;
+                phs[ i ] = x;
 
                 xavg += p;
                 if ( p > xmax ) { xmax = p; }
