@@ -31,6 +31,14 @@ public:
 
     virtual fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false ) = 0;
 
+protected:
+    virtual void pre_init_fx3() {}
+    virtual void init_ntlab_default() {}
+
+
+    virtual uint32_t GetNt1065ChipID() { return 0; }
+    virtual void readNtReg(uint32_t reg) {}
+
     virtual void writeGPIO( uint32_t gpio, uint32_t value ) {}
     virtual void readGPIO( uint32_t gpio, uint32_t* value ) {}
     virtual void startGpif() {}

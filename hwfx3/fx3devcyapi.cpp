@@ -83,17 +83,28 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         return res;
     }
 
+    pre_init_fx3();
     GetNt1065ChipID();
 
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
-            res = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
-            if ( res != FX3_ERR_OK ) {
-                fprintf( stderr, "FX3DevCyAPI::Init() __error__ loadAdditionalFirmware %d %s\n", res, fx3_get_error_string( res ) );
-                return res;
+
+            if ( std::string("manual") == std::string(additionalFirmwareFileName) ) {
+
+                init_ntlab_default();
+
+            } else {
+
+                res = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
+                if ( res != FX3_ERR_OK ) {
+                    fprintf( stderr, "FX3DevCyAPI::Init() __error__ loadAdditionalFirmware %d %s\n", res, fx3_get_error_string( res ) );
+                    return res;
+                }
+
             }
         }
     }
+    readNtReg(0x07);
 
     bool In;
     int Attr, MaxPktSize, MaxBurst, Interface, Address;
@@ -464,6 +475,30 @@ fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data
         fprintf( stderr, "__error__ FX3Dev::read24bitSPI() FAILED\n" );
     }
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+}
+
+void FX3DevCyAPI::pre_init_fx3()
+{
+    writeGPIO(NT1065EN,  0);
+    writeGPIO(NT1065AOK, 0);
+    writeGPIO(VCTCXOEN,  0);
+    writeGPIO(ANTLNAEN,  0);
+    writeGPIO(ANTFEEDEN, 0);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    writeGPIO(VCTCXOEN,  1);
+    writeGPIO(NT1065EN,  1);
+
+    writeGPIO(ANTLNAEN,  1);
+    writeGPIO(ANTFEEDEN, 1);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+
+void FX3DevCyAPI::init_ntlab_default()
+{
+
 }
 
 uint32_t FX3DevCyAPI::GetNt1065ChipID()

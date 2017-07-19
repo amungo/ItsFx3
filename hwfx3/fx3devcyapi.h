@@ -74,6 +74,12 @@ private:
     fx3_dev_err_t send24bitSPI(unsigned char data, unsigned short addr);
     fx3_dev_err_t read24bitSPI(unsigned short addr, unsigned char* data);
 
+protected:
+
+    void pre_init_fx3();
+    void init_ntlab_default();
+
+
     uint32_t GetNt1065ChipID();
     void readNtReg(uint32_t reg);
 
