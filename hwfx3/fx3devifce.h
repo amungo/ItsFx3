@@ -32,6 +32,7 @@ public:
     virtual fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false ) = 0;
 
 protected:
+    virtual fx3_dev_err_t resetFx3Chip() { return FX3_ERR_OK; }
     virtual void pre_init_fx3() {}
     virtual void init_ntlab_default() {}
 

@@ -18,6 +18,15 @@ HWManager::HWManager(FX3Config* cfg, QObject *parent) :
     
 }
 
+HWManager::~HWManager()
+{
+    if ( dev ) {
+        FX3DevIfce* safe_dev = dev;
+        dev = NULL;
+        delete safe_dev;
+    }
+}
+
 void HWManager::SetRouter(StreamRouter* r) {
     router = r;
 }

@@ -76,6 +76,7 @@ private:
 
 protected:
 
+    fx3_dev_err_t resetFx3Chip();
     void pre_init_fx3();
     void init_ntlab_default();
 

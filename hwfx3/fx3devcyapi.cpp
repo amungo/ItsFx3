@@ -16,7 +16,20 @@ FX3DevCyAPI::FX3DevCyAPI() :
 }
 
 FX3DevCyAPI::~FX3DevCyAPI() {
+    stopRead();
 
+    std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
+
+    if ( resetFx3Chip() == FX3_ERR_OK ) {
+        fprintf( stderr, "Fx3 is going to reset. Please wait\n" );
+        for ( int i = 0; i < 20; i++ ) {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+            fprintf( stderr, "*" );
+        }
+        fprintf( stderr, " done\n" );
+    } else {
+        fprintf( stderr, "__error__ FX3 CHIP RESET failed\n" );
+    }
 }
 
 fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additionalFirmwareFileName) {
@@ -475,6 +488,26 @@ fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data
     } else {
         fprintf( stderr, "__error__ FX3Dev::read24bitSPI() FAILED\n" );
     }
+    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevCyAPI::resetFx3Chip()
+{
+    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    fprintf( stderr, "FX3DevCyAPI::resetFx3Chip( )\n" );
+
+    CCyControlEndPoint* CtrlEndPt;
+    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
+    CtrlEndPt->Target = TGT_DEVICE;
+    CtrlEndPt->ReqType = REQ_VENDOR;
+    CtrlEndPt->Direction = DIR_TO_DEVICE;
+    CtrlEndPt->ReqCode = fx3cmd::CYPRESS_RESET;
+    CtrlEndPt->Value = 0;
+    CtrlEndPt->Index = 0;
+    long len = 16;
+    int success = CtrlEndPt->XferData(&buf[0], len);
+
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 

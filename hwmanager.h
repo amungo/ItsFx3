@@ -14,6 +14,7 @@ class HWManager :
     Q_OBJECT
 public:
     explicit HWManager(FX3Config *cfg, QObject *parent = 0);
+    ~HWManager();
     void SetRouter( StreamRouter* r );
     // DeviceDataHandlerIfce interface
     virtual void HandleDeviceData(void* data_pointer, size_t size_in_bytes);
