@@ -63,7 +63,8 @@ SOURCES += main.cpp \
     videowidget.cpp \
     gcacorr/point3d_t.cpp \
     datastreams/singleevent.cpp \
-    gcacorr/etalometrfile.cpp
+    gcacorr/etalometrfile.cpp \
+    hwfx3/fx3devifce.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \

@@ -68,25 +68,12 @@ private:
     void GetEndPointParamsByInd(unsigned int EndPointInd, int* Attr, bool* In, int* MaxPktSize, int* MaxBurst, int* Interface, int* Address);
     fx3_dev_err_t loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr );
 
-    fx3_dev_err_t send16bitSPI(unsigned char data, unsigned char addr);
-    fx3_dev_err_t read16bitSPI(unsigned char addr, unsigned char* data);
-
     fx3_dev_err_t send24bitSPI(unsigned char data, unsigned short addr);
     fx3_dev_err_t read24bitSPI(unsigned short addr, unsigned char* data);
 
 protected:
-
-    fx3_dev_err_t resetFx3Chip();
-    void pre_init_fx3();
-    void init_ntlab_default();
-
-
-    uint32_t GetNt1065ChipID();
-    void readNtReg(uint32_t reg);
-
-    void writeGPIO( uint32_t gpio, uint32_t value );
-    void readGPIO( uint32_t gpio, uint32_t* value );
-    void startGpif();
+    fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 );
+    fx3_dev_err_t ctrlFromDevice( uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* dest = nullptr, size_t data_len = 0 );
 
 private:
     DeviceDataHandlerIfce* data_handler;

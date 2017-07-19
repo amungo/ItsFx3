@@ -378,61 +378,6 @@ fx3_dev_err_t FX3DevCyAPI::loadAdditionalFirmware(const char* fw_name, uint32_t 
     return FX3_ERR_OK;
 }
 
-fx3_dev_err_t FX3DevCyAPI::send16bitSPI(unsigned char data, unsigned char addr) {
-    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    buf[0] = (UCHAR)(data);
-    buf[1] = (UCHAR)(addr);
-    
-    //fprintf( stderr, "FX3Dev::send16bitToDevice( 0x%02X, 0x%02X )\n", data, addr );
-    
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = fx3cmd::REG_WRITE;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
-    
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
-}
-
-
-fx3_dev_err_t FX3DevCyAPI::read16bitSPI(unsigned char addr, unsigned char* data)
-{
-    UCHAR buf[16];
-    //addr |= 0x8000;
-    buf[0] = (UCHAR)(*data);
-    buf[1] = (UCHAR)(addr|0x80);
-
-    fprintf( stderr, "FX3Dev::read16bitSPI() from  0x%02X\n", addr );
-
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = fx3cmd::REG_READ;
-    CtrlEndPt->Value = *data;
-    CtrlEndPt->Index = addr|0x80;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
-
-    *data = buf[0];
-    if ( success ) {
-        fprintf( stderr, "[0x%02X] is 0x%02X\n", addr, *data );
-    } else {
-        fprintf( stderr, "__error__ FX3Dev::read16bitSPI() FAILED\n" );
-    }
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
-}
-
-
-
-
 fx3_dev_err_t FX3DevCyAPI::send24bitSPI(unsigned char data, unsigned short addr)
 {
     fprintf( stderr, "[0x%03X] <= 0x%02X\n", addr, data );
@@ -491,268 +436,49 @@ fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
-fx3_dev_err_t FX3DevCyAPI::resetFx3Chip()
+fx3_dev_err_t FX3DevCyAPI::ctrlToDevice(uint8_t cmd, uint16_t value, uint16_t index, void *data, size_t data_len)
 {
-    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-    fprintf( stderr, "FX3DevCyAPI::resetFx3Chip( )\n" );
-
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
+    UCHAR dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG  len = 16;
+    UCHAR* buf = dummybuf;
+    if ( data && data_len != 0 ) {
+        buf = (UCHAR*)data;
+        len = data_len;
+    }
+    CCyControlEndPoint* CtrlEndPt = StartParams.USBDevice->ControlEndPt;
+    CtrlEndPt->Target    = TGT_DEVICE;
+    CtrlEndPt->ReqType   = REQ_VENDOR;
     CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = fx3cmd::CYPRESS_RESET;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 0;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
+    CtrlEndPt->ReqCode   = cmd;
+    CtrlEndPt->Value     = value;
+    CtrlEndPt->Index     = index;
+    int success = CtrlEndPt->XferData(buf, len);
 
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
-void FX3DevCyAPI::pre_init_fx3()
+fx3_dev_err_t FX3DevCyAPI::ctrlFromDevice(uint8_t cmd, uint16_t value, uint16_t index, void *dest, size_t data_len)
 {
-    writeGPIO(NT1065EN,  0);
-    writeGPIO(NT1065AOK, 0);
-    writeGPIO(VCTCXOEN,  0);
-    writeGPIO(ANTLNAEN,  0);
-    writeGPIO(ANTFEEDEN, 0);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-    writeGPIO(VCTCXOEN,  1);
-    writeGPIO(NT1065EN,  1);
-
-    writeGPIO(ANTLNAEN,  1);
-    writeGPIO(ANTFEEDEN, 1);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-}
-
-void FX3DevCyAPI::init_ntlab_default()
-{
-    unsigned char reg = 0;
-
-    //  SetSingleLO
-    send16bitSPI(0x00, 3);
-    send16bitSPI(0x00, 45);
-
-    // SetPLLTune
-    int npll = 0;
-    read16bitSPI(43+npll*4, &reg);
-    send16bitSPI(reg|1, 43+npll*4);
-
-
-    //PLLstat = NT1065_GetPLLStat(0);
-
-    //AOK
-    readNtReg(0x07);
-
-    // NT1065_SetSideBand( chan, side )
-    int chan = 1;
-    int side = 1;
-    read16bitSPI(13+chan*7, &reg);
-    send16bitSPI((reg&0xFD)|((side&1)<<1), 13+chan*7);
-
-    chan = 2;
-    side = 1;
-    read16bitSPI(13+chan*7, &reg);
-    send16bitSPI((reg&0xFD)|((side&1)<<1), 13+chan*7);
-
-    chan = 3;
-    side = 1;
-    read16bitSPI(13+chan*7, &reg);
-    send16bitSPI((reg&0xFD)|((side&1)<<1), 13+chan*7);
-
-    //AOK
-    readNtReg(0x07);
-
-    // SetOutAnalog_IFMGC
-    send16bitSPI(0x22, 15);
-    send16bitSPI(0x22, 22);
-    send16bitSPI(0x22, 29);
-    send16bitSPI(0x22, 36);
-
-//    // setRFGain
-//    chan = 0;
-//    int gain = 11;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
-
-//    chan = 1;
-//    gain = 11;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
-
-//    chan = 2;
-//    gain = 11;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
-
-//    chan = 3;
-//    gain = 11;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0x3)|(((gain-11)&0x0F)<<4), 17+chan*7);
-
-//    // setIfGain
-//    chan = 0;
-//    int gain_code = 10;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
-//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
-
-//    chan = 1;
-//    gain_code = 10;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
-//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
-
-//    chan = 2;
-//    gain_code = 10;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
-//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
-
-//    chan = 3;
-//    gain_code = 10;
-//    read16bitSPI(17+chan*7, &reg);
-//    send16bitSPI((reg&0xFC)|(((gain_code>>3)&0x03)), 17+chan*7);
-//    send16bitSPI( (gain_code&0x07)<<5, 18+chan*7);
-
-
-    // SetLPFCalStart
-    send16bitSPI(1, 4);
-
-    // SetOutADC_IFMGC
-    send16bitSPI(0x23, 15);
-    send16bitSPI(0x0B, 19);
-    send16bitSPI(0x23, 22);
-    send16bitSPI(0x0B, 26);
-    send16bitSPI(0x23, 29);
-    send16bitSPI(0x0B, 33);
-    send16bitSPI(0x23, 36);
-    send16bitSPI(0x0B, 40);
-}
-
-uint32_t FX3DevCyAPI::GetNt1065ChipID()
-{
-    unsigned char reg0 = 0;
-    read16bitSPI(0x00, &reg0);
-
-    unsigned char reg1 = 0;
-    read16bitSPI(0x01, &reg1);
-
-    uint32_t id = (unsigned int)reg0<<21 | ((unsigned int)reg1&0xF8)<<13 | reg1&0x07;
-
-    fprintf( stderr, "ChipID: %08X\n", id );
-    return id;
-}
-
-void print_bits( uint32_t val, int bits_count = 8 ) {
-    for ( int i = bits_count - 1; i >=0; i-- ) {
-        if ( val & ( 1 << i ) ) {
-            fprintf( stderr, "  1" );
-        } else {
-            fprintf( stderr, "  0" );
-        }
+    UCHAR  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG   len = 16;
+    UCHAR* buf = dummybuf;
+    if ( dest && data_len != 0 ) {
+        buf = (UCHAR*)dest;
+        len = data_len;
     }
-    fprintf( stderr, "\n" );
 
-    for ( int i = bits_count - 1; i >=0; i-- ) {
-        fprintf( stderr, "%3d", i );
-    }
-    fprintf( stderr, "\n" );
-}
-
-void FX3DevCyAPI::readNtReg(uint32_t reg)
-{
-    fx3_dev_err_t res = FX3_ERR_OK;
-    unsigned char val = 0x00;
-    res = read16bitSPI(reg, &val);
-    fprintf( stderr, "Reg%d (0x%02X), val = 0x%08X\n", reg, reg, val );
-    print_bits(val);
-}
-
-void FX3DevCyAPI::writeGPIO(uint32_t gpio, uint32_t value)
-{
-    UCHAR buf[16];
-
-    fprintf( stderr, "writeGPIO( %d, %d )\n", gpio, value );
-
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
+    CCyControlEndPoint* CtrlEndPt = StartParams.USBDevice->ControlEndPt;
+    CtrlEndPt->Target    = TGT_DEVICE;
+    CtrlEndPt->ReqType   = REQ_VENDOR;
     CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = fx3cmd::WRITE_GPIO;
-    CtrlEndPt->Value = value;
-    CtrlEndPt->Index = gpio;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
+    CtrlEndPt->ReqCode   = cmd;
+    CtrlEndPt->Value     = value;
+    CtrlEndPt->Index     = index;
 
-    if ( success ) {
-        uint32_t* ans = (uint32_t*)buf;
-        if ( ans[0] != 0 ) {
-            fprintf(stderr, "writeGPIO( %d, %d ) ERROR CyU3PGpioSetValue returned 0x%02X\n", gpio, value, ans[0] );
-        }
-    } else {
-        fprintf(stderr, "writeGPIO( %d, %d ) FAILED\n", gpio, value );
-    }
+    int success = CtrlEndPt->XferData(buf, len);
+
+    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
-
-void FX3DevCyAPI::readGPIO(uint32_t gpio, uint32_t *value)
-{
-    UCHAR buf[16];
-
-    fprintf( stderr, "readGPIO( %d )\n", gpio );
-
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = fx3cmd::WRITE_GPIO;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = gpio;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
-
-    if ( success ) {
-        uint32_t* ans = (uint32_t*)buf;
-        if ( ans[0] != 0 ) {
-            fprintf(stderr, "readGPIO( %d ) ERROR CyU3PGpioGetValue returned 0x%02X\n", gpio, ans[0] );
-        } else {
-            fprintf(stderr, "readGPIO( %d ) have %d value \n", gpio, ans[1] );
-            *value = ans[1];
-        }
-    } else {
-        fprintf(stderr, "readGPIO( %d ) FAILED\n", gpio );
-    }
-}
-
-void FX3DevCyAPI::startGpif()
-{
-    UCHAR buf[16];
-
-    fprintf( stderr, "startGpif()\n" );
-
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = fx3cmd::START;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 0;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
-
-    if ( !success ) {
-        fprintf(stderr, "startGpif() FAILED\n" );
-    }
-}
-
 
 void FX3DevCyAPI::xfer_loop() {
     fprintf( stderr, "FX3DevCyAPI::xfer_loop() started\n" );

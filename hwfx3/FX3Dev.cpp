@@ -363,6 +363,34 @@ fx3_dev_err_t FX3Dev::txControlFromDevice(uint8_t* dest, uint32_t size8 , uint8_
     return FX3_ERR_OK;
 }
 
+
+fx3_dev_err_t FX3Dev::ctrlToDevice(uint8_t cmd, uint16_t value, uint16_t index, void *data, size_t data_len)
+{
+    uint8_t  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 16;
+    uint8_t* buf = dummybuf;
+
+    if ( data && data_len != 0 ) {
+        buf = (uint8_t*)data;
+        len = data_len;
+    }
+
+    return txControlToDevice( buf, len, cmd, value, index );
+}
+
+fx3_dev_err_t FX3Dev::ctrlFromDevice(uint8_t cmd, uint16_t value, uint16_t index, void *dest, size_t data_len)
+{
+    uint8_t  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 16;
+    uint8_t* buf = dummybuf;
+
+    if ( dest && data_len != 0 ) {
+        buf = (uint8_t*)dest;
+        len = data_len;
+    }
+    return txControlFromDevice( buf, len, cmd, value, index );
+}
+
 fx3_dev_err_t FX3Dev::loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr ) {
     if ( !fw_name ) {
         return FX3_ERR_ADDFIRMWARE_FILE_IO_ERROR;
@@ -387,11 +415,7 @@ fx3_dev_err_t FX3Dev::loadAdditionalFirmware( const char* fw_name, uint32_t stop
             return eres;
         }
         
-        #ifdef WIN32
-        Sleep( ADD_FW_LOAD_PAUSE_MS );
-        #else
-        usleep( ADD_FW_LOAD_PAUSE_MS * 1000 );
-        #endif
+        std::this_thread::sleep_for( std::chrono::milliseconds(ADD_FW_LOAD_PAUSE_MS) );
         
         if ( addr[i] == stop_addr ) {
             break;
@@ -451,7 +475,6 @@ fx3_dev_debug_info_t FX3Dev::getDebugInfoFromBoard(bool ask_speed_only) {
         return info;
     }
 }
-
 
 
 fx3_dev_err_t FX3Dev::send16bitToDeviceSynch( uint8_t byte0, uint8_t byte1 ) {
