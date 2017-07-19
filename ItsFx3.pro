@@ -135,7 +135,8 @@ HEADERS  += itsmain.h \
     videowidget.h \
     gcacorr/point3d_t.h \
     datastreams/singleevent.h \
-    gcacorr/etalometrfile.h
+    gcacorr/etalometrfile.h \
+    hwfx3/fx3commands.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
