@@ -60,7 +60,6 @@ public:
     void stopRead();
     void sendAttCommand5bits(uint32_t bits);
     fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false );
-    void fx3_development_call();
 private:
     fx3_dev_err_t scan( int& loadable_count, int& streamable_count );
     fx3_dev_err_t prepareEndPoints();
@@ -74,6 +73,13 @@ private:
 
     fx3_dev_err_t send24bitSPI(unsigned char data, unsigned short addr);
     fx3_dev_err_t read24bitSPI(unsigned short addr, unsigned char* data);
+
+    uint32_t GetNt1065ChipID();
+    void readNtReg(uint32_t reg);
+
+    void writeGPIO( uint32_t gpio, uint32_t value );
+    void readGPIO( uint32_t gpio, uint32_t* value );
+    void startGpif();
 
 private:
     DeviceDataHandlerIfce* data_handler;
