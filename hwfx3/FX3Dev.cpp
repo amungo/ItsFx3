@@ -139,6 +139,7 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
             }
         }
     }
+    readFwVersion();
 
 
 

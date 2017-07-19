@@ -1,6 +1,8 @@
 #ifndef FX3COMMANDS_H
 #define FX3COMMANDS_H
 
+#include <cstdint>
+
 enum fx3cmd {
     FW_LOAD         = 0xA0,
     GET_VERSION     = 0xB0,
@@ -21,6 +23,11 @@ enum fx3gpio {
     ANTLNAEN  = 50, /*        */
     ANTFEEDEN = 18  /* CTL[1] */
 };
+
+typedef struct FirmwareDescription_t {
+    uint32_t version;
+    uint8_t  reserved[ 28 ];
+} FirmwareDescription_t;
 
 
 #endif // FX3COMMANDS_H

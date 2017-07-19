@@ -3,6 +3,7 @@
 
 #include "fx3deverr.h"
 #include "fx3devdebuginfo.h"
+#include "fx3commands.h"
 #include <stddef.h>
 
 // Interface for handling data from FX3 device
@@ -31,6 +32,8 @@ public:
 
     virtual fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false ) = 0;
 
+    virtual void readFwVersion();
+
 protected:
     virtual fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 ) = 0;
     virtual fx3_dev_err_t ctrlFromDevice( uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* dest = nullptr, size_t data_len = 0 ) = 0;
@@ -50,6 +53,8 @@ protected:
     virtual void readNtReg(uint32_t reg);
 
     virtual void startGpif();
+
+    FirmwareDescription_t fwDescription;
 };
 
 #endif // FX3DEVIFCE

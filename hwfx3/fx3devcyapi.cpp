@@ -118,6 +118,7 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         }
     }
     readNtReg(0x07);
+    readFwVersion();
 
     bool In;
     int Attr, MaxPktSize, MaxBurst, Interface, Address;

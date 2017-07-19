@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <thread>
 #include <chrono>
-#include "fx3commands.h"
 #include "fx3devifce.h"
 
 
@@ -166,6 +165,17 @@ void FX3DevIfce::readNtReg(uint32_t reg) {
     res = read16bitSPI(reg, &val);
     fprintf( stderr, "Reg%d (0x%02X), val = 0x%08X\n", reg, reg, val );
     print_bits(val);
+}
+
+void FX3DevIfce::readFwVersion()
+{
+    fx3_dev_err_t res = ctrlFromDevice( fx3cmd::GET_VERSION, 0, 1, &fwDescription, sizeof(fwDescription) );
+    if ( res == FX3_ERR_OK ) {
+        fprintf( stderr, "\n---------------------------------"
+                         "\nFirmware VERSION: %08X\n", fwDescription.version );
+    } else {
+        fprintf( stderr, "__error__ FX3DevIfce::readFwVersion() FAILED\n" );
+    }
 }
 
 fx3_dev_err_t FX3DevIfce::send16bitSPI(uint8_t data, uint8_t addr)
