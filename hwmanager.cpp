@@ -79,7 +79,7 @@ void HWManager::closeHardware() {
 
 void HWManager::startStreams() {
     if ( dev ) {
-        dev->startRead( NULL );
+        dev->startRead( this );
     }
     emit informStartHWStatus( true, "Data stream was started" );
 }
