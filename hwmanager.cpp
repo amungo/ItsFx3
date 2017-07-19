@@ -101,11 +101,6 @@ void HWManager::getDebugInfo() {
     }
 }
 
-void HWManager::callDeveloperFun() {
-    if ( dev ) {
-        dev->fx3_development_call();
-    }
-}
 void HWManager::HandleDeviceData(void* data_pointer, size_t size_in_bytes) {
     if ( router ) {
         router->HandleADCStreamData(data_pointer, size_in_bytes);

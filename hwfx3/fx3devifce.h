@@ -31,8 +31,6 @@ public:
 
     virtual fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false ) = 0;
 
-    virtual void fx3_development_call() {}
-
 };
 
 #endif // FX3DEVIFCE

@@ -32,7 +32,6 @@ public slots:
     void setAttReg( uint32_t reg_val );
     void getDebugInfo();
 
-    void callDeveloperFun();
 signals:
     void informInitHWStatus( bool, QString );
     void informCloseHWStatus( bool, QString );
