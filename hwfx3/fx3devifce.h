@@ -34,12 +34,12 @@ public:
 
     virtual void readFwVersion();
 
+    virtual fx3_dev_err_t send16bitSPI(uint8_t data, uint8_t addr);
+    virtual fx3_dev_err_t read16bitSPI(uint8_t addr, uint8_t *data);
+
 protected:
     virtual fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 ) = 0;
     virtual fx3_dev_err_t ctrlFromDevice( uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* dest = nullptr, size_t data_len = 0 ) = 0;
-
-    virtual fx3_dev_err_t send16bitSPI(uint8_t data, uint8_t addr);
-    virtual fx3_dev_err_t read16bitSPI(uint8_t addr, uint8_t *data);
 
     virtual void writeGPIO( uint32_t gpio, uint32_t value );
     virtual void readGPIO( uint32_t gpio, uint32_t* value );
