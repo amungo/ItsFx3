@@ -83,6 +83,8 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         return res;
     }
 
+    GetNt1065ChipID();
+
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
             res = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
