@@ -123,6 +123,7 @@ void FX3DevCyAPI::startRead(DeviceDataHandlerIfce *handler) {
     startTransferData(0, 128, 4, 1500);
     data_handler = handler;
     xfer_thread = std::thread(&FX3DevCyAPI::xfer_loop, this);
+    startGpif();
 }
 
 void FX3DevCyAPI::stopRead() {
