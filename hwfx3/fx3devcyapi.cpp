@@ -85,11 +85,6 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
 
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
-            res = loadAdditionalFirmware( additionalFirmwareFileName, 112 );
-            if ( res != FX3_ERR_OK ) {
-                fprintf( stderr, "FX3DevCyAPI::Init() __error__ loadAdditionalFirmware %d %s\n", res, fx3_get_error_string( res ) );
-                return res;
-            }
             res = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
             if ( res != FX3_ERR_OK ) {
                 fprintf( stderr, "FX3DevCyAPI::Init() __error__ loadAdditionalFirmware %d %s\n", res, fx3_get_error_string( res ) );
