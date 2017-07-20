@@ -15,6 +15,7 @@ public:
 
 private:
     void convert( float_cpx_t* dst, fftwf_complex* src, int len );
+    void convert_inv( float_cpx_t* dst, fftwf_complex* src, int len );
     float* in_float;
     fftwf_complex* in_complex;
     fftwf_complex* out_complex;

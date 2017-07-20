@@ -17,8 +17,8 @@ using namespace std;
 
 const float nullMHz = 1590.0f;
 
-const float leftMHz  = 10.0f;
-const float rightMHz = 20.0f;
+const float leftMHz  =  9.5f;
+const float rightMHz = 20.5f;
 const float bandMHz  = 53.0f / 2.0f;
 
 const int fft_len = 4096;
@@ -460,7 +460,7 @@ void PhaseForm::SetCurrentIdx( int x )
 
     curIdx = x;
     ui->labelFreq->setText( QString(" %1 MHz").arg( QString::number(
-        nullMHz - leftMHz - curIdx*filterMHz, 'f', 2  ) ));
+        nullMHz - bandMHz + curIdx*filterMHz*2.0, 'f', 2  ) ));
 
 }
 

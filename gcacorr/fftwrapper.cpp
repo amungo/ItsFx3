@@ -37,7 +37,7 @@ void FFTWrapper::TransformShort( const short *in, float_cpx_t *out ) {
         in_float[ i ] = (float) in[ i ];
     }
     fftwf_execute( plan_real );
-    convert( out, out_complex, N );
+    convert_inv( out, out_complex, N );
 }
 
 
@@ -54,5 +54,16 @@ void FFTWrapper::convert(float_cpx_t *dst, fftwf_complex *src, int len) {
     for ( int i = 0; i < len; i++ ) {
         dst[ i ].i = src[ i ][ 0 ];
         dst[ i ].q = src[ i ][ 1 ];
+    }
+}
+
+void FFTWrapper::convert_inv(float_cpx_t *dst, fftwf_complex *src, int len) {
+    for ( int i = 0; i < len/2; i++ ) {
+        dst[ i ].i = src[ len/2 - i ][ 0 ];
+        dst[ i ].q = src[ len/2 - i ][ 1 ];
+    }
+    for ( int i = len/2; i < len; i++ ) {
+        dst[ i ].i = src[ len - i ][ 0 ];
+        dst[ i ].q = src[ len - i ][ 1 ];
     }
 }
