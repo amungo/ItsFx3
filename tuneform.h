@@ -19,9 +19,21 @@ public:
 public slots:
     void setDevicePointer(FX3DevIfce* dev_pointer);
 
+    void onButtonApplyFreq(bool);
+
+    void onBandChanged(int);
+
 private:
     Ui::TuneForm *ui;
     Fx3Tuner* tuner = nullptr;
+
+    const double MAX_L1 = 1750.0;
+    const double MIN_L1 = 1350.0;
+    const double DEF_L1 = 1590.0;
+
+    const double MAX_L2 = 1400.0;
+    const double MIN_L2 = 1040.0;
+    const double DEF_L2 = 1235.0;
 };
 
 #endif // TUNEFORM_H
