@@ -63,6 +63,9 @@
     <property name="maximum">
      <double>1750.000000000000000</double>
     </property>
+    <property name="singleStep">
+     <double>2.000000000000000</double>
+    </property>
    </widget>
    <widget class="QPushButton" name="pushButtonApplyFreq">
     <property name="geometry">
