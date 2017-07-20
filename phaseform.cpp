@@ -15,8 +15,6 @@
 
 using namespace std;
 
-const float nullMHz = 1590.0f;
-
 const float leftMHz  =  9.5f;
 const float rightMHz = 20.5f;
 const float bandMHz  = 53.0f / 2.0f;
@@ -494,6 +492,12 @@ void PhaseForm::InitCamera() {
     } else {
         fprintf( stderr, "\n\n !!!! NO CAMERA FOUND !!!!\n\n" );
     }
+}
+
+void PhaseForm::ChangeNullMhz(double newVal)
+{
+    this->nullMHz = newVal/1.0e6;
+    SetCurrentIdx( GetCurrentIdx() );
 }
 
 void PhaseForm::CurChangeOutside(int value)

@@ -7,6 +7,11 @@ TuneForm::TuneForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->comboBox->setCurrentIndex(0);
+    ui->doubleSpinBoxFreq->setMinimum(MIN_L1);
+    ui->doubleSpinBoxFreq->setMaximum(MAX_L1);
+    ui->doubleSpinBoxFreq->setValue(DEF_L1);
+
     QObject::connect(ui->pushButtonApplyFreq, SIGNAL(clicked(bool)), this, SLOT(onButtonApplyFreq(bool)) );
     QObject::connect(ui->comboBoxBand, SIGNAL(currentIndexChanged(int)), this, SLOT(onBandChanged(int)) );
 
@@ -44,7 +49,9 @@ void TuneForm::onButtonApplyFreq(bool)
         tuner->SetPLL( 0, band, 1 );
         double freq_got = tuner->SetFreq(0, freq_want);
         ui->doubleSpinBoxFreq->setValue(freq_got/1000000.0);
+        emit newFreq( freq_got );
     }
+
 }
 
 void TuneForm::onBandChanged(int) {

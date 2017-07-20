@@ -81,7 +81,12 @@ private:
     EtalometrFile et_file;
     EtalometrBase* et;
 
+    float nullMHz = 1590.0f;
+
+
 public slots:
+    void ChangeNullMhz(double newVal);
+
     void CurChangeOutside( int value );
     void CurChangeButtonUpSlow(bool);
     void CurChangeButtonUpFast(bool);

@@ -34,6 +34,9 @@ private:
     const double MAX_L2 = 1400.0;
     const double MIN_L2 = 1040.0;
     const double DEF_L2 = 1235.0;
+
+signals:
+    void newFreq( double );
 };
 
 #endif // TUNEFORM_H

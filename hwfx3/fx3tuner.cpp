@@ -18,6 +18,9 @@ void Fx3Tuner::SetPLL(int pll_idx, int band, int is_enable)
 
     uint8_t addr = ( pll_idx == 0 ) ? 41 : 45;
 
+    fprintf( stderr, "Fx3Tuner::SetPLL( [%d], %s, %s )\n", pll_idx,
+             band == BandL1 ? "L1" : "L2/L3/L5",
+             is_enable ? "enable" : "DISABLE" );
     pause();
     dev->send16bitSPI( bit_full, addr );
     pause();
