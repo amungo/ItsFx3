@@ -6,104 +6,196 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>560</width>
-    <height>403</height>
+    <width>472</width>
+    <height>226</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Tuner</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>281</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Frequency</string>
-   </property>
-   <widget class="QComboBox" name="comboBoxBand">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>69</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>L1</string>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Frequency</string>
      </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>L2/L3/L5</string>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QComboBox" name="comboBoxBand">
+        <item>
+         <property name="text">
+          <string>L1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>L2/L3/L5</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="doubleSpinBoxFreq">
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>1350.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1750.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>2.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonApplyFreq">
+        <property name="text">
+         <string>Apply</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Gain control</string>
      </property>
-    </item>
-   </widget>
-   <widget class="QDoubleSpinBox" name="doubleSpinBoxFreq">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>20</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="decimals">
-     <number>3</number>
-    </property>
-    <property name="minimum">
-     <double>1350.000000000000000</double>
-    </property>
-    <property name="maximum">
-     <double>1750.000000000000000</double>
-    </property>
-    <property name="singleStep">
-     <double>2.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonApplyFreq">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>20</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Apply</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>110</y>
-     <width>201</width>
-     <height>80</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Gain control</string>
-   </property>
-   <widget class="QComboBox" name="comboBox">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>30</y>
-      <width>69</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-  </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>RF gain</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSlider" name="horizontalSliderRFGain">
+          <property name="maximum">
+           <number>15</number>
+          </property>
+          <property name="value">
+           <number>10</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelRFGain">
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>25 dBm</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="minimumSize">
+           <size>
+            <width>45</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>IF gain</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QSlider" name="horizontalSliderIFGainCoarse">
+            <property name="maximum">
+             <number>31</number>
+            </property>
+            <property name="value">
+             <number>15</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="horizontalSliderIFGainFine">
+            <property name="maximum">
+             <number>31</number>
+            </property>
+            <property name="value">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelIFAGain">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>60</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>43.250 dBm</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBoxAutoGC">
+        <property name="text">
+         <string>Auto</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

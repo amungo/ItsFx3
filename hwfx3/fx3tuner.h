@@ -40,6 +40,9 @@ public:
     static const int CLK_CMOS_ampl_VCC    = 3;
     void ConfigureClockCMOS( int clk_src, int clk_div, int ampl );
 
+    void Set_AGC();
+    void Set_MGC(int rf_gain_idx , int ifa_coarse_gain_idx, int ifa_fine_gain_idx);
+
 
 protected:
     FX3DevIfce* dev = nullptr;

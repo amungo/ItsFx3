@@ -136,6 +136,47 @@ void Fx3Tuner::ConfigureClockCMOS(int clk_src, int clk_div, int ampl) {
     pause();
 }
 
+void Fx3Tuner::Set_AGC() {
+    uint8_t agc_bit = 1;
+    uint8_t reg15 = (agc_bit<<4)|(agc_bit<<3)|(1<<0);
+
+    uint8_t up_thrs_bit = 0x3; // -42 dBm
+    uint8_t lo_thrs_bit = 0x4; // -46 dBm
+    uint8_t reg16 = (up_thrs_bit<<4)|(lo_thrs_bit<<0);
+
+    uint8_t digdet_thrs_bit = 0xA; // 30.3%
+    uint8_t reg18 = (digdet_thrs_bit<<0);
+
+    for ( int ch = 0; ch < 4; ch++ ) {
+        dev->send16bitSPI( reg15, 15 + ch*7 );
+        dev->send16bitSPI( reg16, 16 + ch*7 );
+        dev->send16bitSPI( reg18, 18 + ch*7 );
+    }
+}
+
+void Fx3Tuner::Set_MGC(int rf_gain_idx, int ifa_coarse_gain_idx, int ifa_fine_gain_idx) {
+    uint8_t agc_bit = 0;
+    uint8_t reg15 = (agc_bit<<4)|(agc_bit<<3)|(1<<0);
+
+    if ( rf_gain_idx <  0 ) { rf_gain_idx =  0; }
+    if ( rf_gain_idx > 15 ) { rf_gain_idx = 15; }
+
+    if ( ifa_coarse_gain_idx <  0 ) { ifa_coarse_gain_idx =  0; }
+    if ( ifa_coarse_gain_idx < 31 ) { ifa_coarse_gain_idx = 31; }
+
+    if ( ifa_fine_gain_idx <  0 ) { ifa_fine_gain_idx =  0; }
+    if ( ifa_fine_gain_idx < 31 ) { ifa_fine_gain_idx = 31; }
+
+    uint8_t reg17 = (rf_gain_idx<<4) | (ifa_coarse_gain_idx>>3);
+    uint8_t reg18 = ((ifa_coarse_gain_idx&0x7)<<5) | (ifa_fine_gain_idx);
+
+    for ( int ch = 0; ch < 4; ch++ ) {
+        dev->send16bitSPI( reg15, 15 + ch*7 );
+        dev->send16bitSPI( reg17, 17 + ch*7 );
+        dev->send16bitSPI( reg18, 18 + ch*7 );
+    }
+}
+
 void Fx3Tuner::pause(int ms)
 {
     std::this_thread::sleep_for( std::chrono::milliseconds(ms) );

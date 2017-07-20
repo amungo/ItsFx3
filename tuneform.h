@@ -23,6 +23,9 @@ public slots:
 
     void onBandChanged(int);
 
+    void onAGCChanged(int);
+    void onManualGainChanged(int);
+
 private:
     Ui::TuneForm *ui;
     Fx3Tuner* tuner = nullptr;
@@ -34,6 +37,10 @@ private:
     const double MAX_L2 = 1400.0;
     const double MIN_L2 = 1040.0;
     const double DEF_L2 = 1235.0;
+
+    void SendGain();
+    void SetGainLabels();
+    void SetGainsControlsVisibility( bool is_auto );
 
 signals:
     void newFreq( double );
