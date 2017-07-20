@@ -84,6 +84,58 @@ double Fx3Tuner::SetFreq(int pll_idx, double freq) {
     return 0.0;
 }
 
+void Fx3Tuner::SetTCXO_LO(int tcxo_sel, int lo_src) {
+    uint8_t addr = 3;
+    uint8_t tcxo_bit = ( tcxo_sel == TCXO_sel_10000kHz ? 0 : 1 );
+    uint8_t lo_bit   = ( lo_src == LO_src_A ? 0 : 1 );
+    uint8_t reg = ( tcxo_bit << 1 ) | ( lo_bit << 0 );
+    dev->send16bitSPI( reg, addr );
+}
+
+void Fx3Tuner::ConfigureClockLVDS(int clk_src, int clk_div, int ampl, int outDC) {
+    if ( clk_div <  8 ) { clk_div =  8; }
+    if ( clk_div > 31 ) { clk_div = 31; }
+    uint8_t div_bit  = clk_div;
+    uint8_t src_bit  = ( clk_src == CLK_src_PLLA ) ? 0 : 1;
+    uint8_t type_bit = 1; // LVDS
+    uint8_t cc_bit   = 0x2;
+    switch ( ampl ) {
+    case CLK_LVDS_ampl_230mV: cc_bit = 0x0; break;
+    case CLK_LVDS_ampl_340mV: cc_bit = 0x1; break;
+    case CLK_LVDS_ampl_460mV: cc_bit = 0x2; break;
+    case CLK_LVDS_ampl_570mV: cc_bit = 0x3; break;
+    }
+    uint8_t ol_bit = 0x0;
+    switch( outDC ) {
+    case CLK_LVDS_outDC_1550mV: ol_bit = 0x0; break;
+    case CLK_LVDS_outDC_2100mV: ol_bit = 0x1; break;
+    case CLK_LVDS_outDC_2400mV: ol_bit = 0x2; break;
+    case CLK_LVDS_outDC_2700mV: ol_bit = 0x3; break;
+    }
+    dev->send16bitSPI( ( div_bit << 0 ), 11 );
+    dev->send16bitSPI( (src_bit<<5)|(type_bit<<4)|(cc_bit<<2)|(ol_bit<<0), 12 );
+    pause();
+}
+
+void Fx3Tuner::ConfigureClockCMOS(int clk_src, int clk_div, int ampl) {
+    if ( clk_div <  8 ) { clk_div =  8; }
+    if ( clk_div > 31 ) { clk_div = 31; }
+    uint8_t div_bit  = clk_div;
+    uint8_t src_bit  = ( clk_src == CLK_src_PLLA ) ? 0 : 1;
+    uint8_t type_bit = 0; // CMOS
+    uint8_t cc_bit   = 0x2;
+    uint8_t ol_bit   = 0x0;
+    switch( ampl ) {
+    case CLK_CMOS_ampl_1800mV: ol_bit = 0x0; break;
+    case CLK_CMOS_ampl_2400mV: ol_bit = 0x1; break;
+    case CLK_CMOS_ampl_2700mV: ol_bit = 0x2; break;
+    case CLK_CMOS_ampl_VCC:    ol_bit = 0x3; break;
+    }
+    dev->send16bitSPI( ( div_bit << 0 ), 11 );
+    dev->send16bitSPI( (src_bit<<5)|(type_bit<<4)|(cc_bit<<2)|(ol_bit<<0), 12 );
+    pause();
+}
+
 void Fx3Tuner::pause(int ms)
 {
     std::this_thread::sleep_for( std::chrono::milliseconds(ms) );

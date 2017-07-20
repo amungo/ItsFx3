@@ -3,6 +3,9 @@
 #include <chrono>
 #include "fx3devifce.h"
 
+// include after fx3devifce.h
+#include "fx3tuner.h"
+
 
 fx3_dev_err_t FX3DevIfce::resetFx3Chip() {
     return ctrlToDevice( fx3cmd::CYPRESS_RESET );
@@ -27,22 +30,25 @@ void FX3DevIfce::pre_init_fx3() {
 }
 
 void FX3DevIfce::init_ntlab_default() {
+
+    Fx3Tuner tuner( this );
+
     unsigned char reg = 0;
 
     //  SetSingleLO
-    send16bitSPI(0x00, 3);
-    send16bitSPI(0x00, 45);
+    tuner.SetTCXO_LO( Fx3Tuner::TCXO_sel_10000kHz, Fx3Tuner::LO_src_A );
 
     // SetPLLTune
-    int npll = 0;
-    read16bitSPI(43+npll*4, &reg);
-    send16bitSPI(reg|1, 43+npll*4);
+    tuner.SetPLL( 0, Fx3Tuner::BandL1, 1 );
+    tuner.SetPLL( 1, Fx3Tuner::BandL1, 1 );
 
-
-    //PLLstat = NT1065_GetPLLStat(0);
+    tuner.SetFreq(0, 1590.0e6 );
+    tuner.SetFreq(1, 1590.0e6 );
 
     //AOK
     readNtReg(0x07);
+
+    tuner.ConfigureClockLVDS( Fx3Tuner::CLK_src_PLLB, 15, Fx3Tuner::CLK_LVDS_ampl_570mV, Fx3Tuner::CLK_LVDS_outDC_2400mV );
 
     // NT1065_SetSideBand( chan, side )
     int chan = 1;
@@ -118,6 +124,7 @@ void FX3DevIfce::init_ntlab_default() {
 
     // SetLPFCalStart
     send16bitSPI(1, 4);
+    std::this_thread::sleep_for( std::chrono::milliseconds(50) );
 
     // SetOutADC_IFMGC
     send16bitSPI(0x23, 15);
