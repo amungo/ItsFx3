@@ -7,6 +7,7 @@
 #include "gpscorrform.h"
 #include "SpectrumForm.h"
 #include "phaseform.h"
+#include "tuneform.h"
 
 #include "stdio.h"
 #include <QApplication>
@@ -42,17 +43,21 @@ int main(int argc, char *argv[])
     PhaseForm phaseForm;
     phaseForm.router = &router;
 
+    TuneForm tuneForm;
+
     ItsMain mainWindow( &cfg );
     mainWindow.rawForm = &rawForm;
     mainWindow.gpsForm = &gpsForm;
     mainWindow.specForm = &specForm;
     mainWindow.phaseForm = &phaseForm;
+    mainWindow.tuneForm  = &tuneForm;
 
     HWManager hwm(&cfg);
     hwm.SetRouter(&router);
 
+
     router.AddOutPoint( &gpsForm );
-    
+
     QObject::connect(&mainWindow, SIGNAL(signalInitHw(DriverType_t, const char*, const char*)), &hwm, SLOT(initHardware(DriverType_t, const char*, const char*)) );
     QObject::connect(&mainWindow, SIGNAL(signalCloseHw()),           &hwm, SLOT(closeHardware()) );
     QObject::connect(&mainWindow, SIGNAL(signalStartHwStreams()),    &hwm, SLOT(startStreams()) );
@@ -65,8 +70,9 @@ int main(int argc, char *argv[])
     QObject::connect(&hwm, SIGNAL(informCloseHWStatus(bool,QString)), &mainWindow, SLOT(hardwareCloseStatus(bool,QString)) );
     QObject::connect(&hwm, SIGNAL(informStartHWStatus(bool,QString)), &mainWindow, SLOT(hardwareStartStatus(bool,QString)) );
     QObject::connect(&hwm, SIGNAL(informStopHWStatus(bool,QString)),  &mainWindow, SLOT(hardwareStopStatus(bool,QString)) );
-    QObject::connect(&hwm, SIGNAL(informDebugInfo(bool,fx3_dev_debug_info_t)),  &mainWindow, SLOT(hardwareDebugInfo(bool,fx3_dev_debug_info_t)) );
-    
+    QObject::connect(&hwm, SIGNAL(informDebugInfo(bool,fx3_dev_debug_info_t)),  &mainWindow, SLOT(hardwareDebugInfo(bool,fx3_dev_debug_info_t)) );    
+    QObject::connect(&hwm, SIGNAL(newDevicePointer(FX3DevIfce*)), &tuneForm, SLOT(setDevicePointer(FX3DevIfce*)) );
+
     mainWindow.show();
     
 

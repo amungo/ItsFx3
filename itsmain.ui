@@ -6,212 +6,153 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
-    <height>500</height>
+    <width>507</width>
+    <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>ITS ADC FX3</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QComboBox" name="comboBoxAtts">
-    <property name="geometry">
-     <rect>
-      <x>320</x>
-      <y>10</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="buttonInitHardware">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>111</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Init Hardware</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="buttonCloseHardware">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>40</y>
-      <width>111</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Close Hardware</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="buttonStartStreams">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>10</y>
-      <width>101</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Start Streams</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="buttonStopStreams">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>40</y>
-      <width>101</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Stop Streams</string>
-    </property>
-   </widget>
-   <widget class="QPlainTextEdit" name="plainTextHWLog">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>701</width>
-      <height>371</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Courier New</family>
-     </font>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelAtt">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>10</y>
-      <width>61</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Send ATT:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBoxDbgTimer">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>40</y>
-      <width>61</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBoxForms">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>0</y>
-      <width>331</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Tasks</string>
-    </property>
-    <widget class="QPushButton" name="buttonRawForm">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>41</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Raw</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="buttonGPSForm">
-     <property name="geometry">
-      <rect>
-       <x>210</x>
-       <y>20</y>
-       <width>61</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>GPS</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="buttonSpectrumForm">
-     <property name="geometry">
-      <rect>
-       <x>60</x>
-       <y>20</y>
-       <width>61</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Spectrum</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="buttonDeveloperCall">
-     <property name="geometry">
-      <rect>
-       <x>280</x>
-       <y>20</y>
-       <width>31</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>X</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="buttonPhaseForm">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>20</y>
-       <width>61</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Phase</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QLabel" name="labelAtt_2">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>40</y>
-      <width>61</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Debug:</string>
-    </property>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout_5">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0" rowspan="3">
+       <widget class="QPlainTextEdit" name="plainTextHWLog">
+        <property name="font">
+         <font>
+          <family>Courier New</family>
+         </font>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Device</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="buttonInitHardware">
+           <property name="text">
+            <string>Init</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="buttonStartStreams">
+           <property name="text">
+            <string>Start Streams</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="buttonCloseHardware">
+           <property name="text">
+            <string>Close</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="buttonStopStreams">
+           <property name="text">
+            <string>Stop Streams</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QGroupBox" name="groupBoxForms">
+        <property name="title">
+         <string>Forms</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="buttonPhaseForm">
+           <property name="text">
+            <string>Phase</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="buttonGPSForm">
+           <property name="text">
+            <string>GPS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="buttonTuneForm">
+           <property name="text">
+            <string>Tuner</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="buttonDeveloperCall">
+           <property name="text">
+            <string>X</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QPushButton" name="buttonRawForm">
+           <property name="text">
+            <string>Raw</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QPushButton" name="buttonSpectrumForm">
+           <property name="text">
+            <string>Spectrum</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Misc</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <widget class="QLabel" name="labelAtt">
+           <property name="text">
+            <string>Send ATT:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="comboBoxAtts"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="labelAtt_2">
+           <property name="text">
+            <string>Debug:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBoxDbgTimer"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>721</width>
+     <width>507</width>
      <height>21</height>
     </rect>
    </property>

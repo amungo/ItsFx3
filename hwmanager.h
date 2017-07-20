@@ -34,6 +34,7 @@ public slots:
     void getDebugInfo();
 
 signals:
+    void newDevicePointer( FX3DevIfce* );
     void informInitHWStatus( bool, QString );
     void informCloseHWStatus( bool, QString );
     void informStartHWStatus( bool, QString );

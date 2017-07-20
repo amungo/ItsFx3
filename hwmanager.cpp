@@ -52,6 +52,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
             QString msg( "Device init error " );
             msg += fx3_get_error_string( FX3_ERR_DRV_NOT_IMPLEMENTED );
             emit informInitHWStatus( false, msg );;
+            emit newDevicePointer( nullptr );
             return;
     }
 
@@ -63,10 +64,12 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
         QString msg( "Device init error " );
         msg += fx3_get_error_string( init_error );
         emit informInitHWStatus( false, msg );
+        emit newDevicePointer( nullptr );
         
         closeHardware();
     } else {
         emit informInitHWStatus( true, QString("Device was inited!") );
+        emit newDevicePointer( dev );
     }
 }
 

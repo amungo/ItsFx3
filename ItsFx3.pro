@@ -65,7 +65,8 @@ SOURCES += main.cpp \
     datastreams/singleevent.cpp \
     gcacorr/etalometrfile.cpp \
     hwfx3/fx3devifce.cpp \
-    hwfx3/fx3tuner.cpp
+    hwfx3/fx3tuner.cpp \
+    tuneform.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -139,14 +140,16 @@ HEADERS  += itsmain.h \
     datastreams/singleevent.h \
     gcacorr/etalometrfile.h \
     hwfx3/fx3commands.h \
-    hwfx3/fx3tuner.h
+    hwfx3/fx3tuner.h \
+    tuneform.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
     dialogconfig.ui \
     gpscorrform.ui \
     SpectrumForm.ui \
-    phaseform.ui
+    phaseform.ui \
+    tuneform.ui
 
 INCLUDEPATH += $$PWD/fftw_inc
 

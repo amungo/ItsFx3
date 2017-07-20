@@ -34,6 +34,7 @@ ItsMain::ItsMain(FX3Config* cfg, QWidget *parent) :
     QObject::connect(ui->buttonSpectrumForm, SIGNAL(clicked(bool)), this, SLOT(onSpectrumForm(bool)));
     QObject::connect(ui->buttonPhaseForm, SIGNAL(clicked(bool)), this, SLOT(onPhaseForm(bool)));
     QObject::connect(ui->buttonDeveloperCall, SIGNAL(clicked(bool)), this, SLOT(onButtonCallDeveloperFun(bool)));
+    QObject::connect(ui->buttonTuneForm, SIGNAL(clicked(bool)), this, SLOT(onTuneForm(bool)));
     
     att.Clear();
     att.AddBit(0, 4);
@@ -203,6 +204,12 @@ void ItsMain::onSpectrumForm(bool) {
 void ItsMain::onPhaseForm(bool) {
     if ( phaseForm ) {
         phaseForm->show();
+    }
+}
+
+void ItsMain::onTuneForm(bool) {
+    if ( tuneForm ) {
+        tuneForm->show();
     }
 }
 
