@@ -155,6 +155,7 @@ void Fx3Tuner::Set_AGC() {
 }
 
 void Fx3Tuner::Set_MGC(int rf_gain_idx, int ifa_coarse_gain_idx, int ifa_fine_gain_idx) {
+    fprintf( stderr, "Fx3Tuner::Set_MGC( %2d, %2d, %2d\n", rf_gain_idx, ifa_coarse_gain_idx, ifa_fine_gain_idx );
     uint8_t agc_bit = 0;
     uint8_t reg15 = (agc_bit<<4)|(agc_bit<<3)|(1<<0);
 
@@ -170,11 +171,73 @@ void Fx3Tuner::Set_MGC(int rf_gain_idx, int ifa_coarse_gain_idx, int ifa_fine_ga
     uint8_t reg17 = (rf_gain_idx<<4) | (ifa_coarse_gain_idx>>3);
     uint8_t reg18 = ((ifa_coarse_gain_idx&0x7)<<5) | (ifa_fine_gain_idx);
 
+    pause(5);
     for ( int ch = 0; ch < 4; ch++ ) {
         dev->send16bitSPI( reg15, 15 + ch*7 );
         dev->send16bitSPI( reg17, 17 + ch*7 );
         dev->send16bitSPI( reg18, 18 + ch*7 );
     }
+}
+
+void Fx3Tuner::ConvertRF(int idx, double &db)
+{
+    db = 11.0 + idx*0.95;
+}
+
+void Fx3Tuner::ConvertIFAFine(int idx, double &db)
+{
+    if ( idx < 8 ) {
+        db = -0.35;
+    } else if ( idx > 24 ) {
+        db = 5.10;
+    } else {
+        switch ( idx  ) {
+            case  8: db = -0.30; break;
+            case  9: db = -0.10; break;
+            case 10: db =  0.30; break;
+            case 11: db =  0.90; break;
+            case 12: db =  1.70; break;
+            case 13: db =  2.40; break;
+            case 14: db =  3.00; break;
+            case 15: db =  3.40; break;
+            case 16: db =  3.80; break;
+            case 17: db =  4.10; break;
+            case 18: db =  4.40; break;
+            case 19: db =  4.55; break;
+            case 20: db =  4.70; break;
+            case 21: db =  4.80; break;
+            case 22: db =  4.90; break;
+            case 23: db =  5.00; break;
+            case 24: db =  5.05; break;
+        }
+    }
+}
+
+void Fx3Tuner::ConvertIFACoarse(int idx, double &db)
+{
+    int count = 8;
+    int pts[]    = {    0,    3,    7,   10,   14,   17,   21,   23,   23 };
+    double vls[] = { -0.5, 10.5, 22.7, 31.5, 41.0, 50.7, 61.0, 63.0, 63.0 };
+
+    if ( idx == 0 ) {
+        db = vls[0];
+        return;
+    }
+
+    int i = 0;
+    while ( pts[i] < idx && i < count ) {
+        i++;
+    }
+    if ( i == count - 1 ) {
+        db = vls[ count - 1 ];
+        return;
+    }
+    double db_start = vls[ i ];
+    double db_end = vls[ i + 1 ];
+    double db_step = (db_end - db_start)/(pts[i+1] - pts[i]);
+    idx = idx - pts[ i ];
+    db = db_start + db_step * idx;
+
 }
 
 void Fx3Tuner::pause(int ms)

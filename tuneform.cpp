@@ -127,46 +127,18 @@ void TuneForm::SendGain() {
 }
 
 void TuneForm::SetGainLabels() {
-    int rf   = ui->horizontalSliderRFGain->value();
-    int ifac = ui->horizontalSliderIFGainCoarse->value();
-    int ifaf = ui->horizontalSliderIFGainFine->value();
+    double rfg_db, ifa_coarse_db, ifa_fine_db;
+    Fx3Tuner::ConvertRF( ui->horizontalSliderRFGain->value(), rfg_db );
+    Fx3Tuner::ConvertIFACoarse( ui->horizontalSliderIFGainCoarse->value(), ifa_coarse_db);
+    Fx3Tuner::ConvertIFAFine( ui->horizontalSliderIFGainFine->value(), ifa_fine_db);
 
-    double rfg_db = 11.0 + rf*0.95;
-
-    double ifa_fine_db = 0.0;
-    if ( ifaf < 8 ) {
-        ifa_fine_db = -0.35;
-    } else if ( ifaf > 24 ) {
-        ifa_fine_db = 5.10;
-    } else {
-        switch ( ifaf  ) {
-            case  8: ifa_fine_db = -0.30; break;
-            case  9: ifa_fine_db = -0.10; break;
-            case 10: ifa_fine_db =  0.30; break;
-            case 11: ifa_fine_db =  0.90; break;
-            case 12: ifa_fine_db =  1.70; break;
-            case 13: ifa_fine_db =  2.40; break;
-            case 14: ifa_fine_db =  3.00; break;
-            case 15: ifa_fine_db =  3.40; break;
-            case 16: ifa_fine_db =  3.80; break;
-            case 17: ifa_fine_db =  4.10; break;
-            case 18: ifa_fine_db =  4.40; break;
-            case 19: ifa_fine_db =  4.55; break;
-            case 20: ifa_fine_db =  4.70; break;
-            case 21: ifa_fine_db =  4.80; break;
-            case 22: ifa_fine_db =  4.90; break;
-            case 23: ifa_fine_db =  5.00; break;
-            case 24: ifa_fine_db =  5.05; break;
-        }
-    }
-    double ifa_coarse_db = -0.5 + ifac * 2.64583;
     double ifag_db = ifa_coarse_db + ifa_fine_db;
 
     ui->labelRFGain->setText( QString(" %1 dB").arg( QString::number(
         rfg_db, 'f', 3  ) ));
 
     ui->labelIFAGain->setText( QString(" %1 dB").arg( QString::number(
-                                                          ifag_db, 'f', 3  ) ));
+        ifag_db, 'f', 3  ) ));
 }
 
 void TuneForm::SetGainsControlsVisibility(bool is_auto)

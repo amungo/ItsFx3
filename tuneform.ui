@@ -129,10 +129,10 @@
           <item>
            <widget class="QSlider" name="horizontalSliderIFGainCoarse">
             <property name="maximum">
-             <number>31</number>
+             <number>23</number>
             </property>
             <property name="value">
-             <number>15</number>
+             <number>10</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -141,8 +141,11 @@
           </item>
           <item>
            <widget class="QSlider" name="horizontalSliderIFGainFine">
+            <property name="minimum">
+             <number>8</number>
+            </property>
             <property name="maximum">
-             <number>31</number>
+             <number>24</number>
             </property>
             <property name="value">
              <number>10</number>

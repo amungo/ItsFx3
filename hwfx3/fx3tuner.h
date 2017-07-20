@@ -42,6 +42,9 @@ public:
 
     void Set_AGC();
     void Set_MGC(int rf_gain_idx , int ifa_coarse_gain_idx, int ifa_fine_gain_idx);
+    static void ConvertRF( int idx, double& db );
+    static void ConvertIFAFine( int idx, double& db );
+    static void ConvertIFACoarse( int idx, double& db );
 
 
 protected:
