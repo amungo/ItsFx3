@@ -155,7 +155,7 @@ void Fx3Tuner::Set_AGC() {
 }
 
 void Fx3Tuner::Set_MGC(int rf_gain_idx, int ifa_coarse_gain_idx, int ifa_fine_gain_idx) {
-    fprintf( stderr, "Fx3Tuner::Set_MGC( %2d, %2d, %2d\n", rf_gain_idx, ifa_coarse_gain_idx, ifa_fine_gain_idx );
+    //fprintf( stderr, "Fx3Tuner::Set_MGC( %2d, %2d, %2d\n", rf_gain_idx, ifa_coarse_gain_idx, ifa_fine_gain_idx );
     uint8_t agc_bit = 0;
     uint8_t reg15 = (agc_bit<<4)|(agc_bit<<3)|(1<<0);
 
@@ -163,10 +163,10 @@ void Fx3Tuner::Set_MGC(int rf_gain_idx, int ifa_coarse_gain_idx, int ifa_fine_ga
     if ( rf_gain_idx > 15 ) { rf_gain_idx = 15; }
 
     if ( ifa_coarse_gain_idx <  0 ) { ifa_coarse_gain_idx =  0; }
-    if ( ifa_coarse_gain_idx < 31 ) { ifa_coarse_gain_idx = 31; }
+    if ( ifa_coarse_gain_idx > 31 ) { ifa_coarse_gain_idx = 31; }
 
     if ( ifa_fine_gain_idx <  0 ) { ifa_fine_gain_idx =  0; }
-    if ( ifa_fine_gain_idx < 31 ) { ifa_fine_gain_idx = 31; }
+    if ( ifa_fine_gain_idx > 31 ) { ifa_fine_gain_idx = 31; }
 
     uint8_t reg17 = (rf_gain_idx<<4) | (ifa_coarse_gain_idx>>3);
     uint8_t reg18 = ((ifa_coarse_gain_idx&0x7)<<5) | (ifa_fine_gain_idx);
