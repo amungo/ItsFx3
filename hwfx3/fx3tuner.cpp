@@ -49,18 +49,36 @@ void Fx3Tuner::SetFreqDivs(int pll_idx, uint32_t N, uint32_t R)
     pause();
 }
 
-void Fx3Tuner::SetFreq(int pll_idx, double freq) {
-    freq = freq / 10000000.0;
+double Fx3Tuner::SetFreq(int pll_idx, double freq) {
+    double Ftcxo = 10.0e6;
+    double f = freq / Ftcxo;
+    int N0 = 0;
+    int R0 = 0;
+    double prec0 = 1e100;
     int N;
-    for ( int R = 1; R < 16; R++ ) {
-        N = freq / R;
+    double prec;
+
+    for ( int R = 15; R > 0; R-- ) {
+        N = round( f * R );
         if ( N >= 48 && N <= 511 ) {
-            fprintf( stderr, "Fx3Tuner::SetFreq( %f MHz ) found N=%d, R=%d\n", N, R );
-            SetFreqDivs( pll_idx, N, R );
-            return;
+            prec = abs(freq - Ftcxo*(double)N/(double)R);
+            fprintf( stderr, "Fx3Tuner::SetFreq( %f MHz ) candidate N=%d, R=%d, prec=%f\n", freq/1.0e6, N, R, prec );
+            if ( prec < prec0 ) {
+                N0 = N;
+                R0 = R;
+                prec0 = prec;
+            }
         }
     }
-    fprintf( stderr, "Fx3Tuner::SetFreq( %f MHz ) can not find N and R dividers\n" );
+
+    if ( N0 != 0 ) {
+        fprintf( stderr, "Fx3Tuner::SetFreq( %f MHz ) using N=%d, R=%d, prec=%f\n", freq/1.0e6, N0, R0, prec0 );
+        SetFreqDivs( pll_idx, N0, R0 );
+        return Ftcxo*(double)N0/(double)R0;
+    } else {
+        fprintf( stderr, "Fx3Tuner::SetFreq( %f MHz ) can not find N and R dividers\n", freq/1.0e6 );
+    }
+    return 0.0;
 }
 
 void Fx3Tuner::pause(int ms)

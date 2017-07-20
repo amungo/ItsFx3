@@ -8,11 +8,11 @@ class Fx3Tuner
 public:
     Fx3Tuner(FX3DevIfce* dev);
 
-    const int BandL2 = 0;
-    const int BandL1 = 1;
+    static const int BandL2 = 0;
+    static const int BandL1 = 1;
     void SetPLL( int pll_idx, int band, int is_enable );
     void SetFreqDivs( int pll_idx, uint32_t N, uint32_t R );
-    void SetFreq( int pll_idx, double freq );
+    double SetFreq( int pll_idx, double freq );
 
 protected:
     FX3DevIfce* dev = nullptr;
