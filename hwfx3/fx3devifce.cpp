@@ -15,16 +15,16 @@ void FX3DevIfce::pre_init_fx3() {
     writeGPIO(NT1065EN,  0);
     writeGPIO(NT1065AOK, 0);
     writeGPIO(VCTCXOEN,  0);
-    writeGPIO(ANTLNAEN,  0);
-    writeGPIO(ANTFEEDEN, 0);
+    //writeGPIO(ANTLNAEN,  0);
+    //writeGPIO(ANTFEEDEN, 0);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     writeGPIO(VCTCXOEN,  1);
     writeGPIO(NT1065EN,  1);
 
-    writeGPIO(ANTLNAEN,  1);
-    writeGPIO(ANTFEEDEN, 1);
+    //writeGPIO(ANTLNAEN,  1);
+    //writeGPIO(ANTFEEDEN, 1);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
