@@ -83,6 +83,9 @@ private:
 
     float nullMHz = 1590.0f;
 
+    void RecalculateEtalons();
+    double GetCurrentFreqHz();
+
 
 public slots:
     void ChangeNullMhz(double newVal);

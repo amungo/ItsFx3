@@ -3,6 +3,7 @@
 #include <QCameraViewfinder>
 #include <QMessageBox>
 
+#include <cstdio>
 #include <cmath>
 #include "gcacorr/dsp_utils.h"
 #include "phaseform.h"
@@ -458,7 +459,7 @@ void PhaseForm::SetCurrentIdx( int x )
 
     curIdx = x;
     ui->labelFreq->setText( QString(" %1 MHz").arg( QString::number(
-        nullMHz - bandMHz + curIdx*filterMHz*2.0, 'f', 2  ) ));
+        GetCurrentFreqHz() / 1.0e6, 'f', 2  ) ));
 
 }
 
@@ -494,10 +495,27 @@ void PhaseForm::InitCamera() {
     }
 }
 
+void PhaseForm::RecalculateEtalons()
+{
+    double freq = GetCurrentFreqHz();
+    fprintf( stderr, "PhaseForm::RecalculateEtalons() for freq %.3f MHz\n", freq / 1.0e6 );
+    et_geo.SetBaseParams(  0.052f, GetCurrentFreqHz(), deg_wide_Y, deg_wide_X, deg_prec );
+    et_geo.MakeEtalons();
+
+    et_file.SetBaseParams( 0.052f, GetCurrentFreqHz(), deg_wide_Y, deg_wide_X, deg_prec );
+    et_file.MakeEtalons();
+}
+
+double PhaseForm::GetCurrentFreqHz()
+{
+    return ( nullMHz - bandMHz + curIdx*filterMHz*2.0 ) * 1.0e6;
+}
+
 void PhaseForm::ChangeNullMhz(double newVal)
 {
     this->nullMHz = newVal/1.0e6;
     SetCurrentIdx( GetCurrentIdx() );
+    RecalculateEtalons();
 }
 
 void PhaseForm::CurChangeOutside(int value)
