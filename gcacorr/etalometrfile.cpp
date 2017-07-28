@@ -1,6 +1,8 @@
+#include <string>
 #include "etalometrfile.h"
 
-EtalometrFile::EtalometrFile()
+EtalometrFile::EtalometrFile() :
+    et_files()
 {
 }
 
@@ -28,7 +30,7 @@ void EtalometrFile::SetNewCalibration(float_cpx_t iqss[])
 
     for ( int a = 0; a < 4; a++ ) {
         double angle = et.ant_pt[a].angle(iqss[a]);
-        calib[ a ] = float_cpx_from_angle_rad(angle);
+        calib[ a ] = float_cpx_from_angle_rad((float)angle);
         fprintf( stderr, "angle[%d]: etalon: %4.0f, measured: %4.0f, for calib: %4.0f\n",
                  a, et.ant_pt[a].angle_deg(), iqss[a].angle_deg(), calib[a].angle_deg() );
     }
@@ -43,11 +45,10 @@ int EtalometrFile::MakeEtalons()
         newet[a].resize( 181 );
     }
 
-    char fname[ 8192 ];
     for ( int a = 0; a < 4; a++ ) {
-        sprintf( fname, "etalons_ant%d.csv", a+1 );
-        fprintf( stderr, "LoadEtalonsFromFiles(): fname = '%s'\n", fname );
-        FILE* f = fopen (fname, "r" );
+        std::string fname = et_files.GetFileFor( freq, a );
+        fprintf( stderr, "EtalometrFile::MakeEtalons(): freq %f, ant %d, fname =\n'%s'\n", freq, a, fname );
+        FILE* f = fopen (fname.c_str(), "r" );
         if ( !f ) {
             fprintf( stderr, "Error opening file '%s'\b", fname );
             return -1;

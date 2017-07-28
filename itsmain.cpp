@@ -33,7 +33,6 @@ ItsMain::ItsMain(FX3Config* cfg, QWidget *parent) :
     QObject::connect(ui->buttonGPSForm, SIGNAL(clicked(bool)), this, SLOT(onGPSForm(bool)));
     QObject::connect(ui->buttonSpectrumForm, SIGNAL(clicked(bool)), this, SLOT(onSpectrumForm(bool)));
     QObject::connect(ui->buttonPhaseForm, SIGNAL(clicked(bool)), this, SLOT(onPhaseForm(bool)));
-    QObject::connect(ui->buttonDeveloperCall, SIGNAL(clicked(bool)), this, SLOT(onButtonCallDeveloperFun(bool)));
     QObject::connect(ui->buttonTuneForm, SIGNAL(clicked(bool)), this, SLOT(onTuneForm(bool)));
     
     att.Clear();
@@ -62,12 +61,6 @@ ItsMain::ItsMain(FX3Config* cfg, QWidget *parent) :
     ui->buttonGPSForm->setEnabled( false );
     ui->buttonGPSForm->setVisible( false );
 #endif
-    if ( cfg->adc_type == ADC_AD9361 ) {
-        ui->buttonDeveloperCall->setVisible( true );
-    } else {
-        ui->buttonDeveloperCall->setEnabled( false );
-        ui->buttonDeveloperCall->setVisible( false );
-    }
 
     if ( !cfg->have_atts ) {
         ui->labelAtt->setVisible(false);
@@ -144,11 +137,6 @@ void ItsMain::onButtonStartHWStreams(bool) {
 void ItsMain::onButtonStopHWStreams(bool) {
     SetHWButtonsGrey();
     emit signalStopHwStreams();
-}
-
-void ItsMain::onButtonCallDeveloperFun(bool) {
-    AddHWLog( "Calling developer function" );
-    emit signalCallDeveloperFun();
 }
 
 void ItsMain::onTimerGetDebugInfo() {

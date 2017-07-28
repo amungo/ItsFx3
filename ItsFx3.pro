@@ -66,7 +66,8 @@ SOURCES += main.cpp \
     gcacorr/etalometrfile.cpp \
     hwfx3/fx3devifce.cpp \
     hwfx3/fx3tuner.cpp \
-    tuneform.cpp
+    tuneform.cpp \
+    util/etalonsfiles.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -141,7 +142,8 @@ HEADERS  += itsmain.h \
     gcacorr/etalometrfile.h \
     hwfx3/fx3commands.h \
     hwfx3/fx3tuner.h \
-    tuneform.h
+    tuneform.h \
+    util/etalonsfiles.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

@@ -42,7 +42,6 @@ private slots:
     void onButtonCloseHw( bool );
     void onButtonStartHWStreams( bool );
     void onButtonStopHWStreams( bool );
-    void onButtonCallDeveloperFun( bool );
 
     void onTimerGetDebugInfo();
     void onTimerChanged(int);
@@ -68,7 +67,6 @@ signals:
     void signalStartHwStreams();
     void signalStopHwStreams();
     void signalGetDebugInfo();
-    void signalCallDeveloperFun();
     
     void signalSetAttReg( uint32_t reg_val );
 };

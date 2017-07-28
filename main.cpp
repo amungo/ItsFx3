@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     QObject::connect(&mainWindow, SIGNAL(signalStopHwStreams()),     &hwm, SLOT(stopStreams()) );
     QObject::connect(&mainWindow, SIGNAL(signalSetAttReg(uint32_t)), &hwm, SLOT(setAttReg(uint32_t)) );
     QObject::connect(&mainWindow, SIGNAL(signalGetDebugInfo()),      &hwm, SLOT(getDebugInfo()) );
-    QObject::connect(&mainWindow, SIGNAL(signalCallDeveloperFun()),  &hwm, SLOT(callDeveloperFun()) );
 
     QObject::connect(&hwm, SIGNAL(informInitHWStatus(bool, QString)), &mainWindow, SLOT(hardwareInitStatus(bool, QString)) );
     QObject::connect(&hwm, SIGNAL(informCloseHWStatus(bool,QString)), &mainWindow, SLOT(hardwareCloseStatus(bool,QString)) );
