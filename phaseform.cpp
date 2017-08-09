@@ -222,7 +222,7 @@ void PhaseForm::MakeFFTs()
     if ( avg_cnt == 1 ) {
 
         for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
-            fft.TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data() );
+            fft.TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data(), true );
         }
 
     } else {
@@ -231,7 +231,8 @@ void PhaseForm::MakeFFTs()
             for ( size_t channel = 0; channel < 4; channel++ ) {
                 fft.TransformShort(
                             all_ch_data[ channel ].data() + fft_len * iter,
-                            tbuf_fft[ iter ][ channel ].data()
+                            tbuf_fft[ iter ][ channel ].data(),
+                            true
                             );
             }
         }

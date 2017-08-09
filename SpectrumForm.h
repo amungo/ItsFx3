@@ -31,7 +31,7 @@ private:
     Ui::SpectrumForm *ui;
     std::vector<QCheckBox*> checkBoxShowChannels;
     static const int MAX_CHANS = 4;
-    int avg_cnt = 8;
+    int avg_cnt = 20;
 
     FX3Config* cfg;
     FFTWrapper* fft;
@@ -74,6 +74,11 @@ private:
     int GetCurrentIdx();
     void SetCurrentIdx( int x );
 
+    enum BandType {
+        LSB = 0,
+        USB = 1
+    } band_type;
+
 public slots:
     void ChangeNullMhz(double newVal);
     void CurChangeOutside( int value );
@@ -82,6 +87,7 @@ private slots:
     void slotRun(int);
     void channelsChanged(int);
     void scalesShiftsChanged( int );
+    void bandTypeChanged(int);
 
     // StreamDataHandler interface
 public:

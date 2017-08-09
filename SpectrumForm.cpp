@@ -1,3 +1,4 @@
+#include <QVariant>
 #include "gcacorr/dsp_utils.h"
 #include "SpectrumForm.h"
 #include "ui_SpectrumForm.h"
@@ -16,7 +17,10 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     left_point = 1;
     right_point = half_fft_len - 1;
     points_cnt = right_point - left_point - 1;
+    nullMHz = cfg->inter_freq_hz / 1.0e6;
+    bandMHz = (cfg->adc_sample_rate_hz / 1.0e6) / 2.0;
     filterMHz = bandMHz / ( fft_len );
+    band_type = LSB;
 
     fft = new FFTWrapper( fft_len );
 
@@ -60,6 +64,9 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
         checkBoxShowChannels[ i ]->setEnabled( false );
     }
 
+    ui->comboBoxBandType->insertItem( 0, "LSB", QVariant(LSB));
+    ui->comboBoxBandType->insertItem( 1, "USB", QVariant(USB));
+
     QObject::connect(ui->checkRun, SIGNAL(stateChanged(int)), this, SLOT(slotRun(int)) );
     QObject::connect(ui->widgetSpectrum, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
 
@@ -67,9 +74,10 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     QObject::connect(ui->sliderLevelShift, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
     QObject::connect(ui->sliderFreqScale, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
     QObject::connect(ui->sliderFreqShift, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
+    QObject::connect(ui->comboBoxBandType, SIGNAL(currentIndexChanged(int)), this, SLOT(bandTypeChanged(int)));
 
     SetCurrentIdx( ( right_point - left_point ) / 2 );
-    ChangeNullMhz( cfg->inter_freq_hz );
+    ChangeNullMhz( nullMHz * 1.0e6 );
 }
 
 SpectrumForm::~SpectrumForm()
@@ -113,7 +121,7 @@ void SpectrumForm::MakeFFTs()
     if ( avg_cnt == 1 ) {
 
         for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
-            fft->TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data() );
+            fft->TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data(), band_type == LSB );
         }
 
     } else {
@@ -122,7 +130,8 @@ void SpectrumForm::MakeFFTs()
             for ( size_t channel = 0; channel < 4; channel++ ) {
                 fft->TransformShort(
                             all_ch_data[ channel ].data() + fft_len * iter,
-                            tbuf_fft[ iter ][ channel ].data()
+                            tbuf_fft[ iter ][ channel ].data(),
+                            band_type == LSB
                             );
             }
         }
@@ -204,7 +213,11 @@ void SpectrumForm::SetWidgetData()
 
 double SpectrumForm::GetCurrentFreqHz()
 {
-    return ( nullMHz - bandMHz + curIdx*filterMHz*2.0 ) * 1.0e6;
+    if ( band_type == LSB ) {
+        return ( nullMHz - bandMHz + curIdx*filterMHz*2.0 ) * 1.0e6;
+    } else {
+        return ( nullMHz + curIdx*filterMHz*2.0 ) * 1.0e6;
+    }
 }
 
 int SpectrumForm::GetCurrentIdx()
@@ -238,6 +251,10 @@ void SpectrumForm::ChangeNullMhz(double newVal)
 void SpectrumForm::CurChangeOutside(int value)
 {
     SetCurrentIdx( value );
+    if ( !ui->checkRun->isChecked() ) {
+        ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), 10.0 );
+        update();
+    }
 }
 
 void SpectrumForm::calc_loop()
@@ -286,6 +303,9 @@ void SpectrumForm::channelsChanged(int)
         }
     }
     ui->widgetSpectrum->SetChannelMask( chanmask );
+    if ( !ui->checkRun->isChecked() ) {
+        update();
+    }
 }
 
 void SpectrumForm::scalesShiftsChanged(int)
@@ -322,6 +342,18 @@ void SpectrumForm::scalesShiftsChanged(int)
         points_cnt = right_point - left_point - 1;
     }
     ui->widgetSpectrum->SetPointsParams( left_point, points_cnt );
+}
+
+void SpectrumForm::bandTypeChanged(int)
+{
+    bool ok;
+    BandType new_band_type = (BandType)ui->comboBoxBandType->currentData().toInt(&ok);
+    if ( new_band_type != band_type && !ui->checkRun->isChecked() ) {
+        band_type = new_band_type;
+        data_valid = true;
+        event_data.Notify();
+    }
+    band_type = new_band_type;
 }
 
 void SpectrumForm::hideEvent(QHideEvent* /*event*/ ) {

@@ -32,12 +32,16 @@ void FFTWrapper::Transform( const float *in, float_cpx_t *out ) {
     convert( out, out_complex, N );
 }
 
-void FFTWrapper::TransformShort( const short *in, float_cpx_t *out ) {
+void FFTWrapper::TransformShort(const short *in, float_cpx_t *out , bool inverse_spectrum) {
     for ( int i = 0; i < N; i++ ) {
         in_float[ i ] = (float) in[ i ];
     }
     fftwf_execute( plan_real );
-    convert_inv( out, out_complex, N );
+    if ( inverse_spectrum ) {
+        convert_inv( out, out_complex, N );
+    } else {
+        convert( out, out_complex, N );
+    }
 }
 
 
