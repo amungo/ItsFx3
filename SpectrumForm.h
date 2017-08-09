@@ -31,7 +31,7 @@ private:
     Ui::SpectrumForm *ui;
     std::vector<QCheckBox*> checkBoxShowChannels;
     static const int MAX_CHANS = 4;
-    int avg_cnt = 4;
+    int avg_cnt = 8;
 
     FX3Config* cfg;
     FFTWrapper* fft;
@@ -58,11 +58,12 @@ private:
     void MakePowers();
     void SetWidgetData();
 
+    std::mutex pts_param_mtx;
     float nullMHz = 1590.0f;
     float bandMHz  = 53.0f / 2.0f;
 
-    float leftMHz  =  0.0f;
-    float rightMHz = 53.0f / 2.0f;
+    //float leftMHz  =  0.0f;
+    //float rightMHz = 53.0f / 2.0f;
     double filterMHz;
     int left_point;
     int right_point;
@@ -79,6 +80,8 @@ public slots:
 
 private slots:
     void slotRun(int);
+    void channelsChanged(int);
+    void scalesShiftsChanged( int );
 
     // StreamDataHandler interface
 public:

@@ -22,6 +22,8 @@ public:
             float maxval_cur,
             float norm_threshold );
 
+    void SetPointsParams( int skip_pts, int pts_cnt );
+
     void SetCurrentIdx(int idx, int band = 1);
     int  GetCurrentIdx();
     void SetSpectrumParams( double nullHz, double leftHz, double rightHz, double filterHz );
@@ -32,6 +34,13 @@ public:
     };
     void SetVisualMode( SpecMode_e newmode );
     float GetThresholdDb();
+
+    void SetPowerShift( float pshift_db ) { powerShift = pshift_db; }
+    float GetPowerShift()                 { return powerShift;      }
+    void SetPowerRange( float prange_db ) { powerRange = prange_db; }
+    float GetPowerRange()                 { return powerRange;      }
+
+    void SetChannelMask( uint32_t chanmask ) {this->chanmask = chanmask; }
 
 private:
     SpecMode_e mode = spec_horiz;
@@ -67,6 +76,8 @@ private:
     void PaintVertical( QPainter& painter );
 
     const float border = 20.0f;
+
+    uint32_t chanmask = 0xFF;
 
 signals:
     void sendNewCurIdx( int );

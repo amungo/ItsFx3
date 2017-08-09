@@ -42,14 +42,23 @@ void SpectrumWidget::SetPowersData(
 
     int right_point = skip_pts + pts_cnt;
 
-    for ( int i = skip_pts; i < right_point; i++ ) {
-        float ch0 = (*powers)[ 0 ][i];
-        float ch1 = (*powers)[ 1 ][i];
-        float ch2 = (*powers)[ 2 ][i];
-        float ch3 = (*powers)[ 3 ][i];
-        maxpowers[i-skip_pts] = max( max(ch0, ch1), max(ch2, ch3) );
+    if ( mode == spec_vert ) {
+        for ( int i = skip_pts; i < right_point; i++ ) {
+            float ch0 = (*powers)[ 0 ][i];
+            float ch1 = (*powers)[ 1 ][i];
+            float ch2 = (*powers)[ 2 ][i];
+            float ch3 = (*powers)[ 3 ][i];
+            maxpowers[i-skip_pts] = max( max(ch0, ch1), max(ch2, ch3) );
+        }
     }
     //fprintf( stderr, "%3.0f %3.0f %3.0f %3.0f\n", minval, avgval, maxval, maxval_cur );
+}
+
+void SpectrumWidget::SetPointsParams(int skip_pts, int pts_cnt)
+{
+    lock_guard< mutex > lock( mtx );
+    this->skip_pts = skip_pts;
+    this->pts_cnt  = pts_cnt;
 }
 
 void SpectrumWidget::SetCurrentIdx(int idx, int band)
@@ -109,6 +118,13 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
     choosen -= skip_pts;
 
     for ( int ch = 0; ch < 4; ch++ ) {
+        if ( (chanmask & ( 1 << ch ) ) == 0 ) {
+            continue;
+        }
+
+        painter.setPen( QPen( chan_colors[ ch ], 4, Qt::SolidLine) );
+        painter.drawText( QPoint( border, 12 + 12 * ch ), QString(" Channel %1 ").arg(QString::number(ch)) );
+
         painter.setPen( QPen( chan_colors[ ch ], 1, Qt::SolidLine) );
 
         curX = border;

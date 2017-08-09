@@ -13,8 +13,8 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     fft_len( nFftDefault ),
     half_fft_len( fft_len/2 )
 {
-    left_point = 0;
-    right_point = half_fft_len;
+    left_point = 1;
+    right_point = half_fft_len - 1;
     points_cnt = right_point - left_point - 1;
     filterMHz = bandMHz / ( fft_len );
 
@@ -42,12 +42,19 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     calc_thread = std::thread( &SpectrumForm::calc_loop, this );
 
     ui->setupUi(this);
+    ui->widgetSpectrum->SetVisualMode( SpectrumWidget::spec_horiz );
+    ui->widgetSpectrum->SetChannelMask( 0xFF );
 
     checkBoxShowChannels.resize( MAX_CHANS );
     checkBoxShowChannels[ 0 ] = ui->checkBoxShowCh0;
     checkBoxShowChannels[ 1 ] = ui->checkBoxShowCh1;
     checkBoxShowChannels[ 2 ] = ui->checkBoxShowCh2;
     checkBoxShowChannels[ 3 ] = ui->checkBoxShowCh3;
+
+    for ( size_t i = 0; i < checkBoxShowChannels.size(); i++ ) {
+        QObject::connect(checkBoxShowChannels[ i ], SIGNAL(stateChanged(int)), this, SLOT(channelsChanged(int)) );
+    }
+
     for ( int i = cfg->chan_count; i < MAX_CHANS; i++ ) {
         checkBoxShowChannels[ i ]->setChecked( false );
         checkBoxShowChannels[ i ]->setEnabled( false );
@@ -55,6 +62,11 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
 
     QObject::connect(ui->checkRun, SIGNAL(stateChanged(int)), this, SLOT(slotRun(int)) );
     QObject::connect(ui->widgetSpectrum, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
+
+    QObject::connect(ui->sliderLevelScale, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
+    QObject::connect(ui->sliderLevelShift, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
+    QObject::connect(ui->sliderFreqScale, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
+    QObject::connect(ui->sliderFreqShift, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
 
     SetCurrentIdx( ( right_point - left_point ) / 2 );
 }
@@ -143,24 +155,31 @@ void SpectrumForm::MakeFFTs()
 
 void SpectrumForm::MakePowers()
 {
-    float xavg = 0.0f;
-    float xmax = -1000.0f;
-    float xmin = 1000.0f;
+    //float xavg = 0.0f;
+    //float xmax = -1000.0f;
+    //float xmin = 1000.0f;
+
+    int left_point_copy, right_point_copy;
+    {
+        lock_guard<mutex> lock( pts_param_mtx );
+        left_point_copy  = left_point;
+        right_point_copy = right_point;
+    }
 
     for ( int ch = 0; ch < 4; ch++ ) {
         const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
         vector<float>& pwr = powers[ch];
-        for ( int i = left_point; i < right_point; i++ ) {
+        for ( int i = left_point_copy; i < right_point_copy; i++ ) {
             float p = 5.0f * log10f( avg_data[i].len_squared() );
             pwr[ i ] = p;
 
-            xavg += p;
-            if ( p > xmax ) { xmax = p; }
-            if ( p < xmin ) { xmin = p; }
+            //xavg += p;
+            //if ( p > xmax ) { xmax = p; }
+            //if ( p < xmin ) { xmin = p; }
 
         }
     }
-    xavg /= (right_point - left_point) * 4.0f;
+    //xavg /= (left_point_copy - right_point_copy) * 4.0f;
     //this->powerAvg = xavg;
     //this->powerMax = xmax;
     //this->powerMin = xmin;
@@ -168,8 +187,15 @@ void SpectrumForm::MakePowers()
 
 void SpectrumForm::SetWidgetData()
 {
+    scalesShiftsChanged(0);
+    int left_point_copy, points_cnt_copy;
+    {
+        lock_guard<mutex> lock( pts_param_mtx );
+        left_point_copy  = left_point;
+        points_cnt_copy  = points_cnt;
+    }
     ui->widgetSpectrum->SetPowersData(
-        &powers, left_point, points_cnt, -40.0, 80.0, 10.0, 20.0, 100.0 );
+        &powers, left_point_copy, points_cnt_copy, -40.0, 80.0, 10.0, 20.0, 100.0 );
     //  &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur, GetThreshold()
 
     ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), 10.0 );
@@ -187,14 +213,17 @@ int SpectrumForm::GetCurrentIdx()
 
 void SpectrumForm::SetCurrentIdx(int x)
 {
-    if ( x < left_point ) {
-        x = left_point;
-    }
-    if ( x > right_point ) {
-        x = right_point;
-    }
+    {
+        lock_guard<mutex> lock( pts_param_mtx );
+        if ( x < left_point ) {
+            x = left_point;
+        }
+        if ( x > right_point ) {
+            x = right_point;
+        }
 
-    curIdx = x;
+        curIdx = x;
+    }
     ui->labelFreq->setText( QString("   %1 MHz").arg( QString::number(
         GetCurrentFreqHz() / 1.0e6, 'f', 2  ) ));
 }
@@ -247,13 +276,60 @@ void SpectrumForm::slotRun(int state) {
 
 }
 
+void SpectrumForm::channelsChanged(int)
+{
+    uint32_t chanmask = 0;
+    for ( size_t i = 0; i < checkBoxShowChannels.size(); i++ ) {
+        if ( checkBoxShowChannels[ i ]->isChecked() ) {
+            chanmask |= ( 1 << i );
+        }
+    }
+    ui->widgetSpectrum->SetChannelMask( chanmask );
+}
+
+void SpectrumForm::scalesShiftsChanged(int)
+{
+    float yscale = 80.0f * ( (float)ui->sliderLevelScale->value() / (float)ui->sliderLevelScale->maximum() );
+    ui->widgetSpectrum->SetPowerRange(yscale);
+
+    float yshift = -(float)ui->sliderLevelShift->value();
+    ui->widgetSpectrum->SetPowerShift( yshift );
+    update();
+
+    float band = half_fft_len * ( (float)ui->sliderFreqScale->value() / (float)ui->sliderFreqScale->maximum() );
+
+    float freq_shift = (float)half_fft_len * (float)ui->sliderFreqShift->value() / 200.0f;
+    float center = ((float)half_fft_len) / 2.0f + freq_shift;
+
+    {
+        lock_guard<mutex> lock( pts_param_mtx );
+        left_point  = (int) round( center - band / 2.0f );
+        right_point = (int) round( center + band / 2.0f );
+
+        if ( left_point < 0 ) {
+            left_point = 0;
+        }
+
+        if ( right_point > half_fft_len ) {
+            right_point = half_fft_len - 1;
+        }
+
+        if ( left_point > right_point ) {
+            left_point = right_point - 1;
+        }
+
+        points_cnt = right_point - left_point - 1;
+    }
+    ui->widgetSpectrum->SetPointsParams( left_point, points_cnt );
+}
+
 void SpectrumForm::hideEvent(QHideEvent* /*event*/ ) {
     ui->checkRun->setChecked(false);
 }
 
 void SpectrumForm::HandleAllChansData(std::vector<short *> &new_all_ch_data, size_t pts_cnt)
 {
-    if ( pts_cnt < fft_len ) {
+    if ( (int)pts_cnt < fft_len ) {
         return;
     }
     if ( new_all_ch_data.size() != 4 ) {
