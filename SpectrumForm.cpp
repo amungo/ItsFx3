@@ -69,6 +69,7 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     QObject::connect(ui->sliderFreqShift, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
 
     SetCurrentIdx( ( right_point - left_point ) / 2 );
+    ChangeNullMhz( cfg->inter_freq_hz );
 }
 
 SpectrumForm::~SpectrumForm()
