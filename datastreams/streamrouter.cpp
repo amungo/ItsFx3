@@ -1,9 +1,11 @@
 #include "streamrouter.h"
 #include "string.h"
 #include "util/Chan2bitParser.h"
+#include "util/TimeComputator.h"
 
-//const int hack_len = 0; // no data cut
-const int hack_len = 4096 * sizeof( short ) * 20; // cut data len for performance
+const int hack_len = 0; // no data cut
+//const int hack_len = 4096 * sizeof( short ) * 20; // cut data len for performance
+TimeComputator tc("convert");
 
 StreamRouter::StreamRouter( ADCType type ) :
     loop_running( true ),
@@ -11,6 +13,7 @@ StreamRouter::StreamRouter( ADCType type ) :
     adc_type( type )
 {
     data_handler_thread = std::thread(&StreamRouter::DataHandleLoop, this);
+    tc.SetPrintPeriod(20);
 }
 
 StreamRouter::~StreamRouter() {
@@ -71,6 +74,7 @@ void StreamRouter::RouteData(void* data, size_t size8) {
 
     uint32_t pts_cnt;
     if ( adc_type == ADC_NT1065 || adc_type == ADC_SE4150 || adc_type == ADC_NT1065_File ) {
+        tc.Start();
         pts_cnt = size8 / sizeof( uint8_t );
         chans_data.resize( 4 );
 
@@ -78,28 +82,15 @@ void StreamRouter::RouteData(void* data, size_t size8) {
         for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
             chans_data[ ch ] = new int16_t[ pts_cnt ];
         }
-        uint8_t* p8 = ( uint8_t* ) data;
-        for ( uint32_t i = 0; i < pts_cnt; i+=4 ) {
-            chans_data[ 0 ][ i+0 ] = decode_2bchar_to_short_ch0(p8[i+0]);
-            chans_data[ 0 ][ i+1 ] = decode_2bchar_to_short_ch0(p8[i+1]);
-            chans_data[ 0 ][ i+2 ] = decode_2bchar_to_short_ch0(p8[i+2]);
-            chans_data[ 0 ][ i+3 ] = decode_2bchar_to_short_ch0(p8[i+3]);
 
-            chans_data[ 1 ][ i+0 ] = decode_2bchar_to_short_ch1(p8[i+0]);
-            chans_data[ 1 ][ i+1 ] = decode_2bchar_to_short_ch1(p8[i+1]);
-            chans_data[ 1 ][ i+2 ] = decode_2bchar_to_short_ch1(p8[i+2]);
-            chans_data[ 1 ][ i+3 ] = decode_2bchar_to_short_ch1(p8[i+3]);
-
-            chans_data[ 2 ][ i+0 ] = decode_2bchar_to_short_ch2(p8[i+0]);
-            chans_data[ 2 ][ i+1 ] = decode_2bchar_to_short_ch2(p8[i+1]);
-            chans_data[ 2 ][ i+2 ] = decode_2bchar_to_short_ch2(p8[i+2]);
-            chans_data[ 2 ][ i+3 ] = decode_2bchar_to_short_ch2(p8[i+3]);
-
-            chans_data[ 3 ][ i+0 ] = decode_2bchar_to_short_ch3(p8[i+0]);
-            chans_data[ 3 ][ i+1 ] = decode_2bchar_to_short_ch3(p8[i+1]);
-            chans_data[ 3 ][ i+2 ] = decode_2bchar_to_short_ch3(p8[i+2]);
-            chans_data[ 3 ][ i+3 ] = decode_2bchar_to_short_ch3(p8[i+3]);
+        uint32_t* p32 = ( uint32_t* ) data;
+        for ( uint32_t i = 0; i < pts_cnt/4; i++ ) {
+            decode4bytes_to_4shorts_ch0( p32[ i ], &chans_data[ 0 ][ 4*i ] );
+            decode4bytes_to_4shorts_ch1( p32[ i ], &chans_data[ 1 ][ 4*i ] );
+            decode4bytes_to_4shorts_ch2( p32[ i ], &chans_data[ 2 ][ 4*i ] );
+            decode4bytes_to_4shorts_ch3( p32[ i ], &chans_data[ 3 ][ 4*i ] );
         }
+        tc.Finish(size8+pts_cnt*sizeof(short)*4);
     } else if ( adc_type == ADC_1ch_16bit ) {
         pts_cnt = size8 / sizeof( uint16_t );
         chans_data.resize( 1 );
