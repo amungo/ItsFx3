@@ -54,6 +54,7 @@ struct FX3Config {
     double adc_sample_rate_hz;
     double inter_freq_hz;
     bool auto_start_streams;
+    int hacked_len = 0;
 
     FX3Config() :
         adc_type( ADC_1ch_16bit ),

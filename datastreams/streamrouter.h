@@ -1,14 +1,16 @@
 #ifndef STREAMROUTER_H
 #define STREAMROUTER_H
 
-#include "streamdatahandler.h"
-#include "hwfx3/fx3config.h"
 #include <queue>
 #include <set>
-
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+
+#include "streamdatahandler.h"
+#include "hwfx3/fx3config.h"
+#include "util/TimeComputator.h"
+
 
 struct StreamData {
     StreamData();
@@ -27,6 +29,8 @@ public:
     // StreamDataHandler interface
     virtual void HandleADCStreamData(void* data, size_t size8);
     virtual void HandleStreamDataOneChan( short* one_ch_data, size_t pts_cnt, int channel );
+
+    void SetHackedLen( int hacked_len );
 protected:
     virtual void RouteData( void* data, size_t size8 );
     virtual void onOverrun( uint64_t over_size8, uint32_t over_queue_count );
@@ -43,6 +47,10 @@ private:
     
     uint64_t queue_size8;
     ADCType adc_type;
+
+    int hack_len;
+    TimeComputator tc;
+
 };
 
 #endif

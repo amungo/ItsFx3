@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
 
 
     StreamRouter router( cfg.adc_type );
+    router.SetHackedLen( cfg.hacked_len );
         
     RawSignalForm rawForm( &cfg );
     rawForm.router = &router;

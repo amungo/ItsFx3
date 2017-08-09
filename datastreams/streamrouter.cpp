@@ -1,16 +1,13 @@
 #include "streamrouter.h"
 #include "string.h"
 #include "util/Chan2bitParser.h"
-#include "util/TimeComputator.h"
-
-const int hack_len = 0; // no data cut
-//const int hack_len = 4096 * sizeof( short ) * 20; // cut data len for performance
-TimeComputator tc("convert");
 
 StreamRouter::StreamRouter( ADCType type ) :
     loop_running( true ),
     queue_size8( 0 ),
-    adc_type( type )
+    adc_type( type ),
+    hack_len( 0 ),
+    tc("convert")
 {
     data_handler_thread = std::thread(&StreamRouter::DataHandleLoop, this);
     tc.SetPrintPeriod(20);
@@ -60,6 +57,10 @@ void StreamRouter::HandleADCStreamData(void* data, size_t size8) {
 
 void StreamRouter::HandleStreamDataOneChan(short*, size_t, int) {
 
+}
+
+void StreamRouter::SetHackedLen(int hacked_len) {
+    this->hack_len = hacked_len;
 }
 
 static double ctr_fl = 0.0f;

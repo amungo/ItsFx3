@@ -50,6 +50,11 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
     }
     ui->comboBoxBoardType->setCurrentIndex(0);
 
+    int hli = 0;
+    ui->comboBoxHackedLen->insertItem( hli++, "no hack", QVariant(0) );
+    ui->comboBoxHackedLen->insertItem( hli++, "fft4k x avg10", QVariant(4096 * sizeof(short) * 10) );
+    ui->comboBoxHackedLen->insertItem( hli++, "fft4k x avg20", QVariant(4096 * sizeof(short) * 20) );
+
     reSetFields();
 
 #ifdef NO_GPS
@@ -133,6 +138,7 @@ void DialogConfig::setConfigValues() {
     cfg->adc_sample_rate_hz = ui->lineEditADCSampleRate->text().toDouble(&ok);
     cfg->inter_freq_hz = ui->lineEditGPSInterFreq->text().toDouble(&ok);
     cfg->auto_start_streams = ui->checkBoxAutoStart->isChecked();
+    cfg->hacked_len = (int)ui->comboBoxHackedLen->currentData().toInt(&ok);
 
     cfg->FinishConfigure();
 }
