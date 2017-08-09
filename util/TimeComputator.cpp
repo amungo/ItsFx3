@@ -23,10 +23,19 @@ void TimeComputator::Finish() {
 
     if ( calls_count >= print_period ) {
         double one_call_time_mks = ( time_accum_mks / ( double ) calls_count );
-        fprintf( stderr, "[%s] %.0f mks (%d calls)\n", name.c_str(), one_call_time_mks, calls_count );
+        double mbps = ((double)bytes_accum / time_accum_mks) * (1000000.0/(1024.0*1024.0));
+        fprintf( stderr, "[%s] %.0f mks %.1f Mb/sec (%d calls)\n",
+                 name.c_str(), one_call_time_mks, mbps, calls_count );
         calls_count = 0;
         time_accum_mks = 0.0;
+        bytes_accum = 0;
     }
+}
+
+void TimeComputator::Finish(int bytes)
+{
+    bytes_accum += bytes;
+    Finish();
 }
 
 void TimeComputator::SetPrintPeriod(int n) {
