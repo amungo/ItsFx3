@@ -110,6 +110,10 @@ private slots:
     // StreamDataHandler interface
 public:
     void HandleAllChansData(std::vector<short*>& new_all_ch_data, size_t pts_cnt );
+
+    // QWidget interface
+protected:
+    void hideEvent(QHideEvent *event);
 };
 
 #endif // PHASEFORM_H

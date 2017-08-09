@@ -187,6 +187,11 @@ void PhaseForm::slotRun(int state)
     }
 }
 
+void PhaseForm::hideEvent(QHideEvent *event)
+{
+    ui->checkBoxRun->setChecked(false);
+}
+
 void PhaseForm::HandleAllChansData( std::vector<short*>& new_all_ch_data, size_t pts_cnt )
 {
     if ( pts_cnt < source_len * avg_cnt ) {
