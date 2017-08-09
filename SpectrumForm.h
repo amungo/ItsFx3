@@ -2,11 +2,13 @@
 #define SPECTRUMFORM_H
 
 #include <QWidget>
+#include <QCheckBox>
 #include <mutex>
-#include "gui/qcustomplot.h"
+#include <thread>
 
 #include "datastreams/streamdatahandler.h"
 #include "datastreams/streamrouter.h"
+#include "datastreams/singleevent.h"
 #include "hwfx3/fx3config.h"
 #include "gcacorr/fftwrapper.h"
 #include "gcacorr/averagervector.h"
@@ -27,49 +29,64 @@ public:
 
 private:
     Ui::SpectrumForm *ui;
-    QCustomPlot* specPlot;
     std::vector<QCheckBox*> checkBoxShowChannels;
     static const int MAX_CHANS = 4;
+    int avg_cnt = 4;
 
     FX3Config* cfg;
     FFTWrapper* fft;
     static const int nFftDefault = 1024;
-    int nFft;
-    int visN;
-    float_cpx_t* fftbuf;
-    std::vector< Averager<double>* > avg;
+    int fft_len;
+    int half_fft_len;
 
-    bool replot_is_in_progress;
-    std::mutex mtx;
+    SingleEvent event_data;
+    std::mutex mtx_data;
+    bool data_is_busy = false;
+    bool data_valid = false;
+    std::vector<std::vector<short>> all_ch_data;
+    bool TryLockData();
+    void UnlockData();
 
-    void ShowSpectrumReal( const float* real_data, int pts_cnt, int chan );
-    void ShowSpectrumComplex( const float_cpx_t *complex_data, int pts_cnt, int chan );
+    std::thread calc_thread;
+    bool running = false;
+    void calc_loop();
 
-    void ShowSpectrum(int chan , double *powers);
+    std::vector< std::vector<float_cpx_t> > fft_out_averaged;
+    std::vector<std::vector<std::vector<float_cpx_t>>> tbuf_fft;
+    std::vector< std::vector<float> > powers;
+    void MakeFFTs();
+    void MakePowers();
+    void SetWidgetData();
 
-    int GetMaxCheckedChannel();
+    float nullMHz = 1590.0f;
+    float bandMHz  = 53.0f / 2.0f;
 
-    QPoint startMove;
+    float leftMHz  =  0.0f;
+    float rightMHz = 53.0f / 2.0f;
+    double filterMHz;
+    int left_point;
+    int right_point;
+    int points_cnt;
+    double GetCurrentFreqHz();
 
+    int curIdx = 1;
+    int GetCurrentIdx();
+    void SetCurrentIdx( int x );
 
-signals:
-    void signalNeedReplot();
+public slots:
+    void ChangeNullMhz(double newVal);
+    void CurChangeOutside( int value );
 
 private slots:
-    void slotReplot();
-    void slotReplotComplete();
-
     void slotRun(int);
-    void avgChanged(int);
-    void onMWheel(QWheelEvent*);
-    void onMPress(QMouseEvent*);
-    void onMRelease(QMouseEvent*);
-
 
     // StreamDataHandler interface
 public:
-    void HandleADCStreamData(void*, size_t);
-    void HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel);
+    void HandleAllChansData(std::vector<short*>& new_all_ch_data, size_t pts_cnt );
+
+    // QWidget interface
+protected:
+    void hideEvent(QHideEvent *event);
 };
 
 #endif // SPECTRUMFORM_H

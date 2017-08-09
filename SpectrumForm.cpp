@@ -1,5 +1,8 @@
+#include "gcacorr/dsp_utils.h"
 #include "SpectrumForm.h"
 #include "ui_SpectrumForm.h"
+
+using namespace std;
 
 SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     QWidget(parent),
@@ -7,34 +10,38 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     ui(new Ui::SpectrumForm),
     cfg( cfg ),
     fft( NULL ),
-    nFft( nFftDefault ),
-    visN( nFft/2 ),
-    fftbuf( NULL ),
-    replot_is_in_progress( false )
+    fft_len( nFftDefault ),
+    half_fft_len( fft_len/2 )
 {
-    fftbuf = new float_cpx_t[ nFft ];
-    fft = new FFTWrapper( nFft );
+    left_point = 0;
+    right_point = half_fft_len;
+    points_cnt = right_point - left_point - 1;
+    filterMHz = bandMHz / ( fft_len );
+
+    fft = new FFTWrapper( fft_len );
+
+    powers.resize(4);
+    for ( size_t i = 0; i < powers.size(); i++ ) {
+        powers.at(i).resize(half_fft_len);
+    }
+
+    fft_out_averaged.resize(4);
+    for ( size_t i = 0; i < fft_out_averaged.size(); i++ ) {
+        fft_out_averaged.at(i).resize(fft_len);
+    }
+
+    tbuf_fft.resize(avg_cnt);
+    for ( size_t iter = 0; iter < tbuf_fft.size(); iter++ ) {
+        tbuf_fft[ iter ].resize( 4 );
+        for ( size_t ch = 0; ch < tbuf_fft[ iter ].size(); ch++ ) {
+            tbuf_fft[ iter ][ ch ].resize( fft_len );
+        }
+    }
+
+    running = true;
+    calc_thread = std::thread( &SpectrumForm::calc_loop, this );
 
     ui->setupUi(this);
-
-    specPlot = ui->widgetSpectrum;
-    specPlot->addGraph();
-    specPlot->addGraph();
-    specPlot->addGraph();
-    specPlot->addGraph();
-    specPlot->graph(0)->setPen(QPen(Qt::green));
-    specPlot->graph(1)->setPen(QPen(Qt::red));
-    specPlot->graph(2)->setPen(QPen(Qt::blue));
-    specPlot->graph(3)->setPen(QPen(Qt::lightGray));
-
-    specPlot->xAxis->setRange(0, visN);
-    specPlot->yAxis->setRange(0, 70);
-
-
-    avg.resize( MAX_CHANS );
-    for ( int i = 0; i < MAX_CHANS; i++ ) {
-        avg[ i ] = new Averager<double>( visN, 10 );
-    }
 
     checkBoxShowChannels.resize( MAX_CHANS );
     checkBoxShowChannels[ 0 ] = ui->checkBoxShowCh0;
@@ -46,21 +53,10 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
         checkBoxShowChannels[ i ]->setEnabled( false );
     }
 
-    QObject::connect(this, SIGNAL(signalNeedReplot()), this, SLOT(slotReplot()) );
-    QObject::connect(ui->widgetSpectrum, SIGNAL(afterReplot()), this, SLOT(slotReplotComplete()) );
     QObject::connect(ui->checkRun, SIGNAL(stateChanged(int)), this, SLOT(slotRun(int)) );
-    QObject::connect(ui->comboBoxAvg, SIGNAL(currentIndexChanged(int)), this, SLOT(avgChanged(int)));
-    QObject::connect(ui->widgetSpectrum, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(onMWheel(QWheelEvent*)));
-    QObject::connect(ui->widgetSpectrum, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(onMPress(QMouseEvent*)));
-    QObject::connect(ui->widgetSpectrum, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(onMRelease(QMouseEvent*)));
+    QObject::connect(ui->widgetSpectrum, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
 
-    ui->comboBoxAvg->addItem( "No avg", QVariant( 1 ) );
-    ui->comboBoxAvg->addItem( "Avg 3 times", QVariant( 3 ) );
-    ui->comboBoxAvg->addItem( "Avg 5 times", QVariant( 5 ) );
-    ui->comboBoxAvg->addItem( "Avg 10 times", QVariant( 10 ) );
-    ui->comboBoxAvg->addItem( "Avg 20 times", QVariant( 20 ) );
-    ui->comboBoxAvg->addItem( "Avg 40 times", QVariant( 40 ) );
-    ui->comboBoxAvg->setCurrentIndex( 1 );
+    SetCurrentIdx( ( right_point - left_point ) / 2 );
 }
 
 SpectrumForm::~SpectrumForm()
@@ -68,121 +64,176 @@ SpectrumForm::~SpectrumForm()
     if ( router ) {
         router->DeleteOutPoint( this );
     }
-    delete fft;
-    if ( fftbuf ) {
-        delete [] fftbuf;
+
+    running = false;
+    data_valid = false;
+    event_data.Notify();
+    if ( calc_thread.joinable() ) {
+        calc_thread.join();
     }
+
+
+    delete fft;
     delete ui;
 }
 
-void SpectrumForm::ShowSpectrumReal(const float *real_data, int pts_cnt, int channel_num) {
-    if ( pts_cnt < nFft ) {
-        return;
-    }
-    if ( !checkBoxShowChannels[ channel_num ]->isChecked() ) {
-        specPlot->graph( channel_num )->clearData();
-        return;
-    }
-
-    fft->Transform( real_data, fftbuf );
-
-    double* pu = new double[ visN ];
-    for ( int i = 0; i < visN; i++ ) {
-        pu[ i ] = 10.0 * log10( fftbuf[i].len_squared() );
-    }
-
-    ShowSpectrum( channel_num, pu );
-    delete [] pu;
-}
-
-void SpectrumForm::ShowSpectrumComplex(const float_cpx_t *complex_data, int pts_cnt, int channel_num) {
-    if ( pts_cnt < nFft ) {
-        return;
-    }
-    if ( !checkBoxShowChannels[ channel_num ]->isChecked() ) {
-        specPlot->graph( channel_num )->clearData();
-        return;
-    }
-
-    fft->Transform( complex_data, fftbuf, false );
-
-    double* pu = new double[ visN ];
-    for ( int i = 0; i < visN; i++ ) {
-        pu[ i ] = 10.0 * log10( fftbuf[i].len_squared() );
-    }
-
-    ShowSpectrum( channel_num, pu );
-    delete [] pu;
-}
-
-void SpectrumForm::ShowSpectrum(int channel_num, double* powers ) {
-    mtx.lock(); // -------------
-
-    avg[ channel_num ]->PushData( powers );
-
-
-    QVector<double> keys( visN );
-    QVector<double> values( visN );
-
-    double freq = 0.0;
-    double freq_step = cfg->adc_sample_rate_hz / ( double ) nFft;
-    double max_freq = cfg->inter_freq_hz + cfg->adc_sample_rate_hz / 2.0;
-    if ( cfg->signal_type == SigTypeIQParts ) {
-        freq = cfg->inter_freq_hz - cfg->adc_sample_rate_hz / 2.0;
-    } else if ( cfg->signal_type == SigTypeRealPartOnly ) {
-        freq = cfg->inter_freq_hz;
-    }
-
-    double k = 1.0;
-    QString legend = "Freq";
-    if ( max_freq > 1.e9 ) {
-        legend = "Freq, GHz";
-        k = 1.0e-9;
-    } else if ( max_freq > 1.e6 ) {
-        legend = "Freq, MHz";
-        k = 1.0e-6;
-    } else if ( max_freq > 1.e3 ) {
-        legend = "Freq, kHz";
-        k = 1.0e-3;
-    }
-    freq *= k;
-    freq_step *= k;
-
-    const double* ap = avg[ channel_num ]->GetData();
-    for ( int i = 0; i < visN; i++ ) {
-        values[ i ] = ap[i];
-        keys[ i ] = freq;
-        freq += freq_step;
-    }
-    mtx.unlock(); // ------------
-
-    specPlot->graph( channel_num )->setData(keys, values);
-    specPlot->xAxis->setRange( keys[ 0 ], keys[ visN - 1 ] );
-    specPlot->xAxis->setLabel( legend );
-    //specPlot->rescaleAxes();
-
-    if ( channel_num == GetMaxCheckedChannel() ) {
-        replot_is_in_progress = true;
-        emit signalNeedReplot();
+bool SpectrumForm::TryLockData()
+{
+    lock_guard<mutex> lock(mtx_data);
+    if ( data_is_busy ) {
+        return false;
+    } else {
+        data_is_busy = true;
+        return true;
     }
 }
 
-int SpectrumForm::GetMaxCheckedChannel() {
-    for ( int i = MAX_CHANS - 1; i >= 0; i-- ) {
-        if ( checkBoxShowChannels[ i ]->isChecked() ) {
-            return i;
+void SpectrumForm::UnlockData()
+{
+    lock_guard<mutex> lock(mtx_data);
+    data_is_busy = false;
+}
+
+
+void SpectrumForm::MakeFFTs()
+{
+    if ( avg_cnt == 1 ) {
+
+        for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
+            fft->TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data() );
+        }
+
+    } else {
+
+        for ( int iter = 0; iter < avg_cnt; iter++ ) {
+            for ( size_t channel = 0; channel < 4; channel++ ) {
+                fft->TransformShort(
+                            all_ch_data[ channel ].data() + fft_len * iter,
+                            tbuf_fft[ iter ][ channel ].data()
+                            );
+            }
+        }
+
+        float scale = 1.0f / ((float) avg_cnt * 4.0f);
+        float_cpx_t corr[4];
+        for ( int pt = 0; pt < half_fft_len; pt++ ) {
+            corr[0] = float_cpx_t( 0.0f, 0.0f );
+            corr[1] = float_cpx_t( 0.0f, 0.0f );
+            corr[2] = float_cpx_t( 0.0f, 0.0f );
+            corr[3] = float_cpx_t( 0.0f, 0.0f );
+
+            for ( int iter = 0; iter < avg_cnt; iter++ ) {
+                for ( int ch = 0; ch < 4; ch++ ) {
+                    corr[ch].add(
+                        calc_correlation(
+                            tbuf_fft[ iter ][ 0  ][ pt ],
+                            tbuf_fft[ iter ][ ch ][ pt ]
+                        )
+                    );
+                }
+            }
+
+            for ( int ch = 0; ch < 4; ch++ ) {
+                fft_out_averaged[ ch ][ pt ] = corr[ ch ].mul_real( scale );
+            }
         }
     }
-    return -1;
+    data_valid = false;
 }
 
-void SpectrumForm::slotReplot() {
-    replot_is_in_progress = true;
-    specPlot->replot();
+void SpectrumForm::MakePowers()
+{
+    float xavg = 0.0f;
+    float xmax = -1000.0f;
+    float xmin = 1000.0f;
+
+    for ( int ch = 0; ch < 4; ch++ ) {
+        const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
+        vector<float>& pwr = powers[ch];
+        for ( int i = left_point; i < right_point; i++ ) {
+            float p = 5.0f * log10f( avg_data[i].len_squared() );
+            pwr[ i ] = p;
+
+            xavg += p;
+            if ( p > xmax ) { xmax = p; }
+            if ( p < xmin ) { xmin = p; }
+
+        }
+    }
+    xavg /= (right_point - left_point) * 4.0f;
+    //this->powerAvg = xavg;
+    //this->powerMax = xmax;
+    //this->powerMin = xmin;
 }
 
-void SpectrumForm::slotReplotComplete() {
-    replot_is_in_progress = false;
+void SpectrumForm::SetWidgetData()
+{
+    ui->widgetSpectrum->SetPowersData(
+        &powers, left_point, points_cnt, -40.0, 80.0, 10.0, 20.0, 100.0 );
+    //  &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur, GetThreshold()
+
+    ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), 10.0 );
+}
+
+double SpectrumForm::GetCurrentFreqHz()
+{
+    return ( nullMHz - bandMHz + curIdx*filterMHz*2.0 ) * 1.0e6;
+}
+
+int SpectrumForm::GetCurrentIdx()
+{
+    return curIdx;
+}
+
+void SpectrumForm::SetCurrentIdx(int x)
+{
+    if ( x < left_point ) {
+        x = left_point;
+    }
+    if ( x > right_point ) {
+        x = right_point;
+    }
+
+    curIdx = x;
+    ui->labelFreq->setText( QString("   %1 MHz").arg( QString::number(
+        GetCurrentFreqHz() / 1.0e6, 'f', 2  ) ));
+}
+
+void SpectrumForm::ChangeNullMhz(double newVal)
+{
+    this->nullMHz = newVal/1.0e6;
+    SetCurrentIdx( GetCurrentIdx() );
+}
+
+void SpectrumForm::CurChangeOutside(int value)
+{
+    SetCurrentIdx( value );
+}
+
+void SpectrumForm::calc_loop()
+{
+    this_thread::sleep_for(chrono::milliseconds(2000));
+    while (running) {
+        event_data.WaitAndFlush();
+
+        if ( TryLockData() ) {
+            if ( data_valid ) {
+                // have new data
+
+                MakeFFTs();
+                UnlockData();
+                MakePowers();
+                SetWidgetData();
+                update();
+
+            } else {
+                // no new data
+                UnlockData();
+            }
+
+        } // if TryLockData()
+
+    } // while running
 }
 
 void SpectrumForm::slotRun(int state) {
@@ -196,86 +247,34 @@ void SpectrumForm::slotRun(int state) {
 
 }
 
-void SpectrumForm::avgChanged(int) {
-    mtx.lock();
-    bool ok;
-    int nAvg = ui->comboBoxAvg->currentData().toInt( &ok );
-    fprintf( stderr, "avg count changed. New val = %d", nAvg );
-    for ( size_t i = 0; i < avg.size(); i++ ) {
-        delete avg[ i ];
-        avg[ i ] = new Averager< double >( visN, nAvg );
+void SpectrumForm::hideEvent(QHideEvent* /*event*/ ) {
+    ui->checkRun->setChecked(false);
+}
+
+void SpectrumForm::HandleAllChansData(std::vector<short *> &new_all_ch_data, size_t pts_cnt)
+{
+    if ( pts_cnt < fft_len ) {
+        return;
     }
-    mtx.unlock();
-}
-
-void SpectrumForm::onMWheel(QWheelEvent* mevt) {
-    replot_is_in_progress = true;
-    const QCPRange cur = specPlot->yAxis->range();
-    double cur_size = cur.size();
-    double center = cur.center();
-
-    int d = mevt->delta();
-
-    cur_size += d / 20.0;
-    specPlot->yAxis->setRange(center - cur_size / 2.0, center + cur_size / 2.0);
-    emit signalNeedReplot();
-}
-
-void SpectrumForm::onMPress(QMouseEvent* evt) {
-    if ( evt->button() == Qt::LeftButton ) {
-        startMove = evt->pos();
-    }
-}
-
-void SpectrumForm::onMRelease(QMouseEvent* evt) {
-    if ( evt->button() == Qt::LeftButton ) {
-        QPoint endMove = evt->pos();
-        QPoint delta = startMove - endMove;
-        fprintf( stderr, "delta %d pixels, H = %d pixels\n", delta.y(), specPlot->size().height() );
-
-        const QCPRange cur = specPlot->yAxis->range();
-        double cur_size = cur.size();
-        double center = cur.center();
-        double vals_in_pixel = cur_size / ( double ) specPlot->size().height();
-
-
-        center -= delta.y() * vals_in_pixel;
-        specPlot->yAxis->setRange(center - cur_size / 2.0, center + cur_size / 2.0);
-        emit signalNeedReplot();
-    }
-}
-
-void SpectrumForm::HandleADCStreamData(void *, size_t) {
-    // nop
-}
-
-void SpectrumForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel) {
-    if ( replot_is_in_progress ) {
+    if ( new_all_ch_data.size() != 4 ) {
         return;
     }
 
-    if ( channel > cfg->chan_count ) {
-        return;
-    }
-    if ( cfg->signal_type == SigTypeRealPartOnly ) {
-
-        int N = pts_cnt >= nFft ? nFft : pts_cnt;
-        float* pr = new float[ N ];
-        for ( int i = 0; i < N; i++ ) {
-            pr[ i ] = ( float ) one_ch_data[ i ];
+    if ( TryLockData() ) {
+        if ( all_ch_data.size() != 4 ) {
+            all_ch_data.resize(4);
         }
-        ShowSpectrumReal( pr, N, channel );
-        delete [] pr;
-    } else {
-
-        pts_cnt /= 2;
-        int N = pts_cnt >= nFft ? nFft : pts_cnt;
-        float_cpx_t* cpx = new float_cpx_t[ N ];
-        for ( int k = 0; k < N; k++ ) {
-            cpx[ k ].i = ( float ) one_ch_data[ 2*k + 0 ];
-            cpx[ k ].q = ( float ) one_ch_data[ 2*k + 1 ];
+        for ( int ch = 0; ch < 4; ch++ ) {
+            if ( all_ch_data[ch].size() != pts_cnt ) {
+                all_ch_data[ch].resize(pts_cnt);
+            }
+            memcpy( all_ch_data[ch].data(), new_all_ch_data[ch], sizeof(short)*pts_cnt);
         }
-        ShowSpectrumComplex( cpx, N, channel );
-        delete [] cpx;
+        data_valid = true;
+        UnlockData();
+        event_data.Notify();
     }
 }
+
+
+
