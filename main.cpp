@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     QObject::connect(&hwm, SIGNAL(newDevicePointer(FX3DevIfce*)), &tuneForm, SLOT(setDevicePointer(FX3DevIfce*)) );
 
     QObject::connect(&tuneForm, SIGNAL(newFreq(double)), &phaseForm, SLOT(ChangeNullMhz(double)));
+    QObject::connect(&tuneForm, SIGNAL(newFreq(double)), &specForm,  SLOT(ChangeNullMhz(double)));
 
     mainWindow.show();
     
