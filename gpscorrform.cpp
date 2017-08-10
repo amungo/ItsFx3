@@ -141,26 +141,26 @@ void GPSCorrForm::SetWorking(bool b) {
 int GPSCorrForm::GetFilterLen()
 {
     if ( gnss_type == GPS_L1 ) {
-        return filter_53M_2100k_2500k_1_40_len;
+        return filter_53M_2M_10M_1_40_len;
 
     } else if ( gnss_type == GLONASS_L1 ) {
-        return filter_53M_1100k_1400k_1_40_len;
+        return filter_53M_1M_10M_1_40_len;
 
     } else /*if ( gnss_type == GLONASS_L2 )*/ {
-        return filter_53M_1100k_1400k_1_40_len;
+        return filter_53M_1M_10M_1_40_len;
     }
 }
 
 float *GPSCorrForm::GetFir()
 {
     if ( gnss_type == GPS_L1 ) {
-        return filter_53M_2100k_2500k_1_40;
+        return filter_53M_2M_10M_1_40;
 
     } else if ( gnss_type == GLONASS_L1 ) {
-        return filter_53M_1100k_1400k_1_40;
+        return filter_53M_1M_10M_1_40;
 
     } else /*if ( gnss_type == GLONASS_L2 )*/ {
-        return filter_53M_1100k_1400k_1_40;
+        return filter_53M_1M_10M_1_40;
     }
 }
 
@@ -518,7 +518,7 @@ void GPSCorrForm::cellSelected(int x, int) {
     int idx = x + 1;
     plot_data_t& p = cdata[ idx ];
     p.mutex->lock();
-    qDebug( "PRN %d, init = %d", idx, p.inited );
+    //qDebug( "PRN %d, init = %d", idx, p.inited );
     ui->spinBoxRelativeCorr->setValue(shifts.at(x));
 
     plotCorrGraph->clearGraphs();
@@ -588,7 +588,7 @@ void GPSCorrForm::RefreshPressed(int state) {
 }
 
 void GPSCorrForm::relativeCorrChanged(int x) {
-    fprintf( stderr, "relativeCorrChanged(%d)\n\n", x );
+    //fprintf( stderr, "relativeCorrChanged(%d)\n\n", x );
     relativeShift = ui->spinBoxRelativeCorr->value();
     setshifts();
 }
@@ -596,5 +596,21 @@ void GPSCorrForm::relativeCorrChanged(int x) {
 void GPSCorrForm::gnssTypeChanged(int)
 {
     bool ok;
-    gnss_type = (GNSSType)ui->comboBoxGnssType->currentData().toInt(&ok);
+    GNSSType newtype = (GNSSType)ui->comboBoxGnssType->currentData().toInt(&ok);
+    if ( gnss_type != newtype ) {
+        for ( int i = 0; i < PRN_MAX; i++ ) {
+            visible_corrs[ i+1 ]   = 0;
+            invisible_corrs[ i+1 ] = 0;
+
+            ui->tableRes->setItem( i, 0, MakeTableItem(QString("-"), true ) );
+
+            shifts.at(i) = 0;
+
+            ui->tableRes->setItem( i, 1, MakeTableItem( "-", true ) );
+            ui->tableRes->setItem( i, 2, MakeTableItem( "-", true ) );
+            ui->tableRes->setItem( i, 3, MakeTableItem( "-", true ) );
+        }
+        redrawVisGraph();
+    }
+    gnss_type = newtype;
 }
