@@ -148,7 +148,19 @@ void SpectrumWidget::PaintHorizontal(QPainter &painter)
 
 
     painter.setPen( QPen( Qt::black, 2, Qt::SolidLine) );
-    for ( float pwr = -40.0f; pwr < 120.0; pwr += 10.0f ) {
+    float pwrstep = 10.0f;
+    if ( powerRange < 20.1f ) {
+        pwrstep = 1.0f;
+    } else if ( powerRange < 30.1f ) {
+        pwrstep = 2.0f;
+    } else if ( powerRange < 40.1f ) {
+        pwrstep = 4.0f;
+    } else if ( powerRange < 60.1f ) {
+        pwrstep = 5.0f;
+    } else if ( powerRange < 80.1f ) {
+        pwrstep = 10.0f;
+    }
+    for ( float pwr = -40.0f; pwr < 120.0; pwr += pwrstep ) {
         curp.setX( 0 );
         curp.setY( H - ( pwr + powerShift ) * scale );
         painter.drawText( curp, QString(" %1 ").arg(QString::number((int)pwr)) );
