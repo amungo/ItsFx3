@@ -27,7 +27,8 @@ public:
             const double doppler_freq_border =     10000.0,
             const double doppler_step        =      1000.0,
             const double sample_rate         =  53000000.0,
-            const double gps_L1_freq_offset  = -14580000.0
+            const double gps_L1_freq_offset  = -14580000.0,
+            bool is_glonass = false
            );
 
     ~GPSVis();
@@ -46,6 +47,7 @@ private:
     bool FindMaxCorr(double& freq, int& time_shift_out, float &corr_val, double min_freq, double max_freq );
 
 private:
+    bool is_glonass = false;
     const int    PRN;
     const double SR;
     const double GPS_FREQ;

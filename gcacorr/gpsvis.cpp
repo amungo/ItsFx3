@@ -1,7 +1,8 @@
 #include "gpsvis.h"
 #include "cas_codes.h"
 
-GPSVis::GPSVis(uint32_t prn, const double doppler_freq_border, const double doppler_step, const double sample_rate, const double gps_L1_freq_offset) :
+GPSVis::GPSVis(uint32_t prn, const double doppler_freq_border, const double doppler_step, const double sample_rate, const double gps_L1_freq_offset, bool is_glonass) :
+    is_glonass( is_glonass ),
     PRN( prn ),
     SR( sample_rate ),
     GPS_FREQ( gps_L1_freq_offset ),
@@ -9,7 +10,7 @@ GPSVis::GPSVis(uint32_t prn, const double doppler_freq_border, const double dopp
     DOPPLER_BORDER( doppler_freq_border ),
     DOPPLER_STEP( doppler_step ),
     DOPPLER_STEP_CNT( 1 + ( doppler_freq_border * 2 ) / doppler_step ),
-    CPS( 1023000.0f ),
+    CPS( is_glonass ? 511000.0f : 1023000.0f ),
     fft( NPNT ),
     tmp_vec_cpx( NULL ),
     tmp_vec_flt( NULL ),
@@ -52,7 +53,13 @@ void GPSVis::FlushCorr() {
 }
 
 void GPSVis::GenerateEtalonCode() {
-    const int* code = &( ca_codes[ PRN - 1 ][ 0 ] );
+    const int* code = nullptr;
+    if ( is_glonass ) {
+        code = &( gln_ca[ 0 ] );
+        //code = &( gln_ca_inv[ 0 ] );
+    } else {
+        code = &( ca_codes[ PRN - 1 ][ 0 ] );
+    }
     float samples_per_char = SR / CPS;
 
     for ( int char_idx = 0; char_idx < NPNT; char_idx++ ) {

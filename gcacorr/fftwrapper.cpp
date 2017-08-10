@@ -46,11 +46,11 @@ void FFTWrapper::TransformShort(const short *in, float_cpx_t *out , bool inverse
 
 
 void FFTWrapper::Transform( const float_cpx_t *in, float_cpx_t *out, bool is_inverse ) {
-    t.Start();
+    //t.Start();
     memcpy( in_complex, in, N * sizeof( float_cpx_t ) );
     fftwf_execute( plan_complex[ is_inverse ] );
     convert( out, out_complex, N );
-    t.Finish();
+    //t.Finish();
 }
 
 void FFTWrapper::convert(float_cpx_t *dst, fftwf_complex *src, int len) {

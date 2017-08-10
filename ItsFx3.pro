@@ -143,7 +143,8 @@ HEADERS  += itsmain.h \
     hwfx3/fx3commands.h \
     hwfx3/fx3tuner.h \
     tuneform.h \
-    util/etalonsfiles.h
+    util/etalonsfiles.h \
+    gcacorr/filters.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

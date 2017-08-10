@@ -1,5 +1,6 @@
 #include <vector>
 #include "gcacorr/lazy_matrix.h"
+#include "gcacorr/filters.h"
 
 #include "gpscorrform.h"
 #include "ui_gpscorrform.h"
@@ -19,16 +20,15 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     cfg(cfg),
     working( false ),
     running( true ),
-    timer_corr_prepare( "corr prepare" ),
-    timer_corr( "basic corr" ),
-    timer_corr_precise( "precise corr" )
+    gnss_type( GPS_L1 )
 {
-    timer_corr_prepare.SetPrintPeriod( PRN_CNT );
-    timer_corr.SetPrintPeriod( PRN_CNT );
-    timer_corr_precise.SetPrintPeriod( 4 );
 
     ui->setupUi(this);
 
+
+    ui->comboBoxGnssType->insertItem(0, "GPS L1", QVariant(GPS_L1) );
+    ui->comboBoxGnssType->insertItem(1, "GLONASS L1", QVariant(GLONASS_L1) );
+    ui->comboBoxGnssType->insertItem(2, "GLONASS L2", QVariant(GLONASS_L2) );
 
     QObject::connect(this, SIGNAL(satInfo(int,float,int,double,bool)),
                      this, SLOT(satChanged(int,float,int,double,bool)) );
@@ -42,6 +42,8 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     QObject::connect(ui->checkRefresh, SIGNAL(stateChanged(int)), this, SLOT(RefreshPressed(int)));
 
     QObject::connect(ui->spinBoxRelativeCorr, SIGNAL(valueChanged(int)), this, SLOT(relativeCorrChanged(int)) );
+
+    QObject::connect(ui->comboBoxGnssType, SIGNAL(currentIndexChanged(int)), this, SLOT(gnssTypeChanged(int)));
 
     plotCorrAll   = ui->widgetCorrAll;
     plotCorrGraph = ui->widgetCorrGraph;
@@ -104,8 +106,8 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
         str.sprintf( "ch%d", i );
         ui->comboBoxChannel->addItem( str, i );
     }
-    antijamIdx = cfg->chan_count;
-    ui->comboBoxChannel->addItem( "antijamming", antijamIdx );
+    //antijamIdx = cfg->chan_count;
+    //ui->comboBoxChannel->addItem( "antijamming", antijamIdx );
 
     ui->comboBoxChannel->setCurrentIndex( 0 );
 
@@ -136,44 +138,146 @@ void GPSCorrForm::SetWorking(bool b) {
     uiRecalc();
 }
 
+int GPSCorrForm::GetFilterLen()
+{
+    if ( gnss_type == GPS_L1 ) {
+        return filter_53M_2100k_2500k_1_40_len;
+
+    } else if ( gnss_type == GLONASS_L1 ) {
+        return filter_53M_1100k_1400k_1_40_len;
+
+    } else /*if ( gnss_type == GLONASS_L2 )*/ {
+        return filter_53M_1100k_1400k_1_40_len;
+    }
+}
+
+float *GPSCorrForm::GetFir()
+{
+    if ( gnss_type == GPS_L1 ) {
+        return filter_53M_2100k_2500k_1_40;
+
+    } else if ( gnss_type == GLONASS_L1 ) {
+        return filter_53M_1100k_1400k_1_40;
+
+    } else /*if ( gnss_type == GLONASS_L2 )*/ {
+        return filter_53M_1100k_1400k_1_40;
+    }
+}
+
+double GPSCorrForm::GetFreq(int prn_num)
+{
+    if ( gnss_type == GPS_L1 ) {
+        return 1575.42e6 - 1590.0e6;
+
+    } else if ( gnss_type == GLONASS_L1 ) {
+        double prn_freq = ( 1602.0 + (prn_num - 8) * 0.5625 ) * 1.0e6;
+        return prn_freq - 1590.0e6;
+
+    } else /*if ( gnss_type == GLONASS_L2 )*/ {
+        double prn_freq = ( 1246.0 + (prn_num - 8) * 0.4375 ) * 1.0e6;
+        return prn_freq - 1235.0e6;
+
+    }
+}
+
+int GPSCorrForm::GetPrnCount()
+{
+    if ( gnss_type == GPS_L1 ) {
+        return 32;
+
+    } else if ( gnss_type == GLONASS_L1 ) {
+        return 15;
+
+    } else /*if ( gnss_type == GLONASS_L2 )*/ {
+        return 15;
+
+    }
+}
+
+void GPSCorrForm::PrepareRawData()
+{
+    fprintf( stderr, "Preparing raw data (filtering)\n");
+    int avg_cnt = ui->checkAverageX8->isChecked() ? 8 : 1;
+
+    int DATA_SIZE = cfg->adc_sample_rate_hz / 1000.0;
+    int ALL_DATA_SIZE = DATA_SIZE * avg_cnt;
+    int ALL_DATA_SIZE_WFIR = ALL_DATA_SIZE + GetFilterLen();
+
+    float_cpx_t* sss = new float_cpx_t[ ALL_DATA_SIZE_WFIR ];
+
+    for ( int i = 0; i < ALL_DATA_SIZE_WFIR; i++ ) {
+        sss[i].i = (float) cached_one_chan_data[ i ];
+        sss[i].q = 0.0f;
+    }
+
+    for ( int prn = 1; prn <= GetPrnCount(); prn++ ) {
+        fprintf( stderr, "Filtering for prn %d\n", prn);
+        sigs[ prn ].resize( avg_cnt );
+
+        float_cpx_t* shifted  = freq_shift( sss, ALL_DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, GetFreq(prn) );
+        float_cpx_t* filtered = make_fir( shifted, GetFir(), ALL_DATA_SIZE, GetFilterLen() );
+
+        for ( uint32_t i = 0; i < sigs[ prn ].size(); i++ ) {
+            sigs[ prn ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
+            sigs[ prn ][ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
+        }
+
+        if ( gnss_type == GPS_L1 ) {
+            for ( int prn2 = 2; prn2 < GetPrnCount(); prn2++ ) {
+                sigs[ prn2 ].resize( avg_cnt );
+
+                for ( uint32_t i = 0; i < sigs[ prn2 ].size(); i++ ) {
+                    sigs[ prn2 ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
+                    sigs[ prn2 ][ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
+                }
+            }
+
+            delete [] shifted;
+            delete [] filtered;
+            break;
+        }
+
+        delete [] shifted;
+        delete [] filtered;
+    }
+    delete [] sss;
+    fprintf( stderr, "Preparing raw data DONE\n");
+}
+
+
+
 void GPSCorrForm::calcSats()
 {
 
-    for ( int si = 0; si < PRN_CNT; si++ ) {
+    for ( int prn = 1; prn <= GetPrnCount(); prn++ ) {
         double freq;
         int tshift;
         float corrval;
 
-        timer_corr_prepare.Start();
-        GPSVis sv( PRN_IN_OPER[ si ],
+        GPSVis sv( prn,
                    7000.0,
                    ui->spinBoxFreqStep->value(),
                    cfg->adc_sample_rate_hz,
-                   0.0
-                   //GPS_L1_FREQ - cfg->inter_freq_hz
+                   0.0,
+                   gnss_type == GLONASS_L1 || gnss_type == GLONASS_L2
                    );
-        if ( sigs.size() == 1 ) {
+        if ( sigs[prn].size() == 1 ) {
             sv.SetEdgeKoef( 4.9 );
         } else {
             sv.SetEdgeKoef( 3.0 );
         }
 
-        sv.SetSignal( &sigs );
+        sv.SetSignal( &sigs[prn] );
         sv.CalcCorrMatrix();
-        timer_corr_prepare.Finish();
 
-        plot_data_t& p = cdata[ PRN_IN_OPER[ si ] ];
-        timer_corr.Start();
+        plot_data_t& p = cdata[ prn ];
         bool sv_vis = sv.FindMaxCorr( freq, tshift, corrval );
-        timer_corr.Finish();
         if ( sv_vis ) {
-            emit satInfo( PRN_IN_OPER[ si ], corrval, tshift, freq, true );
+            emit satInfo( prn, corrval, tshift, freq, true );
 
-            timer_corr_precise.Start();
             sv.PreciseFreq( freq, tshift, corrval );
-            timer_corr_precise.Finish();
 
-            emit satInfo( PRN_IN_OPER[ si ], corrval, tshift, freq, true );
+            emit satInfo( prn, corrval, tshift, freq, true );
 
             p.mutex->lock();
             sv.GetCorrMatrix( p.cors, p.freqs_vals );
@@ -181,12 +285,12 @@ void GPSCorrForm::calcSats()
             p.inited = true;
             p.mutex->unlock();
 
-            //file_dump( NULL, 0, "xcorr", "flt", PRN_IN_OPER[ si ], true );
+            //file_dump( NULL, 0, "xcorr", "flt", si, true );
             //for ( unsigned int fi = 0; fi < cm.size(); fi++ ) {
-            //    file_dump( &cm[ fi ][ 0 ], cm[ fi ].size()*4, "xcorr", "flt", PRN_IN_OPER[ si ], true );
+            //    file_dump( &cm[ fi ][ 0 ], cm[ fi ].size()*4, "xcorr", "flt", si, true );
             //}
-            //file_dump( &freqs[ 0 ], freqs.size()*8, "freqs", "flt", PRN_IN_OPER[ si ], false );
-            //fprintf( stderr, "[%2d] size %d x %d\n", PRN_IN_OPER[ si ], cm.size(), cm[0].size() );
+            //file_dump( &freqs[ 0 ], freqs.size()*8, "freqs", "flt", si, false );
+            //fprintf( stderr, "[%2d] size %d x %d\n", si, cm.size(), cm[0].size() );
 
         } else {
             p.mutex->lock();
@@ -198,38 +302,32 @@ void GPSCorrForm::calcSats()
             p.inited = true;
 
             p.mutex->unlock();
-            emit satInfo( PRN_IN_OPER[ si ], corrval, tshift, freq, false );
+            emit satInfo( prn, corrval, tshift, freq, false );
         }
+
+        for ( uint32_t i = 0; i < sigs[prn].size(); i++ ) {
+            delete sigs[ prn ][ i ];
+        }
+        sigs.erase( prn );
 
         if ( !running ) {
             break;
         }
     }
 
-    for ( uint32_t i = 0; i < sigs.size(); i++ ) {
-        delete sigs[ i ];
-    }
     sigs.clear();
 }
 
-const int fir_gps_len = 23;
-const float fir_gps[fir_gps_len] = {
-    0.00212598918, 0.007456087042,  0.01171644684,  0.02019771934,  0.02972034924,
-    0.04128643125,  0.05352092162,  0.06577334553,  0.07682032883,  0.08566072583,
-     0.0913593322,  0.09333115071,   0.0913593322,  0.08566072583,  0.07682032883,
-    0.06577334553,  0.05352092162,  0.04128643125,  0.02972034924,  0.02019771934,
-    0.01171644684, 0.007456087042,  0.00212598918
-};
-
 
 void GPSCorrForm::HandleADCStreamData(void *data, size_t size8) {
+#if 0
     if ( ui->comboBoxChannel->currentIndex() == antijamIdx &&
          !working &&
          ui->checkRefresh->isChecked() )
     {
         int DATA_SIZE      = cfg->adc_sample_rate_hz / 1000.0;
-        int DATA_SIZE_WFIR = DATA_SIZE + fir_gps_len;
-        if ( DATA_SIZE_WFIR > size8 ) {
+        int DATA_SIZE_WFIR = DATA_SIZE + GetFilterLen();
+        if ( DATA_SIZE_WFIR > (int)size8 ) {
             fprintf( stderr, "DATA_SIZE_WFIR > size8\n" );
         }
 
@@ -257,7 +355,7 @@ void GPSCorrForm::HandleADCStreamData(void *data, size_t size8) {
         for ( int i = 0; i < 4; i++ ) {
             double freq = GPS_L1_FREQ - cfg->inter_freq_hz; //-14.58e6 = 1575.42e6 - 1590.0e6
             float_cpx_t* shifted  = freq_shift( s[i].data(), DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, freq );
-            float_cpx_t* filtered = make_fir( shifted, fir_gps, DATA_SIZE, fir_gps_len );
+            float_cpx_t* filtered = make_fir( shifted, GetFir(), DATA_SIZE, GetFilterLen() );
             memcpy( s[i].data(), filtered, sizeof(float_cpx_t) * DATA_SIZE_WFIR );
             delete [] shifted;
             delete [] filtered;
@@ -295,7 +393,7 @@ void GPSCorrForm::HandleADCStreamData(void *data, size_t size8) {
 
         SetWorking( true );
     }
-
+#endif
 }
 
 void GPSCorrForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel) {
@@ -306,34 +404,11 @@ void GPSCorrForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, in
     if ( working || !ui->checkRefresh->isChecked() ) {
         return;
     } else {
-        sigs.resize( ui->checkAverageX8->isChecked() ? 8 : 1 );
 
-        int DATA_SIZE = cfg->adc_sample_rate_hz / 1000.0;
-        int ALL_DATA_SIZE = DATA_SIZE * sigs.size();
-        int ALL_DATA_SIZE_WFIR = ALL_DATA_SIZE + fir_gps_len;
-
-        float_cpx_t* sss = new float_cpx_t[ ALL_DATA_SIZE_WFIR ];
-
-        for ( int i = 0; i < ALL_DATA_SIZE_WFIR; i++ ) {
-            sss[i].i = (float) one_ch_data[i];
-            sss[i].q = 0.0f;
+        if ( cached_one_chan_data.size() != pts_cnt ) {
+            cached_one_chan_data.resize( pts_cnt );
         }
-
-        double freq = GPS_L1_FREQ - cfg->inter_freq_hz; //-14.58e6 = 1575.42e6 - 1590.0e6
-        float_cpx_t* shifted  = freq_shift( sss, ALL_DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, freq );
-        float_cpx_t* filtered = make_fir( shifted, fir_gps, ALL_DATA_SIZE, fir_gps_len );
-
-        for ( uint32_t i = 0; i < sigs.size(); i++ ) {
-            sigs[ i ] = new RawSignal(
-                        DATA_SIZE,
-                        cfg->adc_sample_rate_hz );
-
-            sigs[ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
-        }
-
-        delete [] sss;
-        delete [] shifted;
-        delete [] filtered;
+        memcpy( cached_one_chan_data.data(), one_ch_data, pts_cnt * sizeof( short ) );
 
         SetWorking( true );
     }
@@ -364,6 +439,7 @@ void GPSCorrForm::calcLoop() {
         usleep( 500 * 1000 );
         #endif
         if ( working ) {
+            PrepareRawData();
             calcSats();
             SetWorking( false );
         }
@@ -384,8 +460,10 @@ void GPSCorrForm::redrawVisGraph() {
 void GPSCorrForm::uiRecalc() {
     if ( !ui->checkRefresh->isChecked() && !working ) {
         ui->comboBoxChannel->setEnabled( true );
+        ui->comboBoxGnssType->setEnabled( true );
     } else {
         ui->comboBoxChannel->setEnabled( false );
+        ui->comboBoxGnssType->setEnabled( false );
     }
 }
 
@@ -408,7 +486,6 @@ void GPSCorrForm::setshifts() {
 
 
 void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool is_visible) {
-
     int tidx = prn - 1;
 
 
@@ -514,4 +591,10 @@ void GPSCorrForm::relativeCorrChanged(int x) {
     fprintf( stderr, "relativeCorrChanged(%d)\n\n", x );
     relativeShift = ui->spinBoxRelativeCorr->value();
     setshifts();
+}
+
+void GPSCorrForm::gnssTypeChanged(int)
+{
+    bool ok;
+    gnss_type = (GNSSType)ui->comboBoxGnssType->currentData().toInt(&ok);
 }

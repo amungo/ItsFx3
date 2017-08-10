@@ -13,349 +13,258 @@
   <property name="windowTitle">
    <string>GPS Correlator</string>
   </property>
-  <widget class="QCustomPlot" name="widgetCorrAll" native="true">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>20</y>
-     <width>241</width>
-     <height>621</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkRefresh">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>20</y>
-     <width>61</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>calc!</string>
-   </property>
-  </widget>
-  <widget class="QTableWidget" name="tableRes">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>40</y>
-     <width>201</width>
-     <height>601</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QCustomPlot" name="widgetCorrGraph" native="true">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>170</y>
-     <width>591</width>
-     <height>471</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelHelp">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>140</y>
-     <width>491</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Double click on table to show correlation graph</string>
-   </property>
-  </widget>
-  <widget class="QGroupBox" name="groupBoxRec">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>0</y>
-     <width>591</width>
-     <height>91</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Export file for MS LEAP service</string>
-   </property>
-   <widget class="QLineEdit" name="lineRecFileName">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>361</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>gps_data.leap.bin</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonFile">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>20</y>
-      <width>31</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>...</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBoxChunkCount">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>20</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>1</number>
-    </property>
-    <property name="maximum">
-     <number>1000</number>
-    </property>
-    <property name="value">
-     <number>20</number>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBoxChunkLen">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>40</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>1</number>
-    </property>
-    <property name="maximum">
-     <number>999</number>
-    </property>
-    <property name="singleStep">
-     <number>1</number>
-    </property>
-    <property name="value">
-     <number>2</number>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBoxChunkGap">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>60</y>
-      <width>51</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>999</number>
-    </property>
-    <property name="value">
-     <number>50</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelChCount">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>20</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Chunk count:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelChLen">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>40</y>
-      <width>91</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Chunk length, ms:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="labelChGap">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>60</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Chunk gap, ms</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonSaveFile">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Save file</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QComboBox" name="comboBoxChannel">
-   <property name="geometry">
-    <rect>
-     <x>368</x>
-     <y>10</y>
-     <width>91</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="currentIndex">
-    <number>-1</number>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelChannel">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>10</y>
-     <width>31</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>CH</string>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="spinBoxRelativeCorr">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>100</y>
-     <width>81</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>-53000</number>
-   </property>
-   <property name="maximum">
-    <number>53000</number>
-   </property>
-   <property name="singleStep">
-    <number>10</number>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkAverageX8">
-   <property name="geometry">
-    <rect>
-     <x>660</x>
-     <y>100</y>
-     <width>221</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>avg x8 (ignored for anti-jamming)</string>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelChannel_2">
-   <property name="geometry">
-    <rect>
-     <x>560</x>
-     <y>100</y>
-     <width>61</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>relShift</string>
-   </property>
-  </widget>
-  <widget class="QSpinBox" name="spinBoxFreqStep">
-   <property name="geometry">
-    <rect>
-     <x>790</x>
-     <y>130</y>
-     <width>81</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="minimum">
-    <number>100</number>
-   </property>
-   <property name="maximum">
-    <number>1000</number>
-   </property>
-   <property name="singleStep">
-    <number>50</number>
-   </property>
-   <property name="value">
-    <number>250</number>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelChannel_3">
-   <property name="geometry">
-    <rect>
-     <x>880</x>
-     <y>130</y>
-     <width>61</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>freq step</string>
-   </property>
-  </widget>
+  <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1,2">
+   <item>
+    <widget class="QCustomPlot" name="widgetCorrAll" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>100</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QCheckBox" name="checkRefresh">
+         <property name="text">
+          <string>calc!</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelChannel">
+         <property name="text">
+          <string>CH</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBoxChannel">
+         <property name="currentIndex">
+          <number>-1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBoxGnssType"/>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="0">
+      <widget class="QTableWidget" name="tableRes"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1">
+     <item>
+      <widget class="QGroupBox" name="groupBoxRec">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="title">
+        <string>Export file for MS LEAP service</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="1">
+         <widget class="QPushButton" name="pushButtonFile">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLineEdit" name="lineRecFileName">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>gps_data.leap.bin</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" rowspan="2">
+         <widget class="QPushButton" name="pushButtonSaveFile">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Save file</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="labelChCount">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Chunk count:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="labelChGap">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Chunk gap, ms</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QSpinBox" name="spinBoxChunkLen">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>999</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QSpinBox" name="spinBoxChunkCount">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="value">
+           <number>20</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QSpinBox" name="spinBoxChunkGap">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>999</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QLabel" name="labelChLen">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Chunk length, ms:</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,2,1,1">
+       <item>
+        <widget class="QSpinBox" name="spinBoxRelativeCorr">
+         <property name="minimum">
+          <number>-53000</number>
+         </property>
+         <property name="maximum">
+          <number>53000</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelChannel_2">
+         <property name="text">
+          <string>relShift</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkAverageX8">
+         <property name="text">
+          <string>avg x8 (ignored for anti-jamming)</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelChannel_3">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>      freq step</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBoxFreqStep">
+         <property name="minimum">
+          <number>100</number>
+         </property>
+         <property name="maximum">
+          <number>1000</number>
+         </property>
+         <property name="singleStep">
+          <number>50</number>
+         </property>
+         <property name="value">
+          <number>250</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
+       <item>
+        <widget class="QLabel" name="labelHelp">
+         <property name="text">
+          <string>Double click on table to show correlation graph</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCustomPlot" name="widgetCorrGraph" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>100</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>

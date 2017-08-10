@@ -10,7 +10,7 @@ StreamRouter::StreamRouter( ADCType type ) :
     tc("convert")
 {
     data_handler_thread = std::thread(&StreamRouter::DataHandleLoop, this);
-    tc.SetPrintPeriod(20);
+    tc.SetPrintPeriod(200);
 }
 
 StreamRouter::~StreamRouter() {

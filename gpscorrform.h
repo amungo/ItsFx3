@@ -64,9 +64,12 @@ private:
     QVector<double> visible_corrs;
     QVector<double> invisible_corrs;
 
+    std::vector<short> cached_one_chan_data;
+    void PrepareRawData();
+
     bool working;
     void SetWorking( bool b );
-    std::vector< RawSignal* > sigs;
+    std::map< int, std::vector< RawSignal* > > sigs;
     void calcSats();
 
     bool running;
@@ -87,9 +90,16 @@ private:
 
     void uiRecalc();
 
-    TimeComputator timer_corr_prepare;
-    TimeComputator timer_corr;
-    TimeComputator timer_corr_precise;
+    enum GNSSType {
+        GPS_L1 = 0,
+        GLONASS_L1 = 1,
+        GLONASS_L2 = 2
+    } gnss_type;
+
+    int GetFilterLen();
+    float* GetFir();
+    double GetFreq( int prn_num = 1 );
+    int GetPrnCount();
 
 private slots:
     void satChanged(int prn, float corr, int shift, double freq, bool is_visible );
@@ -98,6 +108,7 @@ private slots:
     void ChooseFile(bool);
     void RefreshPressed(int);
     void relativeCorrChanged(int);
+    void gnssTypeChanged(int);
 
 
 signals:
