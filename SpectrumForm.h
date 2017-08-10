@@ -31,7 +31,9 @@ private:
     Ui::SpectrumForm *ui;
     std::vector<QCheckBox*> checkBoxShowChannels;
     static const int MAX_CHANS = 4;
-    int avg_cnt = 20;
+    int avg_matrix_cnt_max = 20;
+    int avg_matrix_cnt = 10;
+    int avg_simple_cnt = 10;
 
     FX3Config* cfg;
     FFTWrapper* fft;
@@ -54,6 +56,9 @@ private:
     std::vector< std::vector<float_cpx_t> > fft_out_averaged;
     std::vector<std::vector<std::vector<float_cpx_t>>> tbuf_fft;
     std::vector< std::vector<float> > powers;
+    std::mutex powers_avg_mtx;
+    std::vector<Averager<float>*> powers_avg;
+    std::vector< std::vector<float> > powers_avg_safe;
     void MakeFFTs();
     void MakePowers();
     void SetWidgetData();
@@ -88,6 +93,8 @@ private slots:
     void channelsChanged(int);
     void scalesShiftsChanged( int );
     void bandTypeChanged(int);
+    void avgSimpleChanged(int);
+    void avgMatrixChanged(int);
 
     // StreamDataHandler interface
 public:

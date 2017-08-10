@@ -24,9 +24,19 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
 
     fft = new FFTWrapper( fft_len );
 
+    powers_avg.resize( 4 );
+    for ( size_t i = 0; i < powers_avg.size(); i++ ) {
+        powers_avg[ i ] = new Averager<float>( half_fft_len, avg_simple_cnt );
+    }
+
     powers.resize(4);
     for ( size_t i = 0; i < powers.size(); i++ ) {
         powers.at(i).resize(half_fft_len);
+    }
+
+    powers_avg_safe.resize(4);
+    for ( size_t i = 0; i < powers_avg_safe.size(); i++ ) {
+        powers_avg_safe.at(i).resize(half_fft_len);
     }
 
     fft_out_averaged.resize(4);
@@ -34,7 +44,7 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
         fft_out_averaged.at(i).resize(fft_len);
     }
 
-    tbuf_fft.resize(avg_cnt);
+    tbuf_fft.resize(avg_matrix_cnt_max);
     for ( size_t iter = 0; iter < tbuf_fft.size(); iter++ ) {
         tbuf_fft[ iter ].resize( 4 );
         for ( size_t ch = 0; ch < tbuf_fft[ iter ].size(); ch++ ) {
@@ -67,6 +77,19 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     ui->comboBoxBandType->insertItem( 0, "LSB", QVariant(LSB));
     ui->comboBoxBandType->insertItem( 1, "USB", QVariant(USB));
 
+    ui->comboBoxAvgMatrix->insertItem( 0, " no corr mtrx", QVariant( 1) );
+    ui->comboBoxAvgMatrix->insertItem( 1, " 4x corr mtrx", QVariant( 4) );
+    ui->comboBoxAvgMatrix->insertItem( 2, " 8x corr mtrx", QVariant( 8) );
+    ui->comboBoxAvgMatrix->insertItem( 3, "10x corr mtrx", QVariant(10) );
+    ui->comboBoxAvgMatrix->insertItem( 4, "20x corr mtrx", QVariant(20) );
+
+    ui->comboBoxAvgSimple->insertItem( 0, " no avg", QVariant( 1) );
+    ui->comboBoxAvgSimple->insertItem( 1, " 4x avg", QVariant( 4) );
+    ui->comboBoxAvgSimple->insertItem( 2, " 8x avg", QVariant( 8) );
+    ui->comboBoxAvgSimple->insertItem( 3, "16x avg", QVariant(16) );
+    ui->comboBoxAvgSimple->insertItem( 4, "32x avg", QVariant(32) );
+    ui->comboBoxAvgSimple->insertItem( 5, "64x avg", QVariant(64) );
+
     QObject::connect(ui->checkRun, SIGNAL(stateChanged(int)), this, SLOT(slotRun(int)) );
     QObject::connect(ui->widgetSpectrum, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
 
@@ -75,6 +98,8 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     QObject::connect(ui->sliderFreqScale, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
     QObject::connect(ui->sliderFreqShift, SIGNAL(valueChanged(int)), this, SLOT(scalesShiftsChanged(int)) );
     QObject::connect(ui->comboBoxBandType, SIGNAL(currentIndexChanged(int)), this, SLOT(bandTypeChanged(int)));
+    QObject::connect(ui->comboBoxAvgMatrix, SIGNAL(currentIndexChanged(int)), this, SLOT(avgMatrixChanged(int)));
+    QObject::connect(ui->comboBoxAvgSimple, SIGNAL(currentIndexChanged(int)), this, SLOT(avgSimpleChanged(int)));
 
     SetCurrentIdx( ( right_point - left_point ) / 2 );
     ChangeNullMhz( nullMHz * 1.0e6 );
@@ -96,6 +121,13 @@ SpectrumForm::~SpectrumForm()
 
     delete fft;
     delete ui;
+
+    for ( size_t i = 0; i < powers_avg.size(); i++ ) {
+        if ( powers_avg[ i ] ) {
+            delete powers_avg[ i ];
+        }
+    }
+
 }
 
 bool SpectrumForm::TryLockData()
@@ -118,25 +150,25 @@ void SpectrumForm::UnlockData()
 
 void SpectrumForm::MakeFFTs()
 {
-    if ( avg_cnt == 1 ) {
+    if ( avg_matrix_cnt == 1 ) {
 
         for ( size_t channel = 0; channel < all_ch_data.size(); channel++ ) {
-            fft->TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data(), band_type == LSB );
+            fft->TransformShort( all_ch_data[ channel ].data(), fft_out_averaged[ channel ].data(), false );
         }
 
     } else {
 
-        for ( int iter = 0; iter < avg_cnt; iter++ ) {
+        for ( int iter = 0; iter < avg_matrix_cnt; iter++ ) {
             for ( size_t channel = 0; channel < 4; channel++ ) {
                 fft->TransformShort(
                             all_ch_data[ channel ].data() + fft_len * iter,
                             tbuf_fft[ iter ][ channel ].data(),
-                            band_type == LSB
+                            false
                             );
             }
         }
 
-        float scale = 1.0f / ((float) avg_cnt * 4.0f);
+        float scale = 1.0f / ((float) avg_matrix_cnt * 4.0f);
         float_cpx_t corr[4];
         for ( int pt = 0; pt < half_fft_len; pt++ ) {
             corr[0] = float_cpx_t( 0.0f, 0.0f );
@@ -144,7 +176,7 @@ void SpectrumForm::MakeFFTs()
             corr[2] = float_cpx_t( 0.0f, 0.0f );
             corr[3] = float_cpx_t( 0.0f, 0.0f );
 
-            for ( int iter = 0; iter < avg_cnt; iter++ ) {
+            for ( int iter = 0; iter < avg_matrix_cnt; iter++ ) {
                 for ( int ch = 0; ch < 4; ch++ ) {
                     corr[ch].add(
                         calc_correlation(
@@ -176,17 +208,28 @@ void SpectrumForm::MakePowers()
         right_point_copy = right_point;
     }
 
+    float koef = 10.0;
+    if ( avg_matrix_cnt > 1 ) {
+        koef = 5.0;
+    }
+
     for ( int ch = 0; ch < 4; ch++ ) {
         const float_cpx_t* avg_data = fft_out_averaged[ ch ].data();
         vector<float>& pwr = powers[ch];
-        for ( int i = left_point_copy; i < right_point_copy; i++ ) {
-            float p = 5.0f * log10f( avg_data[i].len_squared() );
+        //for ( int i = left_point_copy; i < right_point_copy; i++ ) {
+        for ( int i = 0; i < half_fft_len; i++ ) {
+            float p = koef * log10f( avg_data[i].len_squared() );
             pwr[ i ] = p;
 
             //xavg += p;
             //if ( p > xmax ) { xmax = p; }
             //if ( p < xmin ) { xmin = p; }
 
+        }
+
+        lock_guard<mutex> lock(powers_avg_mtx);
+        if ( powers_avg[ ch ] ) {
+            powers_avg[ ch ]->PushData( pwr.data() );
         }
     }
     //xavg /= (left_point_copy - right_point_copy) * 4.0f;
@@ -204,9 +247,18 @@ void SpectrumForm::SetWidgetData()
         left_point_copy  = left_point;
         points_cnt_copy  = points_cnt;
     }
+
+    {
+        lock_guard<mutex> lock(powers_avg_mtx);
+        for ( int ch = 0; ch < 4; ch++ ) {
+            if ( powers_avg[ ch ] ) {
+                powers_avg[ ch ]->GetData( powers_avg_safe[ ch ].data(), band_type == LSB );
+            }
+        }
+    }
+
     ui->widgetSpectrum->SetPowersData(
-        &powers, left_point_copy, points_cnt_copy, -40.0, 80.0, 10.0, 20.0, 100.0 );
-    //  &powers, left_point, points_cnt, powerMin, powerMax, powerAvg, powerMaxCur, GetThreshold()
+        &powers_avg_safe, left_point_copy, points_cnt_copy, -40.0, 80.0, 10.0, 20.0, 100.0 );
 
     ui->widgetSpectrum->SetCurrentIdx( GetCurrentIdx(), 10.0 );
 }
@@ -350,10 +402,33 @@ void SpectrumForm::bandTypeChanged(int)
     BandType new_band_type = (BandType)ui->comboBoxBandType->currentData().toInt(&ok);
     if ( new_band_type != band_type && !ui->checkRun->isChecked() ) {
         band_type = new_band_type;
-        data_valid = true;
-        event_data.Notify();
+        SetWidgetData();
     }
     band_type = new_band_type;
+    SetCurrentIdx( GetCurrentIdx() );
+    update();
+}
+
+void SpectrumForm::avgSimpleChanged(int)
+{
+    bool ok;
+    int newval = ui->comboBoxAvgSimple->currentData().toInt(&ok);
+    if ( newval != avg_simple_cnt ) {
+        lock_guard<mutex> lock( powers_avg_mtx );
+        avg_simple_cnt = newval;
+        for ( size_t i = 0; i < powers_avg.size(); i++ ) {
+            if ( powers_avg[ i ] ) {
+                delete powers_avg[ i ];
+            }
+            powers_avg[ i ] = new Averager<float>( half_fft_len, avg_simple_cnt );
+        }
+    }
+}
+
+void SpectrumForm::avgMatrixChanged(int)
+{
+    bool ok;
+    avg_matrix_cnt = ui->comboBoxAvgMatrix->currentData().toInt(&ok);
 }
 
 void SpectrumForm::hideEvent(QHideEvent* /*event*/ ) {

@@ -43,13 +43,26 @@ public:
         }
     }
 
-    const T* GetData() const {
-        for ( int i = 0; i < nPnt; i++ ) {
-            outbuf[ i ] = 0;
-            for ( int k = 0; k < nAvg; k++ ) {
-                outbuf[ i ] = outbuf[ i ] + buf[k][i] * ( 1.0f / nAvg );
+    void GetData( T* dst, bool inverted = false ) const {
+        if ( inverted ) {
+            for ( int i = 0; i < nPnt; i++ ) {
+                dst[ i ] = 0;
+                for ( int k = 0; k < nAvg; k++ ) {
+                    dst[ i ] = dst[ i ] + buf[k][nPnt - i - 1] * ( 1.0f / nAvg );
+                }
+            }
+        } else {
+            for ( int i = 0; i < nPnt; i++ ) {
+                dst[ i ] = 0;
+                for ( int k = 0; k < nAvg; k++ ) {
+                    dst[ i ] = dst[ i ] + buf[k][i] * ( 1.0f / nAvg );
+                }
             }
         }
+    }
+
+    const T* GetData( bool inverted = false ) const {
+        GetData( outbuf, inverted );
         return outbuf;
     }
 

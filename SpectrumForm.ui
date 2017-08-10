@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,1,1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,1,1">
      <item>
       <widget class="QCheckBox" name="checkRun">
        <property name="sizePolicy">
@@ -107,6 +107,24 @@
         </item>
         <item row="1" column="0">
          <widget class="QComboBox" name="comboBoxBandType"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="title">
+        <string>Averaging</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QComboBox" name="comboBoxAvgMatrix"/>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBoxAvgSimple"/>
         </item>
        </layout>
       </widget>
