@@ -1,4 +1,5 @@
 #include <vector>
+#include <chrono>
 #include "gcacorr/lazy_matrix.h"
 #include "gcacorr/filters.h"
 
@@ -8,11 +9,6 @@
 
 #include "util/Chan2bitParser.h"
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 
 GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     QWidget(parent),
@@ -45,40 +41,9 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
 
     QObject::connect(ui->comboBoxGnssType, SIGNAL(currentIndexChanged(int)), this, SLOT(gnssTypeChanged(int)));
 
-    plotCorrAll   = ui->widgetCorrAll;
     plotCorrGraph = ui->widgetCorrGraph;
 
-    gr_vis = plotCorrAll->addGraph();
-    gr_vis->setPen(QPen(Qt::green));
-    gr_vis->setLineStyle( (QCPGraph::LineStyle) QCPGraph::lsImpulse);
-
-    gr_inv = plotCorrAll->addGraph();
-    gr_inv->setPen(QPen(Qt::red));
-    gr_inv->setLineStyle( (QCPGraph::LineStyle) QCPGraph::lsImpulse);
-
     cdata.resize(PRN_MAX+1);
-
-    visible_sats.resize( PRN_MAX );
-    visible_corrs.resize( PRN_MAX );
-
-    invisible_sats.resize( PRN_MAX );
-    invisible_corrs.resize( PRN_MAX );
-
-    for ( int i = 0; i < PRN_MAX; i++ ) {
-        invisible_sats[ i ] = i;
-        invisible_corrs[ i ] = 1.5;
-
-        visible_sats[ i ] = i;
-        visible_corrs[ i ] = 0.0;
-    }
-
-    gr_vis->setData( visible_sats, visible_corrs );
-    gr_vis->rescaleAxes(true);
-
-    gr_inv->setData( invisible_sats, invisible_corrs );
-    gr_inv->rescaleAxes(true);
-
-    plotCorrAll->yAxis->setRange( 0, 20 );
 
     ui->tableRes->setRowCount( PRN_MAX );
     ui->tableRes->setColumnCount( 4 );
@@ -91,8 +56,8 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     heads << "Stat" << "Freq" << "Shift" << "Val";
     ui->tableRes->setHorizontalHeaderLabels( heads );
     ui->tableRes->setColumnWidth( 0, 40 );
-    ui->tableRes->setColumnWidth( 1, 40 );
-    ui->tableRes->setColumnWidth( 2, 40 );
+    ui->tableRes->setColumnWidth( 1, 50 );
+    ui->tableRes->setColumnWidth( 2, 50 );
     ui->tableRes->setColumnWidth( 3, 40 );
 
     for ( int i = 0; i < PRN_MAX; ++i ) {
@@ -433,11 +398,7 @@ void GPSCorrForm::onFileDumpComplete(std::string fname, ChunkDumpParams params) 
 void GPSCorrForm::calcLoop() {
     qDebug( "GPSCorrForm::calcLoop() STARTED\n" );
     while ( running ) {
-        #ifdef WIN32
-        Sleep( 500 );
-        #else
-        usleep( 500 * 1000 );
-        #endif
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         if ( working ) {
             PrepareRawData();
             calcSats();
@@ -447,15 +408,6 @@ void GPSCorrForm::calcLoop() {
     qDebug( "GPSCorrForm::calcLoop() FINISH\n" );
 }
 
-void GPSCorrForm::redrawVisGraph() {
-    gr_vis->setData( visible_sats, visible_corrs );
-    gr_vis->rescaleAxes(true);
-
-    gr_inv->setData( invisible_sats, invisible_corrs );
-    gr_inv->rescaleAxes(true);
-
-    plotCorrAll->replot();
-}
 
 void GPSCorrForm::uiRecalc() {
     if ( !ui->checkRefresh->isChecked() && !working ) {
@@ -490,15 +442,9 @@ void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool i
 
 
     if ( is_visible ) {
-        visible_corrs[ prn ]   = corr;
-        invisible_corrs[ prn ] = 0;
-
         ui->tableRes->setItem( tidx, 0, MakeTableItem( QString("VIS"), !is_visible ) );
     } else {
-        visible_corrs[ prn ]   = 0;
-        invisible_corrs[ prn ] = corr;
-
-        ui->tableRes->setItem( tidx, 0, MakeTableItem(QString("-"), !is_visible ) );
+        ui->tableRes->setItem( tidx, 0, MakeTableItem( QString("-"), !is_visible ) );
     }
 
     shifts.at(tidx) = shift;
@@ -511,7 +457,6 @@ void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool i
                            MakeTableItem( QString::number( corr, 'g', 2 ), !is_visible ) );
 
     setshifts();
-    redrawVisGraph();
 }
 
 void GPSCorrForm::cellSelected(int x, int) {
@@ -599,8 +544,6 @@ void GPSCorrForm::gnssTypeChanged(int)
     GNSSType newtype = (GNSSType)ui->comboBoxGnssType->currentData().toInt(&ok);
     if ( gnss_type != newtype ) {
         for ( int i = 0; i < PRN_MAX; i++ ) {
-            visible_corrs[ i+1 ]   = 0;
-            invisible_corrs[ i+1 ] = 0;
 
             ui->tableRes->setItem( i, 0, MakeTableItem(QString("-"), true ) );
 
@@ -610,7 +553,6 @@ void GPSCorrForm::gnssTypeChanged(int)
             ui->tableRes->setItem( i, 2, MakeTableItem( "-", true ) );
             ui->tableRes->setItem( i, 3, MakeTableItem( "-", true ) );
         }
-        redrawVisGraph();
     }
     gnss_type = newtype;
 }

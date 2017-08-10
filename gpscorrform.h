@@ -53,16 +53,7 @@ private:
     FX3Config* cfg;
     StreamLEAPDumper dumper;
 
-    QCustomPlot* plotCorrAll;
     QCustomPlot* plotCorrGraph;
-
-    QCPGraph* gr_vis;
-    QCPGraph* gr_inv;
-
-    QVector<double> visible_sats;
-    QVector<double> invisible_sats;
-    QVector<double> visible_corrs;
-    QVector<double> invisible_corrs;
 
     std::vector<short> cached_one_chan_data;
     void PrepareRawData();
@@ -75,8 +66,6 @@ private:
     bool running;
     std::thread calc_thread;
     void calcLoop( void );
-
-    void redrawVisGraph();
 
     std::vector< plot_data_t > cdata;
 
