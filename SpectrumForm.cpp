@@ -82,6 +82,8 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     ui->comboBoxAvgMatrix->insertItem( 2, " 8x corr mtrx", QVariant( 8) );
     ui->comboBoxAvgMatrix->insertItem( 3, "10x corr mtrx", QVariant(10) );
     ui->comboBoxAvgMatrix->insertItem( 4, "20x corr mtrx", QVariant(20) );
+    ui->comboBoxAvgMatrix->setCurrentIndex(0);
+    avgMatrixChanged(0);
 
     ui->comboBoxAvgSimple->insertItem( 0, " no avg", QVariant( 1) );
     ui->comboBoxAvgSimple->insertItem( 1, " 4x avg", QVariant( 4) );
@@ -89,6 +91,8 @@ SpectrumForm::SpectrumForm( FX3Config* cfg, QWidget *parent ) :
     ui->comboBoxAvgSimple->insertItem( 3, "16x avg", QVariant(16) );
     ui->comboBoxAvgSimple->insertItem( 4, "32x avg", QVariant(32) );
     ui->comboBoxAvgSimple->insertItem( 5, "64x avg", QVariant(64) );
+    ui->comboBoxAvgSimple->setCurrentIndex(1);
+    avgSimpleChanged(1);
 
     QObject::connect(ui->checkRun, SIGNAL(stateChanged(int)), this, SLOT(slotRun(int)) );
     QObject::connect(ui->widgetSpectrum, SIGNAL(sendNewCurIdx(int)), this, SLOT(CurChangeOutside(int)) );
