@@ -26,32 +26,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelChannel_2">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="text">
-          <string>rel. shift:</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spinBoxRelativeCorr">
-         <property name="minimum">
-          <number>-53000</number>
-         </property>
-         <property name="maximum">
-          <number>53000</number>
-         </property>
-         <property name="singleStep">
-          <number>10</number>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QComboBox" name="comboBoxChannel">
          <property name="currentIndex">
           <number>-1</number>

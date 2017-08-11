@@ -69,8 +69,11 @@ private:
 
     std::vector< plot_data_t > cdata;
 
+    std::vector<bool> visibles;
     std::vector< int > shifts;
-    int relativeShift;
+    int relativeShift = 0;
+    bool relativeShitValid = false;
+    int selectedPrn = 1;
     void setshifts();
 
     int antijamIdx;
@@ -96,7 +99,6 @@ private slots:
     void RecFile(bool);
     void ChooseFile(bool);
     void RefreshPressed(int);
-    void relativeCorrChanged(int);
     void gnssTypeChanged(int);
 
 
