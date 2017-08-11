@@ -191,7 +191,7 @@
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0">
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0">
        <item>
         <widget class="QLabel" name="labelChannel_3">
          <property name="layoutDirection">
@@ -235,6 +235,13 @@
          </property>
          <property name="checked">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBoxPrecise">
+         <property name="text">
+          <string>Precise freq for visibles</string>
          </property>
         </widget>
        </item>

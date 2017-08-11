@@ -255,7 +255,9 @@ void GPSCorrForm::calcSats()
         if ( sv_vis ) {
             emit satInfo( prn, corrval, tshift, freq, true );
 
-            sv.PreciseFreq( freq, tshift, corrval );
+            if ( ui->checkBoxPrecise->isChecked() ) {
+                sv.PreciseFreq( freq, tshift, corrval );
+            }
 
             emit satInfo( prn, corrval, tshift, freq, true );
 
@@ -435,6 +437,7 @@ void GPSCorrForm::uiRecalc() {
     ui->comboBoxGnssType->setEnabled( enabled );
     ui->checkAverageX8->setEnabled( enabled );
     ui->checkBoxUseFilter->setEnabled( enabled );
+    //ui->checkBoxPrecise->setEnabled( enabled );
 }
 
 QTableWidgetItem* MakeTableItem( const QString& str, bool grey ) {
@@ -510,7 +513,11 @@ void GPSCorrForm::cellSelected(int x, int) {
             g->rescaleAxes( true );
         }
         plotCorrGraph->xAxis->setRange(p.center - N/2, p.center + N/2);
-        plotCorrGraph->yAxis->setRange(0, 35000);
+        if ( ui->checkAverageX8->isChecked() ) {
+            plotCorrGraph->yAxis->setRange(0, 35000);
+        } else {
+            plotCorrGraph->yAxis->setRange(0, 10000);
+        }
     }
     p.mutex->unlock();
     plotCorrGraph->replot();
