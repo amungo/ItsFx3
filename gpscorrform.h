@@ -105,6 +105,9 @@ private slots:
     void RefreshPressed(int);
     void gnssTypeChanged(int);
     void prnCheckUncheck(int);
+    void checkAll(bool);
+    void uncheckAll(bool);
+    void uncheckInVis(bool);
 
 
 signals:

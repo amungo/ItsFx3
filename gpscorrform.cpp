@@ -39,14 +39,18 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
 
     QObject::connect(ui->comboBoxGnssType, SIGNAL(currentIndexChanged(int)), this, SLOT(gnssTypeChanged(int)));
 
+    QObject::connect(ui->pushButtonCheckAll,     SIGNAL(clicked(bool)), this, SLOT(checkAll(bool)));
+    QObject::connect(ui->pushButtonUnchekAll,    SIGNAL(clicked(bool)), this, SLOT(uncheckAll(bool)));
+    QObject::connect(ui->pushButtonUncheckInVis, SIGNAL(clicked(bool)), this, SLOT(uncheckInVis(bool)));
+
     plotCorrGraph = ui->widgetCorrGraph;
 
     cdata.resize(PRN_MAX+1);
 
     ui->tableRes->setRowCount( PRN_MAX );
     ui->tableRes->setColumnCount( 5 );
-    shifts.resize( PRN_MAX );
-    visibles.resize( PRN_MAX );
+    shifts.resize( PRN_MAX + 1 );
+    visibles.resize( PRN_MAX + 1 );
     for ( size_t i = 0; i < shifts.size(); i++ ) {
         shifts[i] = 0;
         visibles[i] = false;
@@ -267,6 +271,7 @@ void GPSCorrForm::calcSats()
                 }
                 sigs.erase( prn );
             }
+            visibles.at(prn-1) = false;
             continue;
         }
 
@@ -630,6 +635,29 @@ void GPSCorrForm::prnCheckUncheck(int)
             setTableItem( i, 1, "-", true );
             setTableItem( i, 2, "-", true );
             setTableItem( i, 3, "-", true );
+        }
+    }
+}
+
+void GPSCorrForm::checkAll(bool)
+{
+    for ( size_t i = 1; i < calc_checks.size(); i++ ) {
+        calc_checks.at(i)->setChecked(true);
+    }
+}
+
+void GPSCorrForm::uncheckAll(bool)
+{
+    for ( size_t i = 1; i < calc_checks.size(); i++ ) {
+        calc_checks.at(i)->setChecked(false);
+    }
+}
+
+void GPSCorrForm::uncheckInVis(bool)
+{
+    for ( size_t i = 1; i < calc_checks.size(); i++ ) {
+        if ( !visibles.at(i-1) ) {
+            calc_checks.at(i)->setChecked(false);
         }
     }
 }

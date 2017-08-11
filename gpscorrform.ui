@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1067</width>
-    <height>657</height>
+    <width>847</width>
+    <height>703</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,6 +39,31 @@
      </item>
      <item row="1" column="0">
       <widget class="QTableWidget" name="tableRes"/>
+     </item>
+     <item row="3" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QPushButton" name="pushButtonCheckAll">
+         <property name="text">
+          <string>+ALL</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonUnchekAll">
+         <property name="text">
+          <string>-ALL</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonUncheckInVis">
+         <property name="text">
+          <string>-InVIS</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
