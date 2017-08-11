@@ -41,8 +41,15 @@ void GPSVis::SetSignal(std::vector<RawSignal *> *signals_ptr) {
 }
 
 void GPSVis::CalcCorrMatrix() {
+
+    // Little hack for performance
+    double freq_hack = 0.0;
+    if ( (int)round(DOPPLER_STEP) == 1000 && (int)round(GPS_FREQ) % 1000 == 500 ) {
+        freq_hack = 500.0;
+    }
+
     for ( int fi = 0; fi < DOPPLER_STEP_CNT; fi++ ) {
-        double freq = fi * DOPPLER_STEP - DOPPLER_BORDER;
+        double freq = fi * DOPPLER_STEP - DOPPLER_BORDER + freq_hack;
         CalcCorrVector( freq );
     }
 }
