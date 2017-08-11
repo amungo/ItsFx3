@@ -44,7 +44,7 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     cdata.resize(PRN_MAX+1);
 
     ui->tableRes->setRowCount( PRN_MAX );
-    ui->tableRes->setColumnCount( 4 );
+    ui->tableRes->setColumnCount( 5 );
     shifts.resize( PRN_MAX );
     visibles.resize( PRN_MAX );
     for ( size_t i = 0; i < shifts.size(); i++ ) {
@@ -53,15 +53,22 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     }
 
     QStringList heads;
-    heads << "Stat" << "Freq" << "Shift" << "Val";
+    heads << "Stat" << "Freq" << "Shift" << "Val" << "Calc";
     ui->tableRes->setHorizontalHeaderLabels( heads );
     ui->tableRes->setColumnWidth( 0, 40 );
     ui->tableRes->setColumnWidth( 1, 50 );
     ui->tableRes->setColumnWidth( 2, 50 );
     ui->tableRes->setColumnWidth( 3, 40 );
+    ui->tableRes->setColumnWidth( 4, 40 );
 
+    calc_checks.resize(PRN_MAX+1);
     for ( int i = 0; i < PRN_MAX; ++i ) {
         ui->tableRes->setRowHeight( i, 18 );
+        QCheckBox* chbx = new QCheckBox();
+        calc_checks.at(i+1) = chbx;
+        chbx->setChecked(true);
+        ui->tableRes->setCellWidget( i, 4, chbx );
+        QObject::connect(chbx, SIGNAL(stateChanged(int)), this, SLOT(prnCheckUncheck(int)));
     }
 
 
@@ -179,7 +186,7 @@ int GPSCorrForm::GetPrnCount()
 
 void GPSCorrForm::PrepareRawData()
 {
-    fprintf( stderr, "Preparing raw data (filtering)\n");
+    fprintf( stderr, "Preparing raw data (filtering): \n");
     int avg_cnt = ui->checkAverageX8->isChecked() ? 8 : 1;
 
     int DATA_SIZE = cfg->adc_sample_rate_hz / 1000.0;
@@ -194,7 +201,10 @@ void GPSCorrForm::PrepareRawData()
     }
 
     for ( int prn = 1; prn <= GetPrnCount(); prn++ ) {
-        fprintf( stderr, "Filtering for prn %d\n", prn);
+        if ( !calc_checks.at(prn)->isChecked() ) {
+            continue;
+        }
+        fprintf( stderr, "%3d", prn);
         sigs[ prn ].resize( avg_cnt );
 
         if ( ui->checkBoxUseFilter->isChecked() ) {
@@ -238,7 +248,7 @@ void GPSCorrForm::PrepareRawData()
     }
     // DONE
     delete [] sss;
-    fprintf( stderr, "Preparing raw data DONE\n");
+    fprintf( stderr, "\nPreparing raw data DONE\n");
 }
 
 
@@ -249,6 +259,21 @@ void GPSCorrForm::calcSats()
     relativeShitValid = false;
 
     for ( int prn = 1; prn <= GetPrnCount(); prn++ ) {
+
+        if ( !calc_checks.at(prn)->isChecked() ) {
+            if ( sigs.find(prn) != sigs.end() ) {
+                for ( uint32_t i = 0; i < sigs[prn].size(); i++ ) {
+                    delete sigs[ prn ][ i ];
+                }
+                sigs.erase( prn );
+            }
+            continue;
+        }
+
+        if ( sigs.find(prn) == sigs.end() ) {
+            continue;
+        }
+
         double freq;
         int tshift;
         float corrval;
@@ -460,9 +485,11 @@ void GPSCorrForm::uiRecalc() {
 }
 
 void GPSCorrForm::setshifts() {
-    for ( int i = 0; i < ui->tableRes->rowCount() && i < (int)shifts.size(); i++ ) {
-        if ( relativeShitValid ) {
-            setTableItem( i, 2, QString::number( shifts.at(i) - relativeShift ), !visibles.at(i) );
+    if ( relativeShitValid ) {
+        for ( int i = 0; i < ui->tableRes->rowCount() && i < (int)shifts.size(); i++ ) {
+            if ( calc_checks.at(i+1)->isChecked() ) {
+                setTableItem( i, 2, QString::number( shifts.at(i) - relativeShift ), !visibles.at(i) );
+            }
         }
     }
 }
@@ -593,4 +620,16 @@ void GPSCorrForm::gnssTypeChanged(int)
         }
     }
     gnss_type = newtype;
+}
+
+void GPSCorrForm::prnCheckUncheck(int)
+{
+    for ( int i = 0; i < PRN_MAX; i++ ) {
+        if ( !calc_checks.at(i+1)->isChecked() ) {
+            setTableItem( i, 0, QString("-"), true );
+            setTableItem( i, 1, "-", true );
+            setTableItem( i, 2, "-", true );
+            setTableItem( i, 3, "-", true );
+        }
+    }
 }

@@ -69,6 +69,8 @@ private:
 
     std::vector< plot_data_t > cdata;
 
+    std::vector<QCheckBox*> calc_checks;
+
     std::vector<bool> visibles;
     std::vector< int > shifts;
     int relativeShift = 0;
@@ -102,6 +104,7 @@ private slots:
     void ChooseFile(bool);
     void RefreshPressed(int);
     void gnssTypeChanged(int);
+    void prnCheckUncheck(int);
 
 
 signals:
