@@ -93,6 +93,8 @@ private:
     double GetFreq( int prn_num = 1 );
     int GetPrnCount();
 
+    void setTableItem( int row, int col, const QString& str, bool is_greyed );
+
 private slots:
     void satChanged(int prn, float corr, int shift, double freq, bool is_visible );
     void cellSelected( int, int );

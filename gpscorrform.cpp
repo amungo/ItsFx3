@@ -96,6 +96,25 @@ GPSCorrForm::~GPSCorrForm()
     qDebug( "GPSCorrForm::~GPSCorrForm() finished!\n" );
 }
 
+void GPSCorrForm::setTableItem(int row, int col, const QString &str, bool is_greyed)
+{
+    QTableWidgetItem* item = ui->tableRes->item( row, col );
+    if ( !item ) {
+        item = new QTableWidgetItem( str );
+        item->setTextAlignment( Qt::AlignRight );
+        item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+        ui->tableRes->setItem( row, col, item );
+    } else {
+        item->setText( str );
+    }
+    if ( is_greyed ) {
+        item->setForeground(Qt::gray);
+    } else {
+        item->setForeground(Qt::black);
+    }
+}
+
+
 void GPSCorrForm::SetWorking(bool b) {
     working = b;
     uiRecalc();
@@ -440,21 +459,10 @@ void GPSCorrForm::uiRecalc() {
     //ui->checkBoxPrecise->setEnabled( enabled );
 }
 
-QTableWidgetItem* MakeTableItem( const QString& str, bool grey ) {
-    QTableWidgetItem* item = new QTableWidgetItem( str );
-    item->setTextAlignment( Qt::AlignRight );
-    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-    if ( grey ) {
-        item->setForeground(QColor::fromRgb(128,128,128));
-    }
-    return item;
-}
-
 void GPSCorrForm::setshifts() {
     for ( int i = 0; i < ui->tableRes->rowCount() && i < (int)shifts.size(); i++ ) {
         if ( relativeShitValid ) {
-            ui->tableRes->setItem( i, 2,
-                MakeTableItem( QString::number( shifts.at(i) - relativeShift ), !visibles.at(i) ) );
+            setTableItem( i, 2, QString::number( shifts.at(i) - relativeShift ), !visibles.at(i) );
         }
     }
 }
@@ -473,16 +481,16 @@ void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool i
 
 
     if ( is_visible ) {
-        ui->tableRes->setItem( tidx, 0, MakeTableItem( QString("VIS"), !is_visible ) );
+        setTableItem( tidx, 0, QString("VIS"), !is_visible );
     } else {
-        ui->tableRes->setItem( tidx, 0, MakeTableItem( QString("-"), !is_visible ) );
+        setTableItem( tidx, 0, QString("-"), !is_visible );
     }
 
-    ui->tableRes->setItem( tidx, 1, MakeTableItem( QString::number( freq, 'f', 0  ), !is_visible ) );
+    setTableItem( tidx, 1, QString::number( freq, 'f', 0  ), !is_visible );
     if ( relativeShitValid ) {
-        ui->tableRes->setItem( tidx, 2, MakeTableItem( QString::number( shifts.at(tidx) - relativeShift ), !is_visible ) );
+        setTableItem( tidx, 2, QString::number( shifts.at(tidx) - relativeShift ), !is_visible );
     }
-    ui->tableRes->setItem( tidx, 3, MakeTableItem( QString::number( corr, 'g', 2 ), !is_visible ) );
+    setTableItem( tidx, 3, QString::number( corr, 'g', 2 ), !is_visible );
 
     setshifts();
 }
@@ -561,7 +569,8 @@ void GPSCorrForm::ChooseFile(bool) {
     );
     if ( fileName.size() > 1 ) {
         ui->lineRecFileName->setText( fileName );
-    }}
+    }
+}
 
 void GPSCorrForm::RefreshPressed(int state) {
     uiRecalc();
@@ -574,13 +583,13 @@ void GPSCorrForm::gnssTypeChanged(int)
     if ( gnss_type != newtype ) {
         for ( int i = 0; i < PRN_MAX; i++ ) {
 
-            ui->tableRes->setItem( i, 0, MakeTableItem(QString("-"), true ) );
+            setTableItem( i, 0, QString("-"), true );
 
             shifts.at(i) = 0;
 
-            ui->tableRes->setItem( i, 1, MakeTableItem( "-", true ) );
-            ui->tableRes->setItem( i, 2, MakeTableItem( "-", true ) );
-            ui->tableRes->setItem( i, 3, MakeTableItem( "-", true ) );
+            setTableItem( i, 1, "-", true );
+            setTableItem( i, 2, "-", true );
+            setTableItem( i, 3, "-", true );
         }
     }
     gnss_type = newtype;
