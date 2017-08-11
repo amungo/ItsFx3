@@ -21,14 +21,33 @@
        <item>
         <widget class="QCheckBox" name="checkRefresh">
          <property name="text">
-          <string>calc!</string>
+          <string>run</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="labelChannel">
+        <widget class="QLabel" name="labelChannel_2">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
          <property name="text">
-          <string>CH</string>
+          <string>rel. shift:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="spinBoxRelativeCorr">
+         <property name="minimum">
+          <number>-53000</number>
+         </property>
+         <property name="maximum">
+          <number>53000</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
          </property>
         </widget>
        </item>
@@ -172,44 +191,17 @@
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1,2,1,1">
-       <item>
-        <widget class="QSpinBox" name="spinBoxRelativeCorr">
-         <property name="minimum">
-          <number>-53000</number>
-         </property>
-         <property name="maximum">
-          <number>53000</number>
-         </property>
-         <property name="singleStep">
-          <number>10</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelChannel_2">
-         <property name="text">
-          <string>relShift</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="checkAverageX8">
-         <property name="text">
-          <string>avg x8 (ignored for anti-jamming)</string>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0">
        <item>
         <widget class="QLabel" name="labelChannel_3">
          <property name="layoutDirection">
           <enum>Qt::LeftToRight</enum>
          </property>
          <property name="text">
-          <string>      freq step</string>
+          <string>freq step:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -229,17 +221,40 @@
          </property>
         </widget>
        </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
        <item>
-        <widget class="QLabel" name="labelHelp">
+        <widget class="QCheckBox" name="checkBoxUseFilter">
          <property name="text">
-          <string>Double click on table to show correlation graph</string>
+          <string>Use filter</string>
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="checkAverageX8">
+         <property name="text">
+          <string>avg x8 (ignored for anti-jamming)</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
        <item>
         <widget class="QCustomPlot" name="widgetCorrGraph" native="true">
          <property name="minimumSize">
@@ -247,6 +262,16 @@
            <width>100</width>
            <height>100</height>
           </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="labelHelp">
+         <property name="text">
+          <string>Double click on table to show correlation graph</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>

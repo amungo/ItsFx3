@@ -180,32 +180,46 @@ void GPSCorrForm::PrepareRawData()
         fprintf( stderr, "Filtering for prn %d\n", prn);
         sigs[ prn ].resize( avg_cnt );
 
-        float_cpx_t* shifted  = freq_shift( sss, ALL_DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, -GetFreq(prn) );
-        float_cpx_t* filtered = make_fir( shifted, GetFir(), ALL_DATA_SIZE, GetFilterLen() );
+        if ( ui->checkBoxUseFilter->isChecked() ) {
 
-        for ( uint32_t i = 0; i < sigs[ prn ].size(); i++ ) {
-            sigs[ prn ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
-            sigs[ prn ][ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
-        }
+            // ****** SHIFT & FILTER ******
+            float_cpx_t* shifted  = freq_shift( sss, ALL_DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, -GetFreq(prn) );
+            float_cpx_t* filtered = make_fir( shifted, GetFir(), ALL_DATA_SIZE, GetFilterLen() );
 
-        if ( gnss_type == GPS_L1 ) {
-            for ( int prn2 = 2; prn2 < GetPrnCount(); prn2++ ) {
-                sigs[ prn2 ].resize( avg_cnt );
+            for ( uint32_t i = 0; i < sigs[ prn ].size(); i++ ) {
+                sigs[ prn ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
+                sigs[ prn ][ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
+            }
 
-                for ( uint32_t i = 0; i < sigs[ prn2 ].size(); i++ ) {
-                    sigs[ prn2 ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
-                    sigs[ prn2 ][ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
+            if ( gnss_type == GPS_L1 ) {
+                for ( int prn2 = 2; prn2 < GetPrnCount(); prn2++ ) {
+                    sigs[ prn2 ].resize( avg_cnt );
+
+                    for ( uint32_t i = 0; i < sigs[ prn2 ].size(); i++ ) {
+                        sigs[ prn2 ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
+                        sigs[ prn2 ][ i ]->LoadData( filtered, DT_FLOAT_IQ, i*DATA_SIZE );
+                    }
                 }
+
+                delete [] shifted;
+                delete [] filtered;
+                break; // goto DONE
             }
 
             delete [] shifted;
             delete [] filtered;
-            break;
-        }
 
-        delete [] shifted;
-        delete [] filtered;
+        } else {
+
+            // ****** Use original signal ******
+            for ( uint32_t i = 0; i < sigs[ prn ].size(); i++ ) {
+                sigs[ prn ][ i ] = new RawSignal( DATA_SIZE, cfg->adc_sample_rate_hz );
+                sigs[ prn ][ i ]->LoadData( sss, DT_FLOAT_IQ, i*DATA_SIZE );
+            }
+
+        }
     }
+    // DONE
     delete [] sss;
     fprintf( stderr, "Preparing raw data DONE\n");
 }
@@ -224,7 +238,7 @@ void GPSCorrForm::calcSats()
                    7000.0,
                    ui->spinBoxFreqStep->value(),
                    cfg->adc_sample_rate_hz,
-                   0.0,
+                   ui->checkBoxUseFilter->isChecked() ? 0.0 : GetFreq( prn ),
                    gnss_type == GLONASS_L1 || gnss_type == GLONASS_L2
                    );
         if ( sigs[prn].size() == 1 ) {
@@ -411,13 +425,16 @@ void GPSCorrForm::calcLoop() {
 
 
 void GPSCorrForm::uiRecalc() {
+    bool enabled;
     if ( !ui->checkRefresh->isChecked() && !working ) {
-        ui->comboBoxChannel->setEnabled( true );
-        ui->comboBoxGnssType->setEnabled( true );
+        enabled = true;
     } else {
-        ui->comboBoxChannel->setEnabled( false );
-        ui->comboBoxGnssType->setEnabled( false );
+        enabled = false;
     }
+    ui->comboBoxChannel->setEnabled( enabled );
+    ui->comboBoxGnssType->setEnabled( enabled );
+    ui->checkAverageX8->setEnabled( enabled );
+    ui->checkBoxUseFilter->setEnabled( enabled );
 }
 
 QTableWidgetItem* MakeTableItem( const QString& str, bool grey ) {
