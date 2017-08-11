@@ -9,6 +9,14 @@
 
 #include "util/Chan2bitParser.h"
 
+enum TableColumnsIndexes {
+    COL_STAT = 0,
+    COL_FREQ,
+    COL_SHIFT,
+    COL_VAL,
+    COL_CHCK,
+    COL_NUM
+};
 
 GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     QWidget(parent),
@@ -48,7 +56,7 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     cdata.resize(PRN_MAX+1);
 
     ui->tableRes->setRowCount( PRN_MAX );
-    ui->tableRes->setColumnCount( 5 );
+    ui->tableRes->setColumnCount( COL_NUM );
     shifts.resize( PRN_MAX + 1 );
     visibles.resize( PRN_MAX + 1 );
     for ( size_t i = 0; i < shifts.size(); i++ ) {
@@ -59,11 +67,11 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     QStringList heads;
     heads << "Stat" << "Freq" << "Shift" << "Val" << "Calc";
     ui->tableRes->setHorizontalHeaderLabels( heads );
-    ui->tableRes->setColumnWidth( 0, 40 );
-    ui->tableRes->setColumnWidth( 1, 50 );
-    ui->tableRes->setColumnWidth( 2, 50 );
-    ui->tableRes->setColumnWidth( 3, 40 );
-    ui->tableRes->setColumnWidth( 4, 40 );
+    ui->tableRes->setColumnWidth( COL_STAT,  40 );
+    ui->tableRes->setColumnWidth( COL_FREQ,  50 );
+    ui->tableRes->setColumnWidth( COL_SHIFT, 50 );
+    ui->tableRes->setColumnWidth( COL_VAL,   40 );
+    ui->tableRes->setColumnWidth( COL_CHCK,  40 );
 
     calc_checks.resize(PRN_MAX+1);
     for ( int i = 0; i < PRN_MAX; ++i ) {
@@ -71,7 +79,7 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
         QCheckBox* chbx = new QCheckBox();
         calc_checks.at(i+1) = chbx;
         chbx->setChecked(true);
-        ui->tableRes->setCellWidget( i, 4, chbx );
+        ui->tableRes->setCellWidget( i, COL_CHCK, chbx );
         QObject::connect(chbx, SIGNAL(stateChanged(int)), this, SLOT(prnCheckUncheck(int)));
     }
 
@@ -120,8 +128,12 @@ void GPSCorrForm::setTableItem(int row, int col, const QString &str, bool is_gre
     }
     if ( is_greyed ) {
         item->setForeground(Qt::gray);
+        item->setBackgroundColor(Qt::white);
     } else {
         item->setForeground(Qt::black);
+        if ( col == COL_STAT ) {
+            item->setBackgroundColor(Qt::green);
+        }
     }
 }
 
@@ -493,7 +505,7 @@ void GPSCorrForm::setshifts() {
     if ( relativeShitValid ) {
         for ( int i = 0; i < ui->tableRes->rowCount() && i < (int)shifts.size(); i++ ) {
             if ( calc_checks.at(i+1)->isChecked() ) {
-                setTableItem( i, 2, QString::number( shifts.at(i) - relativeShift ), !visibles.at(i) );
+                setTableItem( i, COL_SHIFT, QString::number( shifts.at(i) - relativeShift ), !visibles.at(i) );
             }
         }
     }
@@ -513,16 +525,17 @@ void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool i
 
 
     if ( is_visible ) {
-        setTableItem( tidx, 0, QString("VIS"), !is_visible );
+        setTableItem( tidx, COL_STAT, QString("VIS"), !is_visible );
     } else {
-        setTableItem( tidx, 0, QString("-"), !is_visible );
+        setTableItem( tidx, COL_STAT, QString("-"), !is_visible );
     }
 
-    setTableItem( tidx, 1, QString::number( freq, 'f', 0  ), !is_visible );
+    setTableItem( tidx, COL_FREQ, QString::number( freq, 'f', 0  ), !is_visible );
+    setTableItem( tidx, COL_VAL,  QString::number( corr, 'g', 2 ), !is_visible );
+
     if ( relativeShitValid ) {
-        setTableItem( tidx, 2, QString::number( shifts.at(tidx) - relativeShift ), !is_visible );
+        setTableItem( tidx, COL_SHIFT, QString::number( shifts.at(tidx) - relativeShift ), !is_visible );
     }
-    setTableItem( tidx, 3, QString::number( corr, 'g', 2 ), !is_visible );
 
     setshifts();
 }
@@ -548,14 +561,14 @@ void GPSCorrForm::cellSelected(int x, int) {
             times[ i ] = p.center - N/2 + i;
         }
 
-        for ( int i = 0; i < p.cors.size(); i++ ) {
+        for ( size_t i = 0; i < p.cors.size(); i++ ) {
             QCPGraph* g = plotCorrGraph->addGraph();
 
             QVector< double > vals;
             std::vector<float> src = p.cors[ i ];
             vals.resize( src.size() );
 
-            for ( int i = 0; i < src.size(); i++ ) {
+            for ( size_t i = 0; i < src.size(); i++ ) {
                 vals[ i ] = src[ i ];
             }
 
@@ -604,7 +617,7 @@ void GPSCorrForm::ChooseFile(bool) {
     }
 }
 
-void GPSCorrForm::RefreshPressed(int state) {
+void GPSCorrForm::RefreshPressed(int /*state*/) {
     uiRecalc();
 }
 
@@ -615,13 +628,11 @@ void GPSCorrForm::gnssTypeChanged(int)
     if ( gnss_type != newtype ) {
         for ( int i = 0; i < PRN_MAX; i++ ) {
 
-            setTableItem( i, 0, QString("-"), true );
-
             shifts.at(i) = 0;
-
-            setTableItem( i, 1, "-", true );
-            setTableItem( i, 2, "-", true );
-            setTableItem( i, 3, "-", true );
+            setTableItem( i, COL_STAT, QString("-"), true );
+            setTableItem( i, COL_FREQ,  "-", true );
+            setTableItem( i, COL_SHIFT, "-", true );
+            setTableItem( i, COL_VAL,   "-", true );
         }
     }
     gnss_type = newtype;
@@ -631,10 +642,10 @@ void GPSCorrForm::prnCheckUncheck(int)
 {
     for ( int i = 0; i < PRN_MAX; i++ ) {
         if ( !calc_checks.at(i+1)->isChecked() ) {
-            setTableItem( i, 0, QString("-"), true );
-            setTableItem( i, 1, "-", true );
-            setTableItem( i, 2, "-", true );
-            setTableItem( i, 3, "-", true );
+            setTableItem( i, COL_STAT, QString("-"), true );
+            setTableItem( i, COL_FREQ,  "-", true );
+            setTableItem( i, COL_SHIFT, "-", true );
+            setTableItem( i, COL_VAL,   "-", true );
         }
     }
 }
