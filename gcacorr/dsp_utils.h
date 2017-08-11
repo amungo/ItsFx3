@@ -30,17 +30,19 @@ void mul_vec( float_cpx_t* A, float_cpx_t k, int len );
 
 template< typename data_t >
 data_t* circle_shift( data_t* data, int samples, int rotate_idx ) {
+    rotate_idx = -rotate_idx;
     data_t* out = new data_t[ samples ];
 
     rotate_idx %= samples;
 
-    // I think some implementation of C can make negative modules.
     if ( rotate_idx < 0 ) {
         rotate_idx += samples;
     }
 
     memcpy( out, data + rotate_idx, ( samples - rotate_idx ) * sizeof( data_t ) );
-    memcpy( out + ( samples - rotate_idx ), data, ( rotate_idx ) * sizeof( data_t ) );
+    if ( rotate_idx != 0 ) {
+        memcpy( out + ( samples - rotate_idx ), data, ( rotate_idx ) * sizeof( data_t ) );
+    }
 
     return out;
 }

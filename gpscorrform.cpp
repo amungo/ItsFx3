@@ -132,7 +132,8 @@ float *GPSCorrForm::GetFir()
 double GPSCorrForm::GetFreq(int prn_num)
 {
     if ( gnss_type == GPS_L1 ) {
-        return 1575.42e6 - 1590.0e6;
+        double prn_freq = 1575.42e6;
+        return prn_freq - 1590.0e6;
 
     } else if ( gnss_type == GLONASS_L1 ) {
         double prn_freq = ( 1602.0 + (prn_num - 8) * 0.5625 ) * 1.0e6;
@@ -179,7 +180,7 @@ void GPSCorrForm::PrepareRawData()
         fprintf( stderr, "Filtering for prn %d\n", prn);
         sigs[ prn ].resize( avg_cnt );
 
-        float_cpx_t* shifted  = freq_shift( sss, ALL_DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, GetFreq(prn) );
+        float_cpx_t* shifted  = freq_shift( sss, ALL_DATA_SIZE_WFIR, cfg->adc_sample_rate_hz, -GetFreq(prn) );
         float_cpx_t* filtered = make_fir( shifted, GetFir(), ALL_DATA_SIZE, GetFilterLen() );
 
         for ( uint32_t i = 0; i < sigs[ prn ].size(); i++ ) {

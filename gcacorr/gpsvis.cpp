@@ -90,7 +90,7 @@ void GPSVis::CalcCorrVector(double doppler_freq) {
     }
 
     for ( uint32_t i = 0; i < sigs->size(); i++ ) {
-        const float_cpx_t* sig = sigs->at( i )->GetSignalShifted( doppler_freq + GPS_FREQ );
+        const float_cpx_t* sig = sigs->at( i )->GetSignalShifted( -( doppler_freq + GPS_FREQ ) );
 
         mul_vectors( sig, etcode_fft_conj, tmp_vec_cpx, NPNT );
         fft.Transform( tmp_vec_cpx, tmp_vec_cpx, true );
@@ -138,7 +138,7 @@ void GPSVis::PreciseFreq(double &freq_out, int &time_shift_out, float &corr_val)
 
     for ( int cur_step = 256; cur_step >= 1; cur_step /= 4 ) {
 
-        for ( int fi = -2; fi < 3; fi++ ) {
+        for ( int fi = -2; fi <= 2; fi++ ) {
             double freq = fi * cur_step + cur_freq;
             CalcCorrVector( freq );
             stat_type& st = corr_matrix.cmap[ freq ].stat;
