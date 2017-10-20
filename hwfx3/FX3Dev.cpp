@@ -127,11 +127,6 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
     
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
-            eres = loadAdditionalFirmware( additionalFirmwareFileName, 112 );
-            if ( eres != FX3_ERR_OK ) {
-                fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
-                return eres;
-            }
             eres = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
             if ( eres != FX3_ERR_OK ) {
                 fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
