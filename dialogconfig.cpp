@@ -15,8 +15,9 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
     QObject::connect(ui->comboBoxBoardType, SIGNAL(currentIndexChanged(int)), this, SLOT(boardChanged(int)));
     QObject::connect(ui->pushButtonFileImg, SIGNAL(clicked(bool)), this, SLOT(openFileImg(bool)));
     QObject::connect(ui->pushButtonFileAddFw, SIGNAL(clicked(bool)), this, SLOT(openFileAddFw(bool)));
+    QObject::connect(ui->pushButtonFileAlgo, SIGNAL(clicked(bool)), this, SLOT(openFileAlgo(bool)));
+    QObject::connect(ui->pushButtonFileData, SIGNAL(clicked(bool)), this, SLOT(openFileData(bool)));
     QObject::connect(ui->checkBoxHaveSubs, SIGNAL(stateChanged(int)), this, SLOT(changedSubs(int)));
-
 
     int dtm = 0;
     bool have_cypress = false;
@@ -85,7 +86,9 @@ void DialogConfig::reSetFields() {
     ui->checkBoxHaveSubs->setChecked( cfg->have_submodules );
     ui->checkBoxHaveDbg->setChecked( cfg->have_dbg );
     ui->lineEditImageFileName->setText( cfg->fn_img.c_str() );
-    ui->lineEditAdditionalImageFileName->setText( cfg->fn_hex.c_str() );
+    ui->lineEditAdditionalImageFileName->setText( cfg->fn_hex.c_str());
+    ui->lineEditAlgoFileName->setText(cfg->fn_alg.c_str());
+    ui->lineEditDataFileName->setText(cfg->fn_data.c_str());
     ui->checkBoxAutoStart->setChecked( cfg->auto_start_streams );
     changedSubs( cfg->have_submodules );
     ui->comboBoxDriverType->setCurrentIndex(drivers_combobox_map[cfg->drv_type]);
@@ -115,6 +118,28 @@ void DialogConfig::openFileAddFw(bool) {
     }
 }
 
+void DialogConfig::openFileAlgo(bool) {
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Select Lattice algorithm file"),
+        "",
+        tr("Images (*.sea);;All files (*.*)" )
+    );
+    if(fileName.size() > 1) {
+        ui->lineEditAlgoFileName->setText( fileName );
+    }
+}
+
+void DialogConfig::openFileData(bool) {
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Select Lattice data file"),
+        "",
+        tr("Images (*.sed);;All files (*.*)" )
+    );
+    if(fileName.size() > 1) {
+        ui->lineEditDataFileName->setText( fileName );
+    }
+}
+
 void DialogConfig::changedSubs(int state ) {
     if ( state ) {
         ui->pushButtonFileAddFw->setEnabled(true);
@@ -135,6 +160,8 @@ void DialogConfig::setConfigValues() {
     cfg->have_dbg  = ui->checkBoxHaveDbg->isChecked();
     cfg->fn_img = ui->lineEditImageFileName->text().toLatin1().data();
     cfg->fn_hex = ui->lineEditAdditionalImageFileName->text().toLatin1().data();
+    cfg->fn_alg = ui->lineEditAlgoFileName->text().toLatin1().data();
+    cfg->fn_data = ui->lineEditDataFileName->text().toLatin1().data();
     cfg->adc_sample_rate_hz = ui->lineEditADCSampleRate->text().toDouble(&ok);
     cfg->inter_freq_hz = ui->lineEditGPSInterFreq->text().toDouble(&ok);
     cfg->auto_start_streams = ui->checkBoxAutoStart->isChecked();
