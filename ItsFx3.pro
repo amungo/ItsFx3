@@ -67,7 +67,10 @@ SOURCES += main.cpp \
     hwfx3/fx3devifce.cpp \
     hwfx3/fx3tuner.cpp \
     tuneform.cpp \
-    util/etalonsfiles.cpp
+    util/etalonsfiles.cpp \
+    hwfx3/lattice/lfe5u_hardware.cpp \
+    hwfx3/lattice/lfe5u_util.cpp \
+    hwfx3/lattice/lfe5u_core.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -144,7 +147,12 @@ HEADERS  += itsmain.h \
     hwfx3/fx3tuner.h \
     tuneform.h \
     util/etalonsfiles.h \
-    gcacorr/filters.h
+    gcacorr/filters.h \
+    hwfx3/lattice/lfe5u_hardware.h \
+    hwfx3/lattice/lfe5u_util.h \
+    hwfx3/lattice/lfe5u_opcode.h \
+    hwfx3/lattice/lfe5u_core.h \
+    hwfx3/lattice/lfe5u_debug.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \

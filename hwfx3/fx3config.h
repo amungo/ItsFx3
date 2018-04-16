@@ -51,6 +51,8 @@ struct FX3Config {
     bool have_dbg;
     std::string fn_hex;
     std::string fn_img;
+    std::string fn_alg;
+    std::string fn_data;
     double adc_sample_rate_hz;
     double inter_freq_hz;
     bool auto_start_streams;
@@ -136,9 +138,11 @@ struct FX3Config {
             have_atts       = false;
             have_dbg        = true;
             //fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex";
-            fn_hex          = "manual";
+            fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex"; //"manual";
             //fn_img          = "D://work//raw_signal.img";
-            fn_img          = "AmungoItsFx3Firmware-2017-07-28-00.img";
+            fn_img          = "SlaveFifoSyncKeldush.img"; //"AmungoItsFx3Firmware-2017-07-28-00.img";
+            fn_alg          = "nuts2_impl1_algo.sea";
+            fn_data         = "nuts2_impl1_data.sed";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
             break;

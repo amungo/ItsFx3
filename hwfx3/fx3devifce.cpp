@@ -254,3 +254,71 @@ void FX3DevIfce::startGpif() {
     fprintf( stderr, "startGpif()\n" );
     ctrlFromDevice( fx3cmd::START );
 }
+
+fx3_dev_err_t FX3DevIfce::send16bitSPI_ECP5(uint8_t data, uint8_t addr)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::sendECP5(uint8_t* buf, long len)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::recvECP5(uint8_t* buf, long len)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::resetECP5()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::checkECP5()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::csonECP5()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::csoffECP5()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::send24bitSPI8bit(unsigned int data)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::device_start()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+
+fx3_dev_err_t FX3DevIfce::device_stop()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::device_reset()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::reset_nt1065()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::load1065Ctrlfile(const char* fwFileName, int lastaddr)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+

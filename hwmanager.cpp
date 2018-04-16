@@ -31,7 +31,9 @@ void HWManager::SetRouter(StreamRouter* r) {
     router = r;
 }
 
-void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , const char* additionalImageFileName) {
+void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , const char* additionalImageFileName,
+                             const char* algoFileName, const char* dataFileName)
+{
     fprintf( stderr, "HWManager::initHardware( %d, %s, %s )\n", (int32_t)drvType, imageFileName, additionalImageFileName );
     if ( dev ) {
         delete dev;
@@ -56,8 +58,8 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
             return;
     }
 
-    fx3_dev_err_t init_error = dev->init( imageFileName, additionalImageFileName );
-    if ( init_error != FX3_ERR_OK ) {
+    fx3_dev_err_t init_error = dev->init( imageFileName, /*additionalImageFileName*/ NULL);
+    if( init_error != FX3_ERR_OK ){
         qDebug( "Device init error %d %s", init_error, fx3_get_error_string( init_error ) );
         dev = NULL;
         
@@ -68,6 +70,23 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
         
         closeHardware();
     } else {
+        // If nut2nt load Lattice firmware
+        if(drvType == DrvTypeCypress)
+        {
+            fx3_dev_err_t fpga_error = dev->init_fpga(algoFileName, dataFileName);
+            if(fpga_error != FX3_ERR_OK) {
+                dev = 0;
+                QString msg( "Device init error " );
+                msg += fx3_get_error_string( init_error );
+                emit informInitHWStatus( false, msg );
+                emit newDevicePointer( nullptr );
+
+                closeHardware();
+                return;
+            }
+            dev->load1065Ctrlfile(additionalImageFileName, 49);
+        }
+
         emit informInitHWStatus( true, QString("Device was inited!") );
         emit newDevicePointer( dev );
     }

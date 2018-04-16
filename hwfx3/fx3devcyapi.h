@@ -11,6 +11,7 @@
 #include <windows.h>
 #include "cy_inc/CyAPI.h"
 
+#include <memory>
 #include <cstdint>
 #include <vector>
 #include <thread>
@@ -19,9 +20,11 @@
 #define MAX_QUEUE_SZ  64
 #define VENDOR_ID    ( 0x04B4 )
 #define PRODUCT_STREAM  ( 0x00F1 )
-#define PRODUCT_BOOT    ( 0x00F3 )
+#define PRODUCT_BOOT    ( 0x00F0 ) //( 0x00F3 ) //@camry -- Удалить !!!!! ( 0x00F0 ) пока ипользуем то что прошито.
 
 typedef void (__stdcall * DataProcessorFunc)(char*, int);//data pointer, data size (bytes);
+
+class SSPICore;
 
 struct EndPointParams{
     int Attr;
@@ -55,7 +58,9 @@ public:
 
 public:
     // FX3DevIfce interface
-    fx3_dev_err_t init(const char *firmwareFileName, const char *additionalFirmwareFileName);
+    virtual fx3_dev_err_t init(const char *firmwareFileName, const char *additionalFirmwareFileName);
+    virtual fx3_dev_err_t init_fpga(const char* algoFileName, const char* dataFileName);
+
     void startRead(DeviceDataHandlerIfce *handler);
     void stopRead();
     void sendAttCommand5bits(uint32_t bits);
@@ -71,6 +76,21 @@ private:
     fx3_dev_err_t send24bitSPI(unsigned char data, unsigned short addr);
     fx3_dev_err_t read24bitSPI(unsigned short addr, unsigned char* data);
 
+    //------------------  Lattice (FX3DevIfce interFACE)  ------------------
+    virtual fx3_dev_err_t send16bitSPI_ECP5(uint8_t data, uint8_t addr);
+    virtual fx3_dev_err_t sendECP5(uint8_t* _data, long _data_len);
+    virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
+    virtual fx3_dev_err_t resetECP5();
+    virtual fx3_dev_err_t checkECP5();
+    virtual fx3_dev_err_t csonECP5();
+    virtual fx3_dev_err_t csoffECP5();
+    virtual fx3_dev_err_t send24bitSPI8bit(unsigned int data);
+    virtual fx3_dev_err_t device_start();
+    virtual fx3_dev_err_t device_stop();
+    virtual fx3_dev_err_t device_reset();
+    virtual fx3_dev_err_t reset_nt1065();
+    virtual fx3_dev_err_t load1065Ctrlfile(const char* fwFileName, int lastaddr);
+
 protected:
     fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 );
     fx3_dev_err_t ctrlFromDevice( uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* dest = nullptr, size_t data_len = 0 );
@@ -85,6 +105,8 @@ private:
     
     uint32_t last_overflow_count;
     double size_tx_mb;
+
+    std::shared_ptr<SSPICore> m_SSPICore;
     
 
     // DeviceControlIOIfce interface

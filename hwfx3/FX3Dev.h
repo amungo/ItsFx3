@@ -52,6 +52,14 @@ public:
     void stopRead();
     void sendAttCommand5bits( uint32_t bits );
     fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false );
+
+    //------------------------  Lattice (FX3DevIfce interFACE)  -------------------
+    virtual fx3_dev_err_t sendECP5(uint8_t* _data, long _data_len);
+    virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
+    virtual fx3_dev_err_t resetECP5();
+    virtual fx3_dev_err_t checkECP5();
+    virtual fx3_dev_err_t csonECP5();
+    virtual fx3_dev_err_t csoffECP5();
     // ****
 protected:
     fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 );

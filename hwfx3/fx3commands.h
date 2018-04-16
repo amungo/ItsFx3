@@ -13,7 +13,13 @@ enum fx3cmd {
     CYPRESS_RESET   = 0xBF,
     START           = 0xC0,
     WRITE_GPIO      = 0xC1,
-    READ_GPIO       = 0xC2
+    READ_GPIO       = 0xC2,
+
+    ECP5_WRITE      = 0xD1,
+    ECP5_READ       = 0xD5,
+    ECP5_CSON       = 0xD3,
+    ECP5_CSOFF      = 0xD4,
+    ECP5_CHECK      = 0xD2
 };
 
 enum fx3gpio {

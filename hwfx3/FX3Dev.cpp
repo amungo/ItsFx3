@@ -473,6 +473,47 @@ fx3_dev_debug_info_t FX3Dev::getDebugInfoFromBoard(bool ask_speed_only) {
 }
 
 
+//---------------------- Lattice  ----------------------------
+
+fx3_dev_err_t FX3Dev::sendECP5(uint8_t*, long)
+{
+
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3Dev::recvECP5(uint8_t*, long)
+{
+
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3Dev::resetECP5()
+{
+
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3Dev::checkECP5()
+{
+
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3Dev::csonECP5()
+{
+
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3Dev::csoffECP5()
+{
+
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+//------------------------------------------------------------
+
+
 fx3_dev_err_t FX3Dev::send16bitToDeviceSynch( uint8_t byte0, uint8_t byte1 ) {
     //fprintf( stderr, "FX3Dev::send16bitToDevice( 0x%02X, 0x%02X )\n", byte0, byte1 );
     // see transferDataToDevice() for more information abput this specific values

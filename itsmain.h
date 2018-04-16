@@ -62,7 +62,7 @@ public slots:
 
     
 signals:
-    void signalInitHw( DriverType_t, const char*, const char* );
+    void signalInitHw( DriverType_t, const char*, const char*, const char*, const char*);
     void signalCloseHw();
     void signalStartHwStreams();
     void signalStopHwStreams();
