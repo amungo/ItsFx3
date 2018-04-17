@@ -153,7 +153,7 @@ fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* algoFileName, const char* dataF
     if(retCode == FX3_ERR_OK)
     {
         // Set DAC
-        retCode = send24bitSPI8bit(0x0007FFFF<<4);
+        retCode = send24bitSPI8bit(0x000AFFFF<<4);
         retCode = device_stop();
         retCode = reset_nt1065();
     }
