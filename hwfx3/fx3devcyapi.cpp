@@ -101,8 +101,8 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         return res;
     }
 
-    /*---GetNt1065ChipID();
-    readFwVersion();
+    GetNt1065ChipID();
+    /*readFwVersion();
     if ( fwDescription.version >= 0x17072800 ) {
         pre_init_fx3();
     }
@@ -494,6 +494,32 @@ fx3_dev_err_t FX3DevCyAPI::send16bitSPI_ECP5(uint8_t _addr, uint8_t _data)
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
+fx3_dev_err_t FX3DevCyAPI::read16bitSPI_ECP5(uint8_t addr, uint8_t* data)
+{
+    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t addr_fix = (addr|0x80);
+
+    //fprintf( stderr, "FX3Dev::read16bitSPI_ECP5() from  0x%03X\n", addr );
+
+    CCyControlEndPoint* CtrlEndPt;
+    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
+    CtrlEndPt->Target = TGT_DEVICE;
+    CtrlEndPt->ReqType = REQ_VENDOR;
+    CtrlEndPt->Direction = DIR_FROM_DEVICE;
+    CtrlEndPt->ReqCode = 0xD9;
+    CtrlEndPt->Value = addr_fix;
+    CtrlEndPt->Index = *data;
+    long len = 16;
+    int success = CtrlEndPt->XferData(&buf[0], len);
+
+    *data = buf[0];
+    if ( success ) {
+        fprintf( stderr, "[0x%03X] => 0x%02X\n", addr, *data);
+    } else {
+        fprintf( stderr, "__error__ FX3Dev::read16bitSPI_ECP5() FAILED\n" );
+    }
+    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+}
 
 fx3_dev_err_t FX3DevCyAPI::sendECP5(uint8_t* _data, long _data_len)
 {    

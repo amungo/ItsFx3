@@ -138,11 +138,12 @@ void FX3DevIfce::init_ntlab_default() {
 }
 
 uint32_t FX3DevIfce::GetNt1065ChipID() {
+
     unsigned char reg0 = 0;
-    read16bitSPI(0x00, &reg0);
+    read16bitSPI_ECP5(0x00, &reg0);
 
     unsigned char reg1 = 0;
-    read16bitSPI(0x01, &reg1);
+    read16bitSPI_ECP5(0x01, &reg1);
 
     uint32_t id = (unsigned int)reg0<<21 | ((unsigned int)reg1&0xF8)<<13 | reg1&0x07;
 
@@ -169,7 +170,7 @@ void print_bits( uint32_t val, int bits_count = 8 ) {
 void FX3DevIfce::readNtReg(uint32_t reg) {
     fx3_dev_err_t res = FX3_ERR_OK;
     unsigned char val = 0x00;
-    res = read16bitSPI(reg, &val);
+    res = read16bitSPI_ECP5(reg, &val);
     fprintf( stderr, "Reg%d (0x%02X), val = 0x%08X\n", reg, reg, val );
     print_bits(val);
 }
@@ -256,6 +257,11 @@ void FX3DevIfce::startGpif() {
 }
 
 fx3_dev_err_t FX3DevIfce::send16bitSPI_ECP5(uint8_t data, uint8_t addr)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::read16bitSPI_ECP5(uint8_t addr, uint8_t* data)
 {
     return FX3_ERR_CTRL_TX_FAIL;
 }

@@ -41,6 +41,7 @@ public:
 
     //----------------------- Lattice control ------------------
     virtual fx3_dev_err_t send16bitSPI_ECP5(uint8_t addr, uint8_t data);
+    virtual fx3_dev_err_t read16bitSPI_ECP5(uint8_t addr, uint8_t* data);
     virtual fx3_dev_err_t sendECP5(uint8_t* buf, long len);
     virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
     virtual fx3_dev_err_t resetECP5();
