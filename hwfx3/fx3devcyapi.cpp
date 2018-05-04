@@ -12,12 +12,17 @@
 #include "lattice/lfe5u_opcode.h"
 
 
+FILE* g_flog = 0; // !!!
+int g_regCount = 0; // !!!
+
 FX3DevCyAPI::FX3DevCyAPI() :
     data_handler( NULL ),
     last_overflow_count( 0 ),
     size_tx_mb( 0.0 )
 {
     m_SSPICore = std::shared_ptr<SSPICore>(new SSPICore(this));
+
+    g_flog = fopen( "dump_regs_new.txt", "w" ); // !!!
 }
 
 FX3DevCyAPI::~FX3DevCyAPI() {
@@ -35,6 +40,8 @@ FX3DevCyAPI::~FX3DevCyAPI() {
     } else {
         fprintf( stderr, "__error__ FX3 CHIP RESET failed\n" );
     }
+
+    fclose(g_flog); // !!!
 }
 
 fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additionalFirmwareFileName) {
@@ -57,6 +64,7 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         }
 
         if ( StartParams.USBDevice->IsBootLoaderRunning() ) {
+
             int retCode  = StartParams.USBDevice->DownloadFw((char*)firmwareFileName, FX3_FWDWNLOAD_MEDIA_TYPE::RAM);
 
             if ( retCode != FX3_FWDWNLOAD_ERROR_CODE::SUCCESS ) {
@@ -153,7 +161,7 @@ fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* algoFileName, const char* dataF
     if(retCode == FX3_ERR_OK)
     {
         // Set DAC
-        retCode = send24bitSPI8bit(0x000AFFFF<<4);
+        retCode = setDAC(0x000AFFFF<<4);
         retCode = device_stop();
         retCode = reset_nt1065();
     }
@@ -171,7 +179,14 @@ void FX3DevCyAPI::startRead(DeviceDataHandlerIfce *handler) {
     // !!!
     //device_stop();
     //device_reset();
+    fx3_dev_debug_info_t info1 = getDebugInfoFromBoard(false); //!!!!
+
     device_start();
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    fx3_dev_debug_info_t info2 = getDebugInfoFromBoard(false); // !!!!
+    bool xxx = false;
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 void FX3DevCyAPI::stopRead() {
@@ -235,6 +250,7 @@ fx3_dev_debug_info_t FX3DevCyAPI::getDebugInfoFromBoard(bool ask_speed_only) {
         info.err_reg_hex = uibuf[ 4 ];
         info.phy_errs    = uibuf[ 5 ];
         info.lnk_errs    = uibuf[ 6 ];
+        info.fsm_state   = uibuf[ 7 ];
 
         info.size_tx_mb_inc = size_tx_mb;
         size_tx_mb = 0.0;
@@ -435,7 +451,7 @@ fx3_dev_err_t FX3DevCyAPI::send24bitSPI(unsigned char data, unsigned short addr)
     int success = CtrlEndPt->XferData(&buf[0], len);
 
     if ( !success ) {
-        fprintf( stderr, "__error__ FX3Dev::send24bitSPI() FAILED (len = %d)\n", len );
+        fprintf( stderr, "__error__ FX3Dev::setDAC() FAILED (len = %d)\n", len );
     }
 
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;;
@@ -472,7 +488,7 @@ fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data
 }
 
 // ---------------------- Lattice control -------------------------
-fx3_dev_err_t FX3DevCyAPI::send16bitSPI_ECP5(uint8_t _addr, uint8_t _data)
+fx3_dev_err_t FX3DevCyAPI::send8bitSPI(uint8_t _addr, uint8_t _data)
 {
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     buf[0] = (UCHAR)(_addr);
@@ -491,10 +507,16 @@ fx3_dev_err_t FX3DevCyAPI::send16bitSPI_ECP5(uint8_t _addr, uint8_t _data)
     long len = 16;
     int success = CtrlEndPt->XferData(buf, len);
 
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    std::cerr << " " << std::hex << (int)_addr << "--" << std::hex << (int)_data << std::endl; //!!
+    g_regCount++;
+    fprintf( g_flog, "%02d addr: %02X ---> value: %02X \n", g_regCount, _addr, _data);
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
-fx3_dev_err_t FX3DevCyAPI::read16bitSPI_ECP5(uint8_t addr, uint8_t* data)
+fx3_dev_err_t FX3DevCyAPI::read8bitSPI(uint8_t addr, uint8_t* data)
 {
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint8_t addr_fix = (addr|0x80);
@@ -560,7 +582,7 @@ fx3_dev_err_t FX3DevCyAPI::recvECP5(uint8_t* _data, long _data_len)
     CtrlEndPt->Direction = DIR_FROM_DEVICE;
     CtrlEndPt->ReqCode   = ECP5_READ;
     CtrlEndPt->Value     = (WORD)len;
-    // CtrlEndPt->Index     = 0;
+    CtrlEndPt->Index     = 0;
 
     int success = CtrlEndPt->XferData(buf, len);
 
@@ -642,7 +664,7 @@ fx3_dev_err_t FX3DevCyAPI::csoffECP5()
     return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
-fx3_dev_err_t FX3DevCyAPI::send24bitSPI8bit(unsigned int data)
+fx3_dev_err_t FX3DevCyAPI::setDAC(unsigned int data)
 {
     UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     buf[0] = (UCHAR)(data>>16);
@@ -769,7 +791,7 @@ fx3_dev_err_t FX3DevCyAPI::load1065Ctrlfile(const char* fwFileName, int lastaddr
                     int addr = std::stoi(tokens[0].erase(0,3), nullptr, 10);
                     int value = std::stoi(tokens.at(1), nullptr, 16);
                     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-                    retCode = send16bitSPI_ECP5(addr, value);
+                    retCode = send8bitSPI(addr, value);
                     if(retCode != FX3_ERR_OK || addr == lastaddr)
                         break;
                 }
