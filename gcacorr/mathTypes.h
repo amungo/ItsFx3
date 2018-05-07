@@ -3,6 +3,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <cstdio>
 
 
 static inline float deg2rad( float angle_deg ) {
