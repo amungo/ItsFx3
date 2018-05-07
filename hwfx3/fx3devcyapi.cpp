@@ -12,17 +12,12 @@
 #include "lattice/lfe5u_opcode.h"
 
 
-FILE* g_flog = 0; // !!!
-int g_regCount = 0; // !!!
-
 FX3DevCyAPI::FX3DevCyAPI() :
     data_handler( NULL ),
     last_overflow_count( 0 ),
     size_tx_mb( 0.0 )
 {
     m_SSPICore = std::shared_ptr<SSPICore>(new SSPICore(this));
-
-    g_flog = fopen( "dump_regs_new.txt", "w" ); // !!!
 }
 
 FX3DevCyAPI::~FX3DevCyAPI() {
@@ -40,8 +35,6 @@ FX3DevCyAPI::~FX3DevCyAPI() {
     } else {
         fprintf( stderr, "__error__ FX3 CHIP RESET failed\n" );
     }
-
-    fclose(g_flog); // !!!
 }
 
 fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additionalFirmwareFileName) {
@@ -109,14 +102,6 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         return res;
     }
 
-    GetNt1065ChipID();
-    /*readFwVersion();
-    if ( fwDescription.version >= 0x17072800 ) {
-        pre_init_fx3();
-    }
-
-    */
-
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
 
@@ -135,7 +120,7 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
             }
         }
     }
-    //---readNtReg(0x07);
+
 
     bool In;
     int Attr, MaxPktSize, MaxBurst, Interface, Address;
@@ -164,6 +149,13 @@ fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* algoFileName, const char* dataF
         retCode = setDAC(0x000AFFFF<<4);
         retCode = device_stop();
         retCode = reset_nt1065();
+
+        GetNt1065ChipID();
+        readFwVersion();
+        readNtReg(0x07);
+        if(fwDescription.version >= 0x17072800 ) {
+            pre_init_fx3();
+        }
     }
 
     return retCode;
@@ -176,17 +168,10 @@ void FX3DevCyAPI::startRead(DeviceDataHandlerIfce *handler) {
     data_handler = handler;
     xfer_thread = std::thread(&FX3DevCyAPI::xfer_loop, this);
     //@camry startGpif();
-    // !!!
     //device_stop();
     //device_reset();
-    fx3_dev_debug_info_t info1 = getDebugInfoFromBoard(false); //!!!!
 
     device_start();
-
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    fx3_dev_debug_info_t info2 = getDebugInfoFromBoard(false); // !!!!
-    bool xxx = false;
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 void FX3DevCyAPI::stopRead() {
@@ -491,56 +476,31 @@ fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data
 fx3_dev_err_t FX3DevCyAPI::send8bitSPI(uint8_t _addr, uint8_t _data)
 {
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
     buf[0] = (UCHAR)(_addr);
     buf[1] = (UCHAR)(_data);
 
     //qDebug() << "Reg" << _addr << " " << hex << _data;
-
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = 0xD6;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    std::cerr << " " << std::hex << (int)_addr << "--" << std::hex << (int)_data << std::endl; //!!
-    g_regCount++;
-    fprintf( g_flog, "%02d addr: %02X ---> value: %02X \n", g_regCount, _addr, _data);
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(REG_WRITE8, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::read8bitSPI(uint8_t addr, uint8_t* data)
 {
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
     uint8_t addr_fix = (addr|0x80);
 
     //fprintf( stderr, "FX3Dev::read16bitSPI_ECP5() from  0x%03X\n", addr );
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = 0xD9;
-    CtrlEndPt->Value = addr_fix;
-    CtrlEndPt->Index = *data;
-    long len = 16;
-    int success = CtrlEndPt->XferData(&buf[0], len);
-
+    WORD value = addr_fix;
+    WORD index = *data;
+    fx3_dev_err_t success = ctrlFromDevice(REG_READ8, value, index, buf, len);
     *data = buf[0];
-    if ( success ) {
-        fprintf( stderr, "[0x%03X] => 0x%02X\n", addr, *data);
-    } else {
-        fprintf( stderr, "__error__ FX3Dev::read16bitSPI_ECP5() FAILED\n" );
-    }
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+
+    return success;
+
 }
 
 fx3_dev_err_t FX3DevCyAPI::sendECP5(uint8_t* _data, long _data_len)
@@ -553,16 +513,9 @@ fx3_dev_err_t FX3DevCyAPI::sendECP5(uint8_t* _data, long _data_len)
         len = _data_len;
     }
 
-    CCyControlEndPoint* CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target    = TGT_DEVICE;
-    CtrlEndPt->ReqType   = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode   = ECP5_WRITE;
-    CtrlEndPt->Value     = 0;
-    CtrlEndPt->Index     = 1;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(ECP5_WRITE, value, index, buf, len);
 
 }
 
@@ -576,191 +529,119 @@ fx3_dev_err_t FX3DevCyAPI::recvECP5(uint8_t* _data, long _data_len)
         len = _data_len;
     }
 
-    CCyControlEndPoint* CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target    = TGT_DEVICE;
-    CtrlEndPt->ReqType   = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode   = ECP5_READ;
-    CtrlEndPt->Value     = (WORD)len;
-    CtrlEndPt->Index     = 0;
-
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlFromDevice(ECP5_READ, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::resetECP5()
 {
-    UCHAR  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = 0xD0;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(dummybuf, len);
+    WORD value = 0;
+    WORD index = 1;
+    LONG len = 16;
+    fx3_dev_err_t result = ctrlFromDevice(ECP5_RESET, value, index, buf, len);
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (result == FX3_ERR_OK && buf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3DevCyAPI::checkECP5()
 {
-    UCHAR  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    memset(&dummybuf[0], 0xff, 16);
+    UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
+    memset(&buf[0], 0xff, len);
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_FROM_DEVICE;
-    CtrlEndPt->ReqCode = ECP5_CHECK;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(dummybuf, len);
+    WORD value = 0;
+    WORD index = 1;
+    fx3_dev_err_t result = ctrlFromDevice(ECP5_CHECK, value, index, buf, len);
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (result == FX3_ERR_OK && buf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3DevCyAPI::csonECP5()
 {
-    UCHAR  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    memset(&dummybuf[0], 0xff, 16);
+    UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
+    memset(&buf[0], 0xff, len);
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = ECP5_CSON;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(dummybuf, len);
+    WORD value = 0;
+    WORD index = 1;
+    fx3_dev_err_t result = ctrlToDevice(ECP5_CSON, value, index, buf, len);
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (result == FX3_ERR_OK && buf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3DevCyAPI::csoffECP5()
 {
-    UCHAR  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    memset(&dummybuf[0], 0xff, 16);
+    UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
+    memset(&buf[0], 0xff, len);
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = ECP5_CSOFF;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(dummybuf, len);
+    WORD value = 0;
+    WORD index = 1;
+    fx3_dev_err_t result = ctrlToDevice(ECP5_CSOFF, value, index, buf, len);
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (result == FX3_ERR_OK && buf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3DevCyAPI::setDAC(unsigned int data)
 {
     UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
     buf[0] = (UCHAR)(data>>16);
     buf[1] = (UCHAR)(data>>8);
     buf[2] = (UCHAR)(data);
 
     //qDebug() << "Reg" << hex << data;
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = 0xD8;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(ECP5_SET_DAC, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::device_start()
 {
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     buf[2] = (UCHAR)(0xFF);
+    LONG len = 16;
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = 0xBA;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(DEVICE_START, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::device_stop()
 {
     UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     buf[2] = (UCHAR)(0xFF);
+    LONG len = 16;
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = 0xBB;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(DEVICE_STOP, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::device_reset()
 {   
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     buf[2] = (UCHAR)(0xFF);
+    LONG len = 16;
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = 0xB3;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(CYPRESS_RESET, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::reset_nt1065()
 {
     UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     buf[2] = (UCHAR)(0xFF);
+    LONG len = 16;
 
-    CCyControlEndPoint* CtrlEndPt;
-    CtrlEndPt = StartParams.USBDevice->ControlEndPt;
-    CtrlEndPt->Target = TGT_DEVICE;
-    CtrlEndPt->ReqType = REQ_VENDOR;
-    CtrlEndPt->Direction = DIR_TO_DEVICE;
-    CtrlEndPt->ReqCode = 0xD7;
-    CtrlEndPt->Value = 0;
-    CtrlEndPt->Index = 1;
-    long len = 16;
-    int success = CtrlEndPt->XferData(buf, len);
-
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    WORD value = 0;
+    WORD index = 1;
+    return ctrlToDevice(NT1065_RESET, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::load1065Ctrlfile(const char* fwFileName, int lastaddr)
