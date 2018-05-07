@@ -140,10 +140,10 @@ void FX3DevIfce::init_ntlab_default() {
 uint32_t FX3DevIfce::GetNt1065ChipID() {
 
     unsigned char reg0 = 0;
-    read8bitSPI(0x00, &reg0);
+    fx3_dev_err_t res = read8bitSPI(0x00, &reg0);
 
     unsigned char reg1 = 0;
-    read8bitSPI(0x01, &reg1);
+    res = read8bitSPI(0x01, &reg1);
 
     uint32_t id = (unsigned int)reg0<<21 | ((unsigned int)reg1&0xF8)<<13 | reg1&0x07;
 
@@ -188,6 +188,7 @@ void FX3DevIfce::readFwVersion()
 
 fx3_dev_err_t FX3DevIfce::send16bitSPI(uint8_t data, uint8_t addr)
 {
+#if 0
     uint8_t buf[16];
     buf[0] = data;
     buf[1] = addr;
@@ -200,10 +201,13 @@ fx3_dev_err_t FX3DevIfce::send16bitSPI(uint8_t data, uint8_t addr)
     } else {
         return FX3_ERR_CTRL_TX_FAIL;
     }
+#endif
+    return FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3DevIfce::read16bitSPI(uint8_t addr, uint8_t *data)
 {
+#if 0
     uint8_t addr_fix = (addr|0x80);
     uint8_t buf[16];
     buf[0] = *data;
@@ -218,9 +222,12 @@ fx3_dev_err_t FX3DevIfce::read16bitSPI(uint8_t addr, uint8_t *data)
         fprintf( stderr, "__error__ FX3Dev::read16bitSPI() FAILED\n" );
         return FX3_ERR_CTRL_TX_FAIL;
     }
+#endif
+    return FX3_ERR_CTRL_TX_FAIL;
 }
 
 void FX3DevIfce::writeGPIO(uint32_t gpio, uint32_t value) {
+#if 0
     uint32_t ans[4];
     fx3_dev_err_t res = ctrlFromDevice( fx3cmd::WRITE_GPIO, value, gpio, ans, 16 );
 
@@ -233,9 +240,11 @@ void FX3DevIfce::writeGPIO(uint32_t gpio, uint32_t value) {
     } else {
         fprintf(stderr, "writeGPIO( %d, %d ) FAILED\n", gpio, value );
     }
+#endif
 }
 
 void FX3DevIfce::readGPIO(uint32_t gpio, uint32_t *value) {
+#if 0
     uint32_t ans[4];
     fx3_dev_err_t res = ctrlFromDevice( fx3cmd::READ_GPIO, 0, gpio, ans, 16 );
 
@@ -249,11 +258,14 @@ void FX3DevIfce::readGPIO(uint32_t gpio, uint32_t *value) {
     } else {
         fprintf(stderr, "readGPIO( %d ) FAILED\n", gpio );
     }
+#endif
 }
 
 void FX3DevIfce::startGpif() {
+#if 0
     fprintf( stderr, "startGpif()\n" );
     ctrlFromDevice( fx3cmd::START );
+#endif
 }
 
 fx3_dev_err_t FX3DevIfce::send8bitSPI(uint8_t data, uint8_t addr)
