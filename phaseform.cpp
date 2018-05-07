@@ -471,7 +471,7 @@ void PhaseForm::SetCurrentIdx( int x )
 
 void PhaseForm::InitCamera() {
 
-    QList<QCameraInfo>& camerasList = QCameraInfo::availableCameras();
+    const QList<QCameraInfo>& camerasList = QCameraInfo::availableCameras();
 
     int iter = 0;
     for (const QCameraInfo &cameraInfo : camerasList) {
