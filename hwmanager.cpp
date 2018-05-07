@@ -42,7 +42,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
 
     switch ( drvType ) {
         case DrvTypeLibUsb:
-            dev = new FX3Dev();
+            dev = new FX3Dev(1024*2048, 8);
             break;
         case DrvTypeCypress:
             dev = new FX3DevCyAPI();
@@ -71,7 +71,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
         closeHardware();
     } else {
         // If nut2nt load Lattice firmware
-        if(drvType == DrvTypeCypress)
+        if(drvType == DrvTypeCypress || drvType == DrvTypeLibUsb)
         {
             fx3_dev_err_t fpga_error = dev->init_fpga(algoFileName, dataFileName);
             if(fpga_error != FX3_ERR_OK) {
