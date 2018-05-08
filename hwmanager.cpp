@@ -42,7 +42,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
 
     switch ( drvType ) {
         case DrvTypeLibUsb:
-            dev = new FX3Dev(1024*2048, 8);
+            dev = new FX3Dev(512*2048, 8);
             break;
         case DrvTypeCypress:
             dev = new FX3DevCyAPI();
