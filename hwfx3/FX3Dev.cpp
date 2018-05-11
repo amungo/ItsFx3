@@ -135,17 +135,17 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
     
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
-            eres = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
-            if ( eres != FX3_ERR_OK ) {
-                fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
-                return eres;
+            if ( std::string("manual") == std::string(additionalFirmwareFileName) ) {
+                init_ntlab_default();
+            } else {
+                eres = loadAdditionalFirmware( additionalFirmwareFileName, 48 );
+                if ( eres != FX3_ERR_OK ) {
+                    fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
+                    return eres;
+                }
             }
         }
     }
-
-#if 0
-    readFwVersion();
-#endif
 
     ires = libusb_claim_interface(device_handle, 0);
     if ( ires < 0 ) {
@@ -167,9 +167,16 @@ fx3_dev_err_t FX3Dev::init_fpga(const char* algoFileName, const char* dataFileNa
     if(retCode == FX3_ERR_OK)
     {
         // Set DAC
-        retCode = send24bitSPI8bit(0x000AFFFF<<4);
+        retCode = setDAC(0x000AFFFF<<4);
         retCode = device_stop();
         retCode = reset_nt1065();
+
+        GetNt1065ChipID();
+        readFwVersion();
+        readNtReg(0x07);
+        if(fwDescription.version >= 0x17072800 ) {
+            pre_init_fx3();
+        }
     }
 
     return retCode;
@@ -276,8 +283,6 @@ fx3_dev_err_t FX3Dev::firmwareUploadToDevice(SectionList_t& sections) {
     // Last transfer is special transfer with zero length - it is setting of 'program entry' point
     uint32_t section_num = 0;
     sect_it = sections.begin();
-    int sec_size = sections.size(); // !!!
-    int sec_cnt = 0; // !!!
     while ( sect_it != sections.end() ) {
         bool load_ok = false;
         uint32_t try_num  = 0;
@@ -326,7 +331,6 @@ fx3_dev_err_t FX3Dev::firmwareUploadToDevice(SectionList_t& sections) {
         
         sect_it++;
         section_num++;
-        sec_cnt++;
     }
     return FX3_ERR_OK;
 }
@@ -438,7 +442,7 @@ fx3_dev_err_t FX3Dev::loadAdditionalFirmware( const char* fw_name, uint32_t stop
     parse_hex_file( fw_name, addr, data );
     
     for ( uint32_t i = 0; i < addr.size(); i++ ) {
-        fx3_dev_err_t eres = send16bitToDeviceSynch(data[i], addr[i]);
+        fx3_dev_err_t eres = send8bitSPI(addr[i], data[i]); // send16bitToDeviceSynch(data[i], addr[i]);
         if ( eres != FX3_ERR_OK ) {
             return eres;
         }
@@ -505,9 +509,9 @@ fx3_dev_debug_info_t FX3Dev::getDebugInfoFromBoard(bool ask_speed_only) {
 }
 
 
-//---------------------- Lattice  ----------------------------
+//---------------------------  Lattice  -----------------------------
 
-fx3_dev_err_t FX3Dev::send16bitSPI_ECP5(uint8_t _addr, uint8_t _data)
+fx3_dev_err_t FX3Dev::send8bitSPI(uint8_t _addr, uint8_t _data)
 {
     uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
@@ -515,13 +519,30 @@ fx3_dev_err_t FX3Dev::send16bitSPI_ECP5(uint8_t _addr, uint8_t _data)
     buf[0] = (uint8_t)_addr;
     buf[1] = (uint8_t)_data;
 
-    uint8_t cmd = 0xD6;
+    uint8_t cmd = REG_WRITE8;
     uint16_t value = 0;
     uint16_t index = 1;
 
     fprintf( stderr, "Reg:%u 0x%04x \n", _addr, _data);
 
     return txControlToDevice( buf, len, cmd, value, index);
+}
+
+fx3_dev_err_t FX3Dev::read8bitSPI(uint8_t addr, uint8_t* data)
+{
+    uint8_t buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 16;
+    uint8_t addr_fix = (addr|0x80);
+
+    // fprintf( stderr, "FX3Dev::read16bitSPI_ECP5() from  0x%03X\n", addr );
+
+    uint8_t cmd = REG_READ8;
+    uint16_t value = addr_fix;
+    uint16_t index = *data;
+    fx3_dev_err_t success = txControlFromDevice(buf, len, cmd, value, index );
+    *data = buf[0];
+
+    return success;
 }
 
 fx3_dev_err_t FX3Dev::sendECP5(uint8_t* _data, long _data_len)
@@ -564,13 +585,13 @@ fx3_dev_err_t FX3Dev::resetECP5()
     uint8_t  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
 
-    uint8_t cmd = 0xD0;
+    uint8_t cmd = ECP5_RESET;
     uint16_t value = 0;
     uint16_t index = 1;
 
     int success = (txControlFromDevice(dummybuf, len, cmd, value, index) == FX3_ERR_OK) ? 1 : 0;
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (success && dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3Dev::checkECP5()
@@ -585,7 +606,7 @@ fx3_dev_err_t FX3Dev::checkECP5()
 
     int success = (txControlFromDevice(dummybuf, len, cmd, value, index) == FX3_ERR_OK) ? 1 : 0;
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (success && dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3Dev::csonECP5()
@@ -600,7 +621,7 @@ fx3_dev_err_t FX3Dev::csonECP5()
 
     int success = (txControlToDevice(dummybuf, len, cmd, value, index) == FX3_ERR_OK) ? 1 : 0;
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (success && dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3Dev::csoffECP5()
@@ -615,10 +636,10 @@ fx3_dev_err_t FX3Dev::csoffECP5()
 
     int success = (txControlToDevice(dummybuf, len, cmd, value, index) == FX3_ERR_OK) ? 1 : 0;
 
-    return (success & dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+    return (success && dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
-fx3_dev_err_t FX3Dev::send24bitSPI8bit(unsigned int _data)
+fx3_dev_err_t FX3Dev::setDAC(unsigned int _data)
 {
     uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
@@ -627,7 +648,7 @@ fx3_dev_err_t FX3Dev::send24bitSPI8bit(unsigned int _data)
     buf[1] = (uint8_t)(_data>>8);
     buf[2] = (uint8_t)_data;
 
-    uint8_t cmd = 0xD8;
+    uint8_t cmd = ECP5_SET_DAC;
     uint16_t value = 0;
     uint16_t index = 1;
 
@@ -638,10 +659,9 @@ fx3_dev_err_t FX3Dev::device_start()
 {
     uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
-
     buf[2] = (uint8_t)(0xFF);
 
-    uint8_t cmd = 0xBA;
+    uint8_t cmd = DEVICE_START;
     uint16_t value = 0;
     uint16_t index = 1;
 
@@ -652,10 +672,9 @@ fx3_dev_err_t FX3Dev::device_stop()
 {
     uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
-
     buf[2] = (uint8_t)(0xFF);
 
-    uint8_t cmd = 0xBB;
+    uint8_t cmd = DEVICE_STOP;
     uint16_t value = 0;
     uint16_t index = 1;
 
@@ -666,10 +685,9 @@ fx3_dev_err_t FX3Dev::device_reset()
 {
     uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
-
     buf[2] = (uint8_t)(0xFF);
 
-    uint8_t cmd = 0xB3;
+    uint8_t cmd = CYPRESS_RESET;
     uint16_t value = 0;
     uint16_t index = 1;
 
@@ -683,7 +701,7 @@ fx3_dev_err_t FX3Dev::reset_nt1065()
 
     buf[2] = (uint8_t)(0xFF);
 
-    uint8_t cmd = 0xD7;
+    uint8_t cmd = NT1065_RESET;
     uint16_t value = 0;
     uint16_t index = 1;
 
@@ -718,7 +736,7 @@ fx3_dev_err_t FX3Dev::load1065Ctrlfile(const char* fwFileName, int lastaddr)
                     int addr = std::stoi(tokens[0].erase(0,3), nullptr, 10);
                     int value = std::stoi(tokens.at(1), nullptr, 16);
                     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-                    retCode = send16bitSPI_ECP5(addr, value);
+                    retCode = send8bitSPI(addr, value);
                     if(retCode != FX3_ERR_OK || addr == lastaddr)
                         break;
                 }
