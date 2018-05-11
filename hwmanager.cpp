@@ -42,7 +42,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
 
     switch ( drvType ) {
         case DrvTypeLibUsb:
-            dev = new FX3Dev(512*2048, 8);
+            dev = new FX3Dev();
             break;
         case DrvTypeCypress:
             dev = new FX3DevCyAPI();
@@ -84,7 +84,19 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
                 closeHardware();
                 return;
             }
-            dev->load1065Ctrlfile(additionalImageFileName, 49);
+
+            // dev->load1065Ctrlfile(additionalImageFileName, 49);
+            if ( additionalImageFileName != NULL )
+            {
+                if ( additionalImageFileName[ 0 ] != 0 ) {
+                    fx3_dev_err_t eres = dev->loadAdditionalFirmware( additionalImageFileName, 48);
+                    if ( eres != FX3_ERR_OK ) {
+                        fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
+                        //return eres;
+                    }
+                }
+            }
+
         }
 
         emit informInitHWStatus( true, QString("Device was inited!") );
