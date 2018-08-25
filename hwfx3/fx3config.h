@@ -23,8 +23,8 @@
 
 
 //#define DEF_FW_NAME "fx3_newsub_injector.img"
-#define DEF_FW_NAME "fx3_att_dbg.img"
-//#define DEF_FW_NAME "D:\\work\\SlaveFifoSyncKeldush\\Release\\SlaveFifoSync.img"
+//#define DEF_FW_NAME "fx3_att_dbg.img"
+#define DEF_FW_NAME "AmungoItsFx3Firmware-nut2.img"
 
 enum ADCType {
     ADC_NT1065,
@@ -137,10 +137,9 @@ struct FX3Config {
             have_submodules = true;
             have_atts       = false;
             have_dbg        = true;
-            //fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex";
             fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex"; //"manual";
             //fn_img          = "D://work//raw_signal.img";
-            fn_img          = "SlaveFifoSyncKeldush.img"; //"AmungoItsFx3Firmware-2017-07-28-00.img";
+            fn_img          = DEF_FW_NAME;
             fn_alg          = "nuts2_impl1_algo.sea";
             fn_data         = "nuts2_impl1_data.sed";
             adc_sample_rate_hz = 53.0e6;
