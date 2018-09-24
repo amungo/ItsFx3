@@ -36,7 +36,7 @@ public:
 
     virtual void readFwVersion();
 
-    virtual fx3_dev_err_t loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr ) {}
+    virtual fx3_dev_err_t loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr ) { return FX3_ERR_DRV_NOT_IMPLEMENTED; }
 
     virtual fx3_dev_err_t send16bitSPI(uint8_t data, uint8_t addr);
     virtual fx3_dev_err_t read16bitSPI(uint8_t addr, uint8_t *data);
