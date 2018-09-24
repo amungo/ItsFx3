@@ -144,9 +144,13 @@ void DialogConfig::changedSubs(int state ) {
     if ( state ) {
         ui->pushButtonFileAddFw->setEnabled(true);
         ui->lineEditAdditionalImageFileName->setEnabled(true);
+        ui->lineEditAlgoFileName->setEnabled(true);
+        ui->lineEditDataFileName->setEnabled(true);
     } else {
         ui->pushButtonFileAddFw->setEnabled(false);
         ui->lineEditAdditionalImageFileName->setEnabled(false);
+        ui->lineEditAlgoFileName->setEnabled(false);
+        ui->lineEditDataFileName->setEnabled(false);
     }
 }
 
