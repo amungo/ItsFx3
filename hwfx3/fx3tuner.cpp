@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <thread>
 #include <chrono>
+#include <cmath>
 
 #include "fx3tuner.h"
 
