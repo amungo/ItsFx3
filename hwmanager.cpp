@@ -88,20 +88,12 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
             }
             fprintf( stderr, "fpga inited\n" );
 
-            // dev->load1065Ctrlfile(additionalImageFileName, 49);
-            if ( additionalImageFileName != NULL )
-            {
-                if ( additionalImageFileName[ 0 ] != 0 ) {
-                    fx3_dev_err_t eres = dev->loadAdditionalFirmware( additionalImageFileName, 48);
-                    if ( eres != FX3_ERR_OK ) {
-                        fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
-                        //return eres;
-                    } else {
-                        fprintf( stderr, "hex loaded\n" );
-                    }
-                }
+            fx3_dev_err_t eres = dev->load1065Ctrlfile(additionalImageFileName, 49);
+            if ( eres != FX3_ERR_OK ) {
+                fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
+            } else {
+                fprintf( stderr, "hex loaded\n" );
             }
-
         }
 
         emit informInitHWStatus( true, QString("Device was inited!") );
