@@ -73,8 +73,10 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
         // If nut2nt load Lattice firmware
         if(drvType == DrvTypeCypress || drvType == DrvTypeLibUsb)
         {
+            fprintf( stderr, "initing fpga...\n" );
             fx3_dev_err_t fpga_error = dev->init_fpga(algoFileName, dataFileName);
             if(fpga_error != FX3_ERR_OK) {
+                fprintf( stderr, "fpga error %d\n", fpga_error );
                 dev = 0;
                 QString msg( "Device init error " );
                 msg += fx3_get_error_string( init_error );
@@ -84,6 +86,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
                 closeHardware();
                 return;
             }
+            fprintf( stderr, "fpga inited\n" );
 
             // dev->load1065Ctrlfile(additionalImageFileName, 49);
             if ( additionalImageFileName != NULL )
@@ -93,6 +96,8 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
                     if ( eres != FX3_ERR_OK ) {
                         fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
                         //return eres;
+                    } else {
+                        fprintf( stderr, "hex loaded\n" );
                     }
                 }
             }

@@ -52,8 +52,13 @@ SSPICore::~SSPICore()
 int SSPICore::SSPIEm_preset(const std::string& _algoFileName, const std::string& _dataFileName)
 {
     int retVal = m_pAlgoLattice->algoPreset(_algoFileName.c_str());
-    if(retVal == PROC_COMPLETE)
+    fprintf( stderr, "m_pAlgoLattice->algoPreset code %d\n", retVal );
+
+    if(retVal == PROC_COMPLETE) {
         retVal = m_pDataLattice->dataPreset(_dataFileName.c_str());
+        fprintf( stderr, "m_pAlgoLattice->dataPreset code %d\n", retVal );
+
+    }
 
     return retVal;
 }
@@ -62,9 +67,11 @@ int SSPICore::SSPIEm(unsigned int _algoID)
 {
     int retVal = 0;
     retVal =  SSPIEm_init(_algoID);
+    fprintf( stderr, "SSPIEm_init code %d\n", retVal );
     if(retVal != PROC_COMPLETE)
         return retVal;
     retVal = SSPIEm_process(0,0);
+    fprintf( stderr, "SSPIEm_process code %d\n", retVal );
 
     return retVal;
 }

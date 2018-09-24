@@ -127,14 +127,18 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
     fprintf( stderr, "FX3Dev::Init() Proceed to init flashed device (0x%04x)\n", DEV_PID_NO_FW_NEEDED );
     
     device_handle = libusb_open_device_with_vid_pid( ctx, VENDOR_ID, DEV_PID_NO_FW_NEEDED );
+    fprintf( stderr, "FX3Dev::Init() libusb_open_device_with_vid_pid ret %p\n", device_handle);
     
     if ( device_handle == NULL ) {
         fprintf( stderr, "FX3Dev::Init() __error__ no device with vid = 0x%04x and pid = 0x%04X found!\n", VENDOR_ID, DEV_PID_NO_FW_NEEDED );
         return FX3_ERR_NO_DEVICE_FOUND;
     }
     
+    fprintf( stderr, "additionalFirmwareFileName = '%s'\n", additionalFirmwareFileName );
+
     if ( additionalFirmwareFileName != NULL ) {
         if ( additionalFirmwareFileName[ 0 ] != 0 ) {
+            fprintf( stderr, "additionalFirmwareFileName = '%s'\n", additionalFirmwareFileName );
             if ( std::string("manual") == std::string(additionalFirmwareFileName) ) {
                 init_ntlab_default();
             } else {
@@ -152,7 +156,7 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
         fprintf( stderr, "FX3Dev::Init() __error__ libusb_claim_interface failed %d %s\n", ires, libusb_error_name( ires ) );
         return FX3_ERR_USB_INIT_FAIL;
     }
-    
+    fprintf( stderr, "FX3Dev::Init() OK!\n" );
     return FX3_ERR_OK;
 }
 
@@ -168,8 +172,13 @@ fx3_dev_err_t FX3Dev::init_fpga(const char* algoFileName, const char* dataFileNa
     {
         // Set DAC
         retCode = setDAC(0x000AFFFF<<4);
+        fprintf( stderr, "setDAC %d\n", retCode );
+
         retCode = device_stop();
+        fprintf( stderr, "device_stop %d\n", retCode );
+
         retCode = reset_nt1065();
+        fprintf( stderr, "reset_nt1065 %d\n", retCode );
 
         GetNt1065ChipID();
         readFwVersion();
@@ -424,7 +433,9 @@ fx3_dev_err_t FX3Dev::ctrlFromDevice(uint8_t cmd, uint16_t value, uint16_t index
 }
 
 fx3_dev_err_t FX3Dev::loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr ) {
+    fprintf( stderr, "FX3Dev::loadAdditionalFirmware\n" );
     if ( !fw_name ) {
+        fprintf( stderr, "FX3Dev::loadAdditionalFirmware __error__ fw_name is null\n" );
         return FX3_ERR_ADDFIRMWARE_FILE_IO_ERROR;
     }
     

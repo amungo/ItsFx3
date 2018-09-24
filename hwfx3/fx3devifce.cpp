@@ -139,11 +139,14 @@ void FX3DevIfce::init_ntlab_default() {
 
 uint32_t FX3DevIfce::GetNt1065ChipID() {
 
+    fprintf( stderr, "GetNt1065ChipID\n" );
     unsigned char reg0 = 0;
     fx3_dev_err_t res = read8bitSPI(0x00, &reg0);
+    fprintf( stderr, "read8bitSPI(0x00) ret code %d\n", res );
 
     unsigned char reg1 = 0;
     res = read8bitSPI(0x01, &reg1);
+    fprintf( stderr, "read8bitSPI(0x01) ret code %d\n", res );
 
     uint32_t id = (unsigned int)reg0<<21 | ((unsigned int)reg1&0xF8)<<13 | reg1&0x07;
 

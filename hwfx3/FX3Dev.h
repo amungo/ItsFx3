@@ -80,7 +80,7 @@ protected:
 private:    
     static const uint32_t VENDOR_ID = 0x04b4;
     static const uint32_t DEV_PID_NO_FW_NEEDED = 0x00f1; // PID of device with already flashed firmware
-    static const uint32_t DEV_PID_FOR_FW_LOAD  = 0x00f0; //0x00f3; // @camry -- Удалить! PID of device without flashed firmware. This device must be flashed before use.
+    static const uint32_t DEV_PID_FOR_FW_LOAD  = 0x00f0; //0x00f0; // @camry -- Удалить! PID of device without flashed firmware. This device must be flashed before use.
     
     static const uint32_t MAX_UPLOAD_BLOCK_SIZE8 = 2048; // For firmware flashing.
     static const uint8_t  CMD_FW_LOAD   = 0xA0;          // Vendor command for firmware flashing.
