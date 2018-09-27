@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <stdlib.h>
 
 #include "lazy_matrix.h"
 
