@@ -131,12 +131,12 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
             if ( eres != FX3_ERR_OK ) {
                 fprintf( stderr, "FX3Dev::Init() __error__ loadAdditionalFirmware %d %s\n", eres, fx3_get_error_string( eres ) );
                 return eres;
+            } else {
+                fprintf( stderr, "loadAdditionalFirmware ok\n" );
             }
         }
     }
     readFwVersion();
-
-
 
     ires = libusb_claim_interface(device_handle, 0);
     if ( ires < 0 ) {
@@ -411,7 +411,7 @@ fx3_dev_err_t FX3Dev::loadAdditionalFirmware( const char* fw_name, uint32_t stop
             return eres;
         }
         
-        std::this_thread::sleep_for( std::chrono::milliseconds(ADD_FW_LOAD_PAUSE_MS) );
+        std::this_thread::sleep_for( std::chrono::milliseconds((uint64_t)ADD_FW_LOAD_PAUSE_MS) );
         
         if ( addr[i] == stop_addr ) {
             break;
