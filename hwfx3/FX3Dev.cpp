@@ -56,7 +56,6 @@ FX3Dev::~FX3Dev() {
 
     if ( resetECP5() == FX3_ERR_OK) {
         fprintf( stderr, "Going to reset lattice. Please wait\n" );
-        std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
     }
     else {
         fprintf( stderr, "__error__ LATTICE CHIP RESET failed\n" );
