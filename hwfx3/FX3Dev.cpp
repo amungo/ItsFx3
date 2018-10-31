@@ -53,6 +53,26 @@ FX3Dev::~FX3Dev() {
         libusb_cancel_transfer(write_transfer);
         libusb_free_transfer(write_transfer);
     }
+
+    if ( resetECP5() == FX3_ERR_OK) {
+        fprintf( stderr, "Going to reset lattice. Please wait\n" );
+        std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
+    }
+    else {
+        fprintf( stderr, "__error__ LATTICE CHIP RESET failed\n" );
+    }
+
+    if ( resetFx3Chip() == FX3_ERR_OK ) {
+        fprintf( stderr, "Fx3 is going to reset. Please wait\n" );
+        for ( int i = 0; i < 20; i++ ) {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+            fprintf( stderr, "*" );
+        }
+        fprintf( stderr, " done\n" );
+    } else {
+        fprintf( stderr, "__error__ FX3 CHIP RESET failed\n" );
+    }
+
     
     if ( device_handle ) {
         int ires = libusb_release_interface(device_handle, 0);
@@ -842,12 +862,13 @@ void FX3Dev::startRead( DeviceDataHandlerIfce* handler ) {
     for(uint32_t i = 0;i<buffers_count;i++) {
         libusb_fill_bulk_transfer(transfers[i], device_handle, (endpoint_from_dev_num | LIBUSB_ENDPOINT_IN), half_full_buffers[i],
                                   half_full_size8, FX3Dev::onDataReady, this, DEV_DOWNLOAD_TIMEOUT_MS);
+        fprintf( stderr, "submit bulk tx[ %d ], hf_size8 = %u\n", i, half_full_size8 );
     }
     
     data_handler = handler;
     event_loop_running = true;
     event_thread = std::thread(&FX3Dev::event_loop, this);
-    
+
     for(uint32_t i = 0;i<buffers_count;i++) {
         res = libusb_submit_transfer(transfers[i]);
         if(res != 0) {
