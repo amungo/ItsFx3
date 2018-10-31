@@ -25,6 +25,14 @@ FX3DevCyAPI::~FX3DevCyAPI() {
 
     std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
+    if ( resetECP5() == FX3_ERR_OK) {
+        fprintf( stderr, "Going to reset lattice. Please wait\n" );
+        std::this_thread::sleep_for( std::chrono::milliseconds( 200 ) );
+    }
+    else {
+        fprintf( stderr, "__error__ LATTICE CHIP RESET failed\n" );
+    }
+
     if ( resetFx3Chip() == FX3_ERR_OK ) {
         fprintf( stderr, "Fx3 is going to reset. Please wait\n" );
         for ( int i = 0; i < 20; i++ ) {
@@ -147,8 +155,13 @@ fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* algoFileName, const char* dataF
     {
         // Set DAC
         retCode = setDAC(0x000AFFFF<<4);
+        fprintf( stderr, "setDAC %d\n", retCode );
+
         retCode = device_stop();
+        fprintf( stderr, "device_stop %d\n", retCode );
+
         retCode = reset_nt1065();
+        fprintf( stderr, "reset_nt1065 %d\n", retCode );
 
         GetNt1065ChipID();
         readFwVersion();
@@ -481,6 +494,8 @@ fx3_dev_err_t FX3DevCyAPI::send8bitSPI(uint8_t _addr, uint8_t _data)
     buf[1] = (UCHAR)(_data);
 
     //qDebug() << "Reg" << _addr << " " << hex << _data;
+    //fprintf( stderr, "Reg:%u 0x%04x \n", _addr, _data);
+
     WORD value = 0;
     WORD index = 1;
     return ctrlToDevice(REG_WRITE8, value, index, buf, len);
@@ -504,7 +519,7 @@ fx3_dev_err_t FX3DevCyAPI::read8bitSPI(uint8_t addr, uint8_t* data)
 }
 
 fx3_dev_err_t FX3DevCyAPI::sendECP5(uint8_t* _data, long _data_len)
-{    
+{
     UCHAR dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     LONG  len = 16;
     UCHAR* buf = dummybuf;
