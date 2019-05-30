@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <set>
 #include <QDirIterator>
+#include <math.h>
 
 using namespace std;
 
