@@ -14,6 +14,7 @@ enum fx3cmd {
     NT1065_RESET    = 0xD7,
 
     ECP5_RESET      = 0xD0,
+    ECP5_OFF        = 0xDA,
     REG_WRITE8      = 0xD6,
     REG_READ8       = 0xD9,
     ECP5_WRITE      = 0xD1,
