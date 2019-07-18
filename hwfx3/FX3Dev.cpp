@@ -54,11 +54,11 @@ FX3Dev::~FX3Dev() {
         libusb_free_transfer(write_transfer);
     }
 
-    if ( resetECP5() == FX3_ERR_OK) {
-        fprintf( stderr, "Going to reset lattice. Please wait\n" );
+    if ( switchoffECP5() == FX3_ERR_OK) {
+        fprintf( stderr, "Going to switch off lattice. Please wait\n" );
     }
     else {
-        fprintf( stderr, "__error__ LATTICE CHIP RESET failed\n" );
+        fprintf( stderr, "__error__ LATTICE CHIP SWITCH OFF failed\n" );
     }
 
     if ( resetFx3Chip() == FX3_ERR_OK ) {
@@ -616,6 +616,20 @@ fx3_dev_err_t FX3Dev::resetECP5()
     uint32_t len = 16;
 
     uint8_t cmd = ECP5_RESET;
+    uint16_t value = 0;
+    uint16_t index = 1;
+
+    int success = (txControlFromDevice(dummybuf, len, cmd, value, index) == FX3_ERR_OK) ? 1 : 0;
+
+    return (success && dummybuf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3Dev::switchoffECP5()
+{
+    uint8_t  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 16;
+
+    uint8_t cmd = ECP5_OFF;
     uint16_t value = 0;
     uint16_t index = 1;
 

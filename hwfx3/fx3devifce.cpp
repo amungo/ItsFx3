@@ -296,6 +296,11 @@ fx3_dev_err_t FX3DevIfce::resetECP5()
     return FX3_ERR_CTRL_TX_FAIL;
 }
 
+fx3_dev_err_t FX3DevIfce::switchoffECP5()
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
 fx3_dev_err_t FX3DevIfce::checkECP5()
 {
     return FX3_ERR_CTRL_TX_FAIL;

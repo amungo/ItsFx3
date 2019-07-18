@@ -25,11 +25,11 @@ FX3DevCyAPI::~FX3DevCyAPI() {
 
     std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
-    if ( resetECP5() == FX3_ERR_OK) {
-        fprintf( stderr, "Going to reset lattice. Please wait\n" );
+    if ( switchoffECP5() == FX3_ERR_OK) {
+        fprintf( stderr, "Going to switch_off lattice. Please wait\n" );
     }
     else {
-        fprintf( stderr, "__error__ LATTICE CHIP RESET failed\n" );
+        fprintf( stderr, "__error__ LATTICE CHIP SWITCH OFF failed\n" );
     }
 
     if ( resetFx3Chip() == FX3_ERR_OK ) {
@@ -556,6 +556,18 @@ fx3_dev_err_t FX3DevCyAPI::resetECP5()
     WORD index = 1;
     LONG len = 16;
     fx3_dev_err_t result = ctrlFromDevice(ECP5_RESET, value, index, buf, len);
+
+    return (result == FX3_ERR_OK && buf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevCyAPI::switchoffECP5()
+{
+    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    WORD value = 0;
+    WORD index = 1;
+    LONG len = 16;
+    fx3_dev_err_t result = ctrlFromDevice(ECP5_OFF, value, index, buf, len);
 
     return (result == FX3_ERR_OK && buf[0]) ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
