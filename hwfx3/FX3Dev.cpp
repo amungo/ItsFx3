@@ -54,7 +54,7 @@ FX3Dev::~FX3Dev() {
         libusb_free_transfer(write_transfer);
     }
 
-    if ( switchoffECP5() == FX3_ERR_OK) {
+    if ( resetECP5() == FX3_ERR_OK) {
         fprintf( stderr, "Going to switch off lattice. Please wait\n" );
     }
     else {

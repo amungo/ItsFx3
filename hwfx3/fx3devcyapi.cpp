@@ -25,7 +25,7 @@ FX3DevCyAPI::~FX3DevCyAPI() {
 
     std::this_thread::sleep_for( std::chrono::milliseconds( 500 ) );
 
-    if ( switchoffECP5() == FX3_ERR_OK) {
+    if ( resetECP5() == FX3_ERR_OK) {
         fprintf( stderr, "Going to switch_off lattice. Please wait\n" );
     }
     else {
