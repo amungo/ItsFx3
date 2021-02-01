@@ -32,7 +32,7 @@ void HWManager::SetRouter(StreamRouter* r) {
 }
 
 void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , const char* additionalImageFileName,
-                             const char* algoFileName, const char* dataFileName)
+                             const char* bitFileName)
 {
     fprintf( stderr, "HWManager::initHardware( %d, %s, %s )\n", (int32_t)drvType, imageFileName, additionalImageFileName );
     if ( dev ) {
@@ -74,7 +74,7 @@ void HWManager::initHardware(DriverType_t drvType, const char* imageFileName , c
         if(drvType == DrvTypeCypress || drvType == DrvTypeLibUsb)
         {
             fprintf( stderr, "initing fpga...\n" );
-            fx3_dev_err_t fpga_error = dev->init_fpga(algoFileName, dataFileName);
+            fx3_dev_err_t fpga_error = dev->init_fpga(bitFileName);
             if(fpga_error != FX3_ERR_OK) {
                 fprintf( stderr, "fpga error %d\n", fpga_error );
                 dev = 0;

@@ -26,7 +26,7 @@ signals:
     
 public slots:
     void initHardware( DriverType_t drvType, const char* imageFileName, const char* additionalImageFileName,
-                       const char* algoFileName, const char* dataFileName);
+                       const char* bitFileName);
     void closeHardware();
     void startStreams();
     void stopStreams();
