@@ -20,11 +20,10 @@
 #define MAX_QUEUE_SZ  64
 #define VENDOR_ID    ( 0x04B4 )
 #define PRODUCT_STREAM  ( 0x00F1 )
-#define PRODUCT_BOOT    ( 0x00F0 ) //( 0x00F3 ) //@camry -- Удалить !!!!! ( 0x00F0 ) пока ипользуем то что прошито.
+#define PRODUCT_BOOT    ( 0x00F3 ) //( 0x00F3 ) //@camry
 
-typedef void (__stdcall * DataProcessorFunc)(char*, int);//data pointer, data size (bytes);
+typedef void (__stdcall * DataProcessorFunc)(char*, int); //data pointer, data size (bytes);
 
-class SSPICore;
 
 struct EndPointParams{
     int Attr;
@@ -59,7 +58,7 @@ public:
 public:
     // FX3DevIfce interface
     virtual fx3_dev_err_t init(const char *firmwareFileName, const char *additionalFirmwareFileName);
-    virtual fx3_dev_err_t init_fpga(const char* algoFileName, const char* dataFileName);
+    virtual fx3_dev_err_t init_fpga(const char* bitFileName);
 
     void startRead(DeviceDataHandlerIfce *handler);
     void stopRead();
@@ -108,8 +107,6 @@ private:
     uint32_t last_overflow_count;
     double size_tx_mb;
 
-    std::shared_ptr<SSPICore> m_SSPICore;
-    
 
     // DeviceControlIOIfce interface
 public:

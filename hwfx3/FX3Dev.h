@@ -49,7 +49,7 @@ public:
 
     // **** overrides FX3DevIfce
     fx3_dev_err_t init( const char* firmwareFileName = NULL, const char* additionalFirmwareFileName = NULL );
-    virtual fx3_dev_err_t init_fpga(const char* algoFileName, const char* dataFileName);
+    virtual fx3_dev_err_t init_fpga(const char* bitFileName);
 
     void startRead( DeviceDataHandlerIfce* handler );
     void stopRead();
@@ -148,7 +148,6 @@ private:
 
     FX3DevFwParser fw_parser;
 
-    std::shared_ptr<SSPICore> m_SSPICore;
 };
 
 

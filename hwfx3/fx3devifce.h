@@ -20,7 +20,7 @@ public:
     // Opens device and flash it if neccessary (set firmwareFileName to NULL to disable flashing)
     virtual fx3_dev_err_t init( const char* firmwareFileName,
                                 const char* additionalFirmwareFileName ) = 0;
-    virtual fx3_dev_err_t init_fpga(const char* algoFileName, const char* dataFileName)
+    virtual fx3_dev_err_t init_fpga(const char* bitFileName)
     { return FX3_ERR_CTRL_TX_FAIL; }
 
     // Starts reading of signal from device and sends data to handler.
@@ -35,7 +35,6 @@ public:
     virtual fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false ) = 0;
 
     virtual void readFwVersion();
-
     virtual fx3_dev_err_t loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr ) { return FX3_ERR_DRV_NOT_IMPLEMENTED; }
 
     virtual fx3_dev_err_t send16bitSPI(uint8_t data, uint8_t addr);

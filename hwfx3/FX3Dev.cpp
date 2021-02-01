@@ -5,8 +5,7 @@
 #include "FX3Dev.h"
 #include "HexParser.h"
 
-#include "lattice/lfe5u_core.h"
-#include "lattice/lfe5u_opcode.h"
+#include <QFile>
 
 #ifdef WIN32
 #include <windows.h>
@@ -45,7 +44,6 @@ FX3Dev::FX3Dev( size_t one_block_size8, uint32_t dev_buffers_count ) :
     }
     write_buffer = new uint8_t[ half_full_size8 ];
 
-    m_SSPICore = std::shared_ptr<SSPICore>(new SSPICore(this));
 }
 
 FX3Dev::~FX3Dev() {
@@ -179,14 +177,36 @@ fx3_dev_err_t FX3Dev::init(const char* firmwareFileName /* = NULL */, const char
     return FX3_ERR_OK;
 }
 
-fx3_dev_err_t FX3Dev::init_fpga(const char* algoFileName, const char* dataFileName)
+fx3_dev_err_t FX3Dev::init_fpga(const char* bitFileName)
 {
     fx3_dev_err_t retCode = FX3_ERR_OK;
-    int siRetCode = m_SSPICore->SSPIEm_preset( algoFileName, dataFileName);
-    siRetCode = m_SSPICore->SSPIEm(0xFFFFFFFF);
 
-    retCode = (siRetCode == PROC_OVER) ? FX3_ERR_OK : FX3_ERR_FPGA_DATA_FILE_IO_ERROR;
+    QFile fwFile(bitFileName);
+    if(!fwFile.open(QIODevice::ReadOnly))
+        return FX3_ERR_CTRL_TX_FAIL;
 
+    QByteArray buff = fwFile.readAll();
+    qint64 sz = buff.size();
+    fwFile.close();
+
+    int written = 0;
+    int rstFPGA = resetECP5();
+    if(rstFPGA == FX3_ERR_OK) {
+        long len = 512;
+        char* tbuff = buff.data();
+        for (; written < sz; tbuff += len) {
+            if((written + len) > sz)
+                len = sz - written;
+
+            if(sendECP5((quint8*)tbuff, len) != FX3_ERR_OK)
+            {
+                printf("--- Error cfgFPGA!! - ---\n");
+            }
+            written += len;
+        }
+    }
+
+    retCode = checkECP5();
     if(retCode == FX3_ERR_OK)
     {
         // Set DAC
@@ -612,7 +632,7 @@ fx3_dev_err_t FX3Dev::recvECP5(uint8_t* _data, long _data_len)
 
 fx3_dev_err_t FX3Dev::resetECP5()
 {
-    uint8_t  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t  dummybuf[16] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
     uint32_t len = 16;
 
     uint8_t cmd = ECP5_RESET;
@@ -640,7 +660,7 @@ fx3_dev_err_t FX3Dev::switchoffECP5()
 
 fx3_dev_err_t FX3Dev::checkECP5()
 {
-    uint8_t  dummybuf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t  dummybuf[16] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
     memset(&dummybuf[0], 0xff, 16);
     uint32_t len = 16;
 

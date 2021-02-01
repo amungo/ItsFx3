@@ -2,14 +2,13 @@
 
 #include <QDebug>
 #include <QTextStream>
+#include <QFile>
+#include <sstream>
 
 #include "fx3devcyapi.h"
 #ifndef NO_CY_API
 
 #include "HexParser.h"
-#include "ad9361/ad9361_tuner.h"
-#include "lattice/lfe5u_core.h"
-#include "lattice/lfe5u_opcode.h"
 
 
 FX3DevCyAPI::FX3DevCyAPI() :
@@ -17,7 +16,7 @@ FX3DevCyAPI::FX3DevCyAPI() :
     last_overflow_count( 0 ),
     size_tx_mb( 0.0 )
 {
-    m_SSPICore = std::shared_ptr<SSPICore>(new SSPICore(this));
+
 }
 
 FX3DevCyAPI::~FX3DevCyAPI() {
@@ -128,7 +127,6 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
         }
     }
 
-
     bool In;
     int Attr, MaxPktSize, MaxBurst, Interface, Address;
     int EndPointsCount = EndPointsParams.size();
@@ -142,14 +140,36 @@ fx3_dev_err_t FX3DevCyAPI::init(const char *firmwareFileName, const char *additi
 }
 
 
-fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* algoFileName, const char* dataFileName)
+fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* bitFileName)
 {
     fx3_dev_err_t retCode = FX3_ERR_OK;
-    int siRetCode = m_SSPICore->SSPIEm_preset( algoFileName, dataFileName);
-    siRetCode = m_SSPICore->SSPIEm(0xFFFFFFFF);
 
-    retCode = (siRetCode == PROC_OVER) ? FX3_ERR_OK : FX3_ERR_FPGA_DATA_FILE_IO_ERROR;
+    QFile fwFile(bitFileName);
+    if(!fwFile.open(QIODevice::ReadOnly))
+        return FX3_ERR_CTRL_TX_FAIL;
 
+    QByteArray buff = fwFile.readAll();
+    qint64 sz = buff.size();
+    fwFile.close();
+
+    int written = 0;
+    retCode = resetECP5();
+    if(retCode == FX3_ERR_OK) {
+        long len = 512;
+        char* tbuff = buff.data();
+        for (; written < sz; tbuff += len) {
+            if((written + len) > sz)
+                len = sz - written;
+
+            if(sendECP5((quint8*)tbuff, len) != FX3_ERR_OK)
+            {
+                printf("--- Error sendECP5!! - ---\n");
+            }
+            written += len;
+        }
+    }
+
+    retCode = checkECP5();
     if(retCode == FX3_ERR_OK)
     {
         // Set DAC
@@ -174,19 +194,18 @@ fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* algoFileName, const char* dataF
 }
 
 
-void FX3DevCyAPI::startRead(DeviceDataHandlerIfce *handler) {
+void FX3DevCyAPI::startRead(DeviceDataHandlerIfce *handler)
+{
     size_tx_mb = 0.0;
     startTransferData(0, 128, 4, 1500);
     data_handler = handler;
     xfer_thread = std::thread(&FX3DevCyAPI::xfer_loop, this);
-    //@camry startGpif();
-    //device_stop();
-    //device_reset();
 
     device_start();
 }
 
-void FX3DevCyAPI::stopRead() {
+void FX3DevCyAPI::stopRead()
+{
     if( StartParams.bStreaming ) {
         StartParams.bStreaming = false;
         xfer_thread.join();
@@ -451,7 +470,7 @@ fx3_dev_err_t FX3DevCyAPI::send24bitSPI(unsigned char data, unsigned short addr)
         fprintf( stderr, "__error__ FX3Dev::setDAC() FAILED (len = %d)\n", len );
     }
 
-    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;;
+    return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
 
 fx3_dev_err_t FX3DevCyAPI::read24bitSPI(unsigned short addr, unsigned char* data)
@@ -550,7 +569,7 @@ fx3_dev_err_t FX3DevCyAPI::recvECP5(uint8_t* _data, long _data_len)
 
 fx3_dev_err_t FX3DevCyAPI::resetECP5()
 {
-    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    UCHAR buf[16] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 
     WORD value = 0;
     WORD index = 1;
@@ -574,7 +593,7 @@ fx3_dev_err_t FX3DevCyAPI::switchoffECP5()
 
 fx3_dev_err_t FX3DevCyAPI::checkECP5()
 {
-    UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    UCHAR  buf[16] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
     LONG len = 16;
     memset(&buf[0], 0xff, len);
 
@@ -756,6 +775,7 @@ fx3_dev_err_t FX3DevCyAPI::ctrlFromDevice(uint8_t cmd, uint16_t value, uint16_t 
 
     return success ? FX3_ERR_OK : FX3_ERR_CTRL_TX_FAIL;
 }
+
 
 void FX3DevCyAPI::xfer_loop() {
     fprintf( stderr, "FX3DevCyAPI::xfer_loop() started\n" );

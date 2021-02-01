@@ -24,7 +24,7 @@
 
 //#define DEF_FW_NAME "fx3_newsub_injector.img"
 //#define DEF_FW_NAME "fx3_att_dbg.img"
-#define DEF_FW_NAME "AmungoItsFx3Firmware-nut2.img"
+#define DEF_FW_NAME "AmungoItsFx3Firmware-cs2.img"
 
 enum ADCType {
     ADC_NT1065,
@@ -51,8 +51,7 @@ struct FX3Config {
     bool have_dbg;
     std::string fn_hex;
     std::string fn_img;
-    std::string fn_alg;
-    std::string fn_data;
+    std::string fn_bit;
     double adc_sample_rate_hz;
     double inter_freq_hz;
     bool auto_start_streams;
@@ -140,8 +139,7 @@ struct FX3Config {
             fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex"; //"manual";
             //fn_img          = "D://work//raw_signal.img";
             fn_img          = DEF_FW_NAME;
-            fn_alg          = "nuts2_impl1_algo.sea";
-            fn_data         = "nuts2_impl1_data.sed";
+            fn_bit          = "top.bit";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
             break;
