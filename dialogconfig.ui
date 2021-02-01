@@ -284,7 +284,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QGroupBox" name="groupBoxAlgo">
+  <widget class="QGroupBox" name="groupBoxBit">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -294,9 +294,9 @@
     </rect>
    </property>
    <property name="title">
-    <string>Lattice algorithm file (sea)</string>
+    <string>FPGA bitfile (bit)</string>
    </property>
-   <widget class="QLineEdit" name="lineEditAlgoFileName">
+   <widget class="QLineEdit" name="lineEditBitFileName">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -306,43 +306,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButtonFileAlgo">
-    <property name="geometry">
-     <rect>
-      <x>400</x>
-      <y>30</y>
-      <width>31</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>...</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBoxData">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>250</y>
-     <width>441</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Lattice data file (sed)</string>
-   </property>
-   <widget class="QLineEdit" name="lineEditDataFileName">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>381</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonFileData">
+   <widget class="QPushButton" name="pushButtonFileBit">
     <property name="geometry">
      <rect>
       <x>400</x>
