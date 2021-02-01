@@ -122,8 +122,7 @@ void ItsMain::onButtonInitHw(bool) {
     emit signalInitHw( cfg->drv_type,
                        cfg->fn_img.c_str(),
                        cfg->have_submodules ? cfg->fn_hex.c_str() : NULL,
-                       (!cfg->fn_alg.empty()) ? cfg->fn_alg.c_str() : NULL,
-                       (!cfg->fn_data.empty()) ? cfg->fn_data.c_str() : NULL);
+                       (!cfg->fn_bit.empty()) ? cfg->fn_bit.c_str() : NULL);
 }
 
 void ItsMain::onButtonCloseHw(bool) {

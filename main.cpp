@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     router.AddOutPoint( &gpsForm );
 
-    QObject::connect(&mainWindow, SIGNAL(signalInitHw(DriverType_t, const char*, const char*, const char*, const char*)), &hwm, SLOT(initHardware(DriverType_t, const char*, const char*, const char*, const char*)));
+    QObject::connect(&mainWindow, SIGNAL(signalInitHw(DriverType_t, const char*, const char*, const char*)), &hwm, SLOT(initHardware(DriverType_t, const char*, const char*, const char*)));
     QObject::connect(&mainWindow, SIGNAL(signalCloseHw()),           &hwm, SLOT(closeHardware()) );
     QObject::connect(&mainWindow, SIGNAL(signalStartHwStreams()),    &hwm, SLOT(startStreams()) );
     QObject::connect(&mainWindow, SIGNAL(signalStopHwStreams()),     &hwm, SLOT(stopStreams()) );
