@@ -48,8 +48,6 @@ SOURCES += main.cpp \
     hwfx3/FileSimDev.cpp \
     SpectrumForm.cpp \
     util/TimeComputator.cpp \
-    hwfx3/ad9361/ad9361_tuner.cpp \
-    hwfx3/ad9361/types/filters.cpp \
     gcacorr/lazy_matrix.cpp \
     phaseform.cpp \
     phasewidget.cpp \
@@ -67,10 +65,7 @@ SOURCES += main.cpp \
     hwfx3/fx3devifce.cpp \
     hwfx3/fx3tuner.cpp \
     tuneform.cpp \
-    util/etalonsfiles.cpp \
-    hwfx3/lattice/lfe5u_hardware.cpp \
-    hwfx3/lattice/lfe5u_util.cpp \
-    hwfx3/lattice/lfe5u_core.cpp
+    util/etalonsfiles.cpp
 
 HEADERS  += itsmain.h \
             hwfx3/FX3Dev.h \
@@ -120,14 +115,8 @@ HEADERS  += itsmain.h \
     SpectrumForm.h \
     gcacorr/averagervector.h \
     util/TimeComputator.h \
-    hwfx3/ad9361/ad9361_defines.h \
-    hwfx3/ad9361/ad9361_tuner.h \
     hwfx3/devioifce.h \
     hwfx3/ad9361/types/filters.h \
-    hwfx3/ad9361/ad9361_client.h \
-    hwfx3/ad9361/ad9361_filter_taps.h \
-    hwfx3/ad9361/ad9361_gain_tables.h \
-    hwfx3/ad9361/ad9361_synth_lut.h \
     datahandlers/filedumpcallbackifce.h \
     gcacorr/lazy_matrix.h \
     phaseform.h \
@@ -147,12 +136,7 @@ HEADERS  += itsmain.h \
     hwfx3/fx3tuner.h \
     tuneform.h \
     util/etalonsfiles.h \
-    gcacorr/filters.h \
-    hwfx3/lattice/lfe5u_hardware.h \
-    hwfx3/lattice/lfe5u_util.h \
-    hwfx3/lattice/lfe5u_opcode.h \
-    hwfx3/lattice/lfe5u_core.h \
-    hwfx3/lattice/lfe5u_debug.h
+    gcacorr/filters.h
 
 FORMS    += itsmain.ui \
     rawsignalform.ui \
