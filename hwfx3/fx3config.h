@@ -24,7 +24,7 @@
 
 //#define DEF_FW_NAME "fx3_newsub_injector.img"
 //#define DEF_FW_NAME "fx3_att_dbg.img"
-#define DEF_FW_NAME "AmungoItsFx3Firmware-cs2.img"
+#define DEF_FW_NAME "AmungoItsFx3Firmware-cs1.img"
 
 enum ADCType {
     ADC_NT1065,
