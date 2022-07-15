@@ -12,6 +12,10 @@
 #include "util/TimeComputator.h"
 
 
+#define NUT4_GYRO_DATA_PACKET_SIZE  16384
+#define NUT4_GYRO_HEADER_SIZE       18 //20      // (6 bytes 3xADXRS450 + 12 bytes ADXL357 + 2 bytes padding)
+#define NUT4_DATA_SIZE              16366 // 16364        //16366 @camry
+
 struct StreamData {
     StreamData();
     void* data;
@@ -28,7 +32,7 @@ public:
     
     // StreamDataHandler interface
     virtual void HandleADCStreamData(void* data, size_t size8);
-    virtual void HandleStreamDataOneChan( short* one_ch_data, size_t pts_cnt, int channel );
+    virtual void HandleStreamDataOneChan( short* one_ch_data, size_t pts_cnt, int chip, int channel );
 
     void SetHackedLen( int hacked_len );
 protected:

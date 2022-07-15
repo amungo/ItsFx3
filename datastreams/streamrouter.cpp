@@ -55,7 +55,7 @@ void StreamRouter::HandleADCStreamData(void* data, size_t size8) {
     cond_var.notify_one();
 }
 
-void StreamRouter::HandleStreamDataOneChan(short*, size_t, int) {
+void StreamRouter::HandleStreamDataOneChan(short*, size_t, int, int) {
 
 }
 
@@ -69,58 +69,88 @@ void StreamRouter::RouteData(void* data, size_t size8) {
         size8 = hack_len;
     }
 
-    std::vector< int16_t* > chans_data;
-    chans_data.resize( 0 );
+    std::vector< int16_t* > chans_data0;
+    std::vector< int16_t* > chans_data1;
+    std::vector< char> gyro_data;
+    chans_data0.resize( 0 );
+    chans_data1.resize( 0 );
+    gyro_data.resize(NUT4_GYRO_HEADER_SIZE);
+
+    size_t pkt_count = size8 / NUT4_GYRO_DATA_PACKET_SIZE;
+    size_t pkt_data_size = NUT4_DATA_SIZE;
+    size_t to_go = size8;
+
     bool need_delete = false;
 
     uint32_t pts_cnt;
     if ( adc_type == ADC_NT1065 || adc_type == ADC_SE4150 || adc_type == ADC_NT1065_File ) {
         tc.Start();
-        pts_cnt = size8 / sizeof( uint8_t );
-        chans_data.resize( 4 );
+        pts_cnt = (size8 / sizeof( uint8_t )) - (NUT4_GYRO_HEADER_SIZE * pkt_count);
+
+        chans_data0.resize( 4 );
+        chans_data1.resize( 4 );
 
         need_delete = true;
-        for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            chans_data[ ch ] = new int16_t[ pts_cnt ];
+        for ( uint32_t ch = 0; ch < chans_data0.size(); ch++ ) {
+            chans_data0[ ch ] = new int16_t[ pts_cnt / 2];
+            chans_data1[ ch ] = new int16_t[ pts_cnt / 2];
         }
 
-        uint32_t* p32 = ( uint32_t* ) data;
-        for ( uint32_t i = 0; i < pts_cnt/4; i++ ) {
-            decode4bytes_to_4shorts_ch0( p32[ i ], &chans_data[ 0 ][ 4*i ] );
-            decode4bytes_to_4shorts_ch1( p32[ i ], &chans_data[ 1 ][ 4*i ] );
-            decode4bytes_to_4shorts_ch2( p32[ i ], &chans_data[ 2 ][ 4*i ] );
-            decode4bytes_to_4shorts_ch3( p32[ i ], &chans_data[ 3 ][ 4*i ] );
+        uint8_t* p8 = ( uint8_t* )data;
+        p8 += NUT4_GYRO_HEADER_SIZE;
+        size_t data_counter = 0;
+
+        while(to_go > 0)
+        {
+            ::memcpy(gyro_data.data(), p8 - NUT4_GYRO_HEADER_SIZE, NUT4_GYRO_HEADER_SIZE);
+            for ( uint32_t i = 0; i < pkt_data_size; i+=2)
+            {
+                chans_data0[ 0 ][data_counter] = decode_2bchar_to_short_ch0(p8[i]);
+                chans_data0[ 1 ][data_counter] = decode_2bchar_to_short_ch1(p8[i]);
+                chans_data0[ 2 ][data_counter] = decode_2bchar_to_short_ch2(p8[i]);
+                chans_data0[ 3 ][data_counter] = decode_2bchar_to_short_ch3(p8[i]);
+
+                chans_data1[ 0 ][data_counter] = decode_2bchar_to_short_ch0(p8[i+1]);
+                chans_data1[ 1 ][data_counter] = decode_2bchar_to_short_ch1(p8[i+1]);
+                chans_data1[ 2 ][data_counter] = decode_2bchar_to_short_ch2(p8[i+1]);
+                chans_data1[ 3 ][data_counter] = decode_2bchar_to_short_ch3(p8[i+1]);
+
+                data_counter ++;
+            }
+
+            to_go -= NUT4_GYRO_DATA_PACKET_SIZE;
+            p8 += NUT4_GYRO_DATA_PACKET_SIZE;
         }
+
         tc.Finish(size8+pts_cnt*sizeof(short)*4);
     } else if ( adc_type == ADC_1ch_16bit ) {
         pts_cnt = size8 / sizeof( uint16_t );
-        chans_data.resize( 1 );
+        chans_data0.resize( 1 );
         need_delete = false;
-        chans_data[ 0 ] = ( int16_t* ) data;
+        chans_data0[ 0 ] = ( int16_t* ) data;
 
     } else if ( adc_type == ADC_AD9361 ) {
         pts_cnt = size8 / sizeof( uint16_t );
-        chans_data.resize( 2 );
+        chans_data0.resize( 2 );
         need_delete = true;
-        for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            chans_data[ ch ] = new int16_t[ pts_cnt / 2 ];
+        for ( uint32_t ch = 0; ch < chans_data0.size(); ch++ ) {
+            chans_data0[ ch ] = new int16_t[ pts_cnt / 2 ];
         }
 
         int16_t* p16 = ( int16_t* ) data;
         for ( uint32_t i = 0; i < pts_cnt / 2; i += 4 ) {
 
-            chans_data[ 0 ][ i + 0 ] = *p16++; // I
-            chans_data[ 0 ][ i + 1 ] = *p16++; // Q
+            chans_data0[ 0 ][ i + 0 ] = *p16++; // I
+            chans_data0[ 0 ][ i + 1 ] = *p16++; // Q
 
-            chans_data[ 1 ][ i + 0 ] = *p16++; // I
-            chans_data[ 1 ][ i + 1 ] = *p16++; // Q
+            chans_data0[ 1 ][ i + 0 ] = *p16++; // I
+            chans_data0[ 1 ][ i + 1 ] = *p16++; // Q
 
-            chans_data[ 0 ][ i + 2 ] = *p16++; // I
-            chans_data[ 0 ][ i + 3 ] = *p16++; // Q
+            chans_data0[ 0 ][ i + 2 ] = *p16++; // I
+            chans_data0[ 0 ][ i + 3 ] = *p16++; // Q
 
-            chans_data[ 1 ][ i + 2 ] = *p16++; // I
-            chans_data[ 1 ][ i + 3 ] = *p16++; // Q
-
+            chans_data0[ 1 ][ i + 2 ] = *p16++; // I
+            chans_data0[ 1 ][ i + 3 ] = *p16++; // Q
         }
 
     } else {
@@ -135,20 +165,22 @@ void StreamRouter::RouteData(void* data, size_t size8) {
     std::set< StreamDataHandler* >::iterator handler = handlers_copy.begin();
     while ( handler != handlers_copy.end() ) {
         (*handler)->HandleADCStreamData(data, size8);
-        (*handler)->HandleAllChansData( chans_data, pts_cnt );
-        for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            uint32_t p_cnt_fixed = pts_cnt;
+        (*handler)->HandleAllChansData( chans_data0, pts_cnt );
+        (*handler)->HandleGyroData(gyro_data.data(), NUT4_GYRO_HEADER_SIZE);
+        for ( uint32_t ch = 0; ch < chans_data0.size(); ch++ ) {
+            uint32_t p_cnt_fixed = pts_cnt / 2;
             if ( adc_type == ADC_AD9361 ) {
                 p_cnt_fixed = pts_cnt / 2;
             }
-            (*handler)->HandleStreamDataOneChan(chans_data[ ch ], p_cnt_fixed, ch);
+            (*handler)->HandleStreamDataOneChan(chans_data0[ ch ], p_cnt_fixed, 0, ch);
+            (*handler)->HandleStreamDataOneChan(chans_data1[ ch ], p_cnt_fixed, 1, ch);
         }
         handler++;
     }
 
     if ( need_delete ) {
-        for ( uint32_t ch = 0; ch < chans_data.size(); ch++ ) {
-            delete [] chans_data[ ch ];
+        for ( uint32_t ch = 0; ch < chans_data0.size(); ch++ ) {
+            delete [] chans_data0[ ch ];
         }
     }
 }

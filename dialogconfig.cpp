@@ -15,8 +15,8 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
     QObject::connect(ui->comboBoxBoardType, SIGNAL(currentIndexChanged(int)), this, SLOT(boardChanged(int)));
     QObject::connect(ui->pushButtonFileImg, SIGNAL(clicked(bool)), this, SLOT(openFileImg(bool)));
     QObject::connect(ui->pushButtonFileAddFw, SIGNAL(clicked(bool)), this, SLOT(openFileAddFw(bool)));
+    QObject::connect(ui->pushButtonFileBit, SIGNAL(clicked(bool)), this, SLOT(openFileBit(bool)));
     QObject::connect(ui->checkBoxHaveSubs, SIGNAL(stateChanged(int)), this, SLOT(changedSubs(int)));
-
 
     int dtm = 0;
     bool have_cypress = false;
@@ -52,8 +52,8 @@ DialogConfig::DialogConfig(FX3Config* cfg, QWidget *parent) :
 
     int hli = 0;
     ui->comboBoxHackedLen->insertItem( hli++, "no hack", QVariant(0) );
-    ui->comboBoxHackedLen->insertItem( hli++, "fft4k x avg10", QVariant((int)(4096 * sizeof(short) * 10)) );
-    ui->comboBoxHackedLen->insertItem( hli++, "fft4k x avg20", QVariant((int)(4096 * sizeof(short) * 20)) );
+    ui->comboBoxHackedLen->insertItem( hli++, "fft4k x avg10", QVariant((int)(4096 * sizeof(short) * 10)));
+    ui->comboBoxHackedLen->insertItem( hli++, "fft4k x avg20", QVariant((int)(4096 * sizeof(short) * 20)));
 
     reSetFields();
 
@@ -85,7 +85,8 @@ void DialogConfig::reSetFields() {
     ui->checkBoxHaveSubs->setChecked( cfg->have_submodules );
     ui->checkBoxHaveDbg->setChecked( cfg->have_dbg );
     ui->lineEditImageFileName->setText( cfg->fn_img.c_str() );
-    ui->lineEditAdditionalImageFileName->setText( cfg->fn_hex.c_str() );
+    ui->lineEditAdditionalImageFileName->setText( cfg->fn_hex.c_str());
+    ui->lineEditBitFileName->setText(cfg->fn_bit.c_str());
     ui->checkBoxAutoStart->setChecked( cfg->auto_start_streams );
     changedSubs( cfg->have_submodules );
     ui->comboBoxDriverType->setCurrentIndex(drivers_combobox_map[cfg->drv_type]);
@@ -115,13 +116,28 @@ void DialogConfig::openFileAddFw(bool) {
     }
 }
 
+void DialogConfig::openFileBit(bool) {
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Select Lattice algorithm file"),
+        "",
+        tr("Images (*.bit);;All files (*.*)" )
+    );
+    if(fileName.size() > 1) {
+        ui->lineEditBitFileName->setText( fileName );
+    }
+}
+
+
+
 void DialogConfig::changedSubs(int state ) {
     if ( state ) {
         ui->pushButtonFileAddFw->setEnabled(true);
         ui->lineEditAdditionalImageFileName->setEnabled(true);
+        ui->lineEditBitFileName->setEnabled(true);
     } else {
         ui->pushButtonFileAddFw->setEnabled(false);
         ui->lineEditAdditionalImageFileName->setEnabled(false);
+        ui->lineEditBitFileName->setEnabled(false);
     }
 }
 
@@ -135,6 +151,7 @@ void DialogConfig::setConfigValues() {
     cfg->have_dbg  = ui->checkBoxHaveDbg->isChecked();
     cfg->fn_img = ui->lineEditImageFileName->text().toLatin1().data();
     cfg->fn_hex = ui->lineEditAdditionalImageFileName->text().toLatin1().data();
+    cfg->fn_bit = ui->lineEditBitFileName->text().toLatin1().data();
     cfg->adc_sample_rate_hz = ui->lineEditADCSampleRate->text().toDouble(&ok);
     cfg->inter_freq_hz = ui->lineEditGPSInterFreq->text().toDouble(&ok);
     cfg->auto_start_streams = ui->checkBoxAutoStart->isChecked();

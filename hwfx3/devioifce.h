@@ -10,4 +10,3 @@ public:
 };
 
 #endif // DEVIOIFCE_H
-

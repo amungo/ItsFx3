@@ -19,7 +19,7 @@ void StreamGapChecker::HandleADCStreamData(void*, size_t) {
     // nop
 }
 
-void StreamGapChecker::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int) {
+void StreamGapChecker::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int, int) {
     unsigned short gapval16 = ( unsigned short ) gapval;
     unsigned short maxgap16 = ( unsigned short ) maxgap;
     bool state_changed = false;

@@ -61,7 +61,7 @@ ConvResult *EtalometrBase::CalcConvolution(float_cpx_t iqs[])
 {
     result.Flush();
 
-    for ( size_t a = 0; a < etalons.size(); a++ ) {
+    for(size_t a = 0; a < etalons.size(); a++ ) {
         std::vector<PhasesDiff_t>& etalons_raw = etalons[a];
 
         for ( size_t p = 0; p < etalons_raw.size(); p++ ) {

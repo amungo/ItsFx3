@@ -17,14 +17,13 @@ extern "C" {
 
 #ifdef WIN32
 #include <windows.h>
+#include <memory>
 #endif
 
 #include <thread>
 #include <mutex>
 #include <list>
 #include <vector>
-
-
 
 /*
  * Find, opens and flash FX3 device.
@@ -43,15 +42,35 @@ extern "C" {
 class FX3Dev : public FX3DevIfce {
 public:
 
-    FX3Dev( size_t one_block_size8 = (3072 * 1250), uint32_t dev_buffers_count = 2 );
+    FX3Dev( size_t one_block_size8 = /* 2 * 1024 * 1024*/16384 * 64, uint32_t dev_buffers_count = 4 );
     virtual ~FX3Dev();
 
     // **** overrides FX3DevIfce
     fx3_dev_err_t init( const char* firmwareFileName = NULL, const char* additionalFirmwareFileName = NULL );
+    virtual fx3_dev_err_t init_fpga(const char* bitFileName);
+
     void startRead( DeviceDataHandlerIfce* handler );
     void stopRead();
     void sendAttCommand5bits( uint32_t bits );
     fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false );
+
+    //------------------------  Lattice (FX3DevIfce interFACE)  -------------------
+    virtual fx3_dev_err_t send8bitSPI(uint8_t addr, uint8_t data);
+    virtual fx3_dev_err_t read8bitSPI(uint8_t addr, uint8_t* data);
+    virtual fx3_dev_err_t sendECP5(uint8_t* buf, long len);
+    virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
+    virtual fx3_dev_err_t resetECP5();
+    virtual fx3_dev_err_t switchoffECP5();
+    virtual fx3_dev_err_t checkECP5();
+    virtual fx3_dev_err_t csonECP5();
+    virtual fx3_dev_err_t csoffECP5();
+    virtual fx3_dev_err_t setDAC(unsigned int data);
+    virtual fx3_dev_err_t device_start();
+    virtual fx3_dev_err_t device_stop();
+    virtual fx3_dev_err_t device_reset();
+    virtual fx3_dev_err_t reset_nt1065();
+    virtual fx3_dev_err_t load1065Ctrlfile(const char* fwFileName, int lastaddr);
+
     // ****
 protected:
     fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 );
@@ -61,7 +80,7 @@ protected:
 private:    
     static const uint32_t VENDOR_ID = 0x04b4;
     static const uint32_t DEV_PID_NO_FW_NEEDED = 0x00f1; // PID of device with already flashed firmware
-    static const uint32_t DEV_PID_FOR_FW_LOAD  = 0x00f3; // PID of device without flashed firmware. This device must be flashed before use.
+    static const uint32_t DEV_PID_FOR_FW_LOAD  = 0x00f3; //0x00f0; // @camry -- Удалить! PID of device without flashed firmware. This device must be flashed before use.
     
     static const uint32_t MAX_UPLOAD_BLOCK_SIZE8 = 2048; // For firmware flashing.
     static const uint8_t  CMD_FW_LOAD   = 0xA0;          // Vendor command for firmware flashing.
@@ -126,6 +145,7 @@ private:
     double size_tx_mb;
 
     FX3DevFwParser fw_parser;
+
 };
 
 

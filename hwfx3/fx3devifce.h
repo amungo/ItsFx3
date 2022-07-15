@@ -6,6 +6,10 @@
 #include "fx3commands.h"
 #include <stddef.h>
 
+
+//#define NUT4_GYRO_DATA_PACKET_SIZE  16384
+//#define NUT4_GYRO_HEADER_SIZE       18  (6 bytes 3xADXRS450 + 12 bytes ADXL357)
+
 // Interface for handling data from FX3 device
 class DeviceDataHandlerIfce {
 public:
@@ -20,6 +24,8 @@ public:
     // Opens device and flash it if neccessary (set firmwareFileName to NULL to disable flashing)
     virtual fx3_dev_err_t init( const char* firmwareFileName,
                                 const char* additionalFirmwareFileName ) = 0;
+    virtual fx3_dev_err_t init_fpga(const char* bitFileName)
+    { return FX3_ERR_CTRL_TX_FAIL; }
 
     // Starts reading of signal from device and sends data to handler.
     // If handler is NULL, data will be read and skipped
@@ -33,9 +39,27 @@ public:
     virtual fx3_dev_debug_info_t getDebugInfoFromBoard( bool ask_speed_only = false ) = 0;
 
     virtual void readFwVersion();
+    virtual fx3_dev_err_t loadAdditionalFirmware( const char* fw_name, uint32_t stop_addr ) { return FX3_ERR_DRV_NOT_IMPLEMENTED; }
 
     virtual fx3_dev_err_t send16bitSPI(uint8_t data, uint8_t addr);
     virtual fx3_dev_err_t read16bitSPI(uint8_t addr, uint8_t *data);
+
+    //----------------------- Lattice control ------------------
+    virtual fx3_dev_err_t send8bitSPI(uint8_t addr, uint8_t data);
+    virtual fx3_dev_err_t read8bitSPI(uint8_t addr, uint8_t* data);
+    virtual fx3_dev_err_t sendECP5(uint8_t* buf, long len);
+    virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
+    virtual fx3_dev_err_t resetECP5();
+    virtual fx3_dev_err_t switchoffECP5();
+    virtual fx3_dev_err_t checkECP5();
+    virtual fx3_dev_err_t csonECP5();
+    virtual fx3_dev_err_t csoffECP5();
+    virtual fx3_dev_err_t setDAC(unsigned int data);
+    virtual fx3_dev_err_t device_start();
+    virtual fx3_dev_err_t device_stop();
+    virtual fx3_dev_err_t device_reset();
+    virtual fx3_dev_err_t reset_nt1065();
+    virtual fx3_dev_err_t load1065Ctrlfile(const char* fwFileName, int lastaddr);
 
 protected:
     virtual fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 ) = 0;

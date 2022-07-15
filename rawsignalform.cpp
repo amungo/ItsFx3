@@ -85,7 +85,7 @@ void RawSignalForm::HandleADCStreamData(void*, size_t) {
 
 }
 
-void RawSignalForm::HandleStreamDataOneChan(short *one_ch_data, size_t in_pts_cnt, int channel) {
+void RawSignalForm::HandleStreamDataOneChan(short *one_ch_data, size_t in_pts_cnt, int chip, int channel) {
     if ( channel > chan_count ) {
         fprintf( stderr, "RawSignalForm Bad chan count config( rcv %d, cfg is %d )\n", channel, chan_count );
         return;

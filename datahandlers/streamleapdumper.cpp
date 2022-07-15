@@ -18,7 +18,7 @@ void StreamLEAPDumper::HandleADCStreamData(void* data, size_t size8) {
     mtx.unlock();
 }
 
-void StreamLEAPDumper::HandleStreamDataOneChan(short* one_ch_data, size_t pts_cnt, int channel) {
+void StreamLEAPDumper::HandleStreamDataOneChan(short* one_ch_data, size_t pts_cnt, int chan, int channel) {
     mtx.lock();
     if ( state != DS_NoDumping ) {
         if ( !pars.all_chans_raw_sig && pars.chan_num == channel ) {
