@@ -56,7 +56,9 @@ public:
 
     //------------------------  Lattice (FX3DevIfce interFACE)  -------------------
     virtual fx3_dev_err_t send8bitSPI(uint8_t addr, uint8_t data);
-    virtual fx3_dev_err_t read8bitSPI(uint8_t addr, uint8_t* data);
+    virtual fx3_dev_err_t read8bitSPI(uint8_t addr, uint8_t* data, uint8_t chip);
+    virtual fx3_dev_err_t writeADXL(uint8_t addr, uint8_t data);
+    virtual fx3_dev_err_t readADXL(uint8_t addr, uint8_t* data);
     virtual fx3_dev_err_t sendECP5(uint8_t* buf, long len);
     virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
     virtual fx3_dev_err_t resetECP5();
@@ -70,6 +72,7 @@ public:
     virtual fx3_dev_err_t device_reset();
     virtual fx3_dev_err_t reset_nt1065();
     virtual fx3_dev_err_t load1065Ctrlfile(const char* fwFileName, int lastaddr);
+    virtual fx3_dev_err_t set_spi_clock(uint16_t _clock);
 
     // ****
 protected:

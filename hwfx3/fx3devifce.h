@@ -46,7 +46,9 @@ public:
 
     //----------------------- Lattice control ------------------
     virtual fx3_dev_err_t send8bitSPI(uint8_t addr, uint8_t data);
-    virtual fx3_dev_err_t read8bitSPI(uint8_t addr, uint8_t* data);
+    virtual fx3_dev_err_t read8bitSPI(uint8_t addr, uint8_t* data, uint8_t chip = 0);
+    virtual fx3_dev_err_t writeADXL(uint8_t addr, uint8_t data);
+    virtual fx3_dev_err_t readADXL(uint8_t addr, uint8_t* data);
     virtual fx3_dev_err_t sendECP5(uint8_t* buf, long len);
     virtual fx3_dev_err_t recvECP5(uint8_t* buf, long len);
     virtual fx3_dev_err_t resetECP5();
@@ -54,12 +56,13 @@ public:
     virtual fx3_dev_err_t checkECP5();
     virtual fx3_dev_err_t csonECP5();
     virtual fx3_dev_err_t csoffECP5();
-    virtual fx3_dev_err_t setDAC(unsigned int data);
+    virtual fx3_dev_err_t setDAC(uint32_t data);
     virtual fx3_dev_err_t device_start();
     virtual fx3_dev_err_t device_stop();
     virtual fx3_dev_err_t device_reset();
     virtual fx3_dev_err_t reset_nt1065();
     virtual fx3_dev_err_t load1065Ctrlfile(const char* fwFileName, int lastaddr);
+    virtual fx3_dev_err_t set_spi_clock(uint16_t _clock);
 
 protected:
     virtual fx3_dev_err_t ctrlToDevice(   uint8_t cmd, uint16_t value = 0, uint16_t index = 0, void* data = nullptr, size_t data_len = 0 ) = 0;

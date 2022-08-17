@@ -276,7 +276,17 @@ fx3_dev_err_t FX3DevIfce::send8bitSPI(uint8_t data, uint8_t addr)
     return FX3_ERR_CTRL_TX_FAIL;
 }
 
-fx3_dev_err_t FX3DevIfce::read8bitSPI(uint8_t addr, uint8_t* data)
+fx3_dev_err_t FX3DevIfce::read8bitSPI(uint8_t addr, uint8_t* data, uint8_t chip)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::writeADXL(uint8_t addr, uint8_t data)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}
+
+fx3_dev_err_t FX3DevIfce::readADXL(uint8_t addr, uint8_t* data)
 {
     return FX3_ERR_CTRL_TX_FAIL;
 }
@@ -346,4 +356,7 @@ fx3_dev_err_t FX3DevIfce::load1065Ctrlfile(const char* fwFileName, int lastaddr)
     return FX3_ERR_CTRL_TX_FAIL;
 }
 
-
+fx3_dev_err_t FX3DevIfce::set_spi_clock(uint16_t _clock)
+{
+    return FX3_ERR_CTRL_TX_FAIL;
+}

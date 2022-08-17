@@ -22,7 +22,10 @@ enum fx3cmd {
     ECP5_CSON       = 0xD3,
     ECP5_CSOFF      = 0xD4,
     ECP5_CHECK      = 0xD2,
-    ECP5_SET_DAC    = 0xD8
+    ECP5_SET_DAC    = 0xD8,
+    ADXL_WRITE      = 0xDB,
+    ADXL_READ       = 0xDE,
+    SET_SPI_CLOCK   = 0xB5,
 };
 
 enum fx3gpio {

@@ -192,6 +192,12 @@ fx3_dev_err_t FX3Dev::init_fpga(const char* bitFileName)
     int written = 0;
     int rstFPGA = resetECP5();
     if(rstFPGA == FX3_ERR_OK) {
+        retCode = set_spi_clock(25000);
+        if(retCode != FX3_ERR_OK) {
+            fprintf( stderr, "FX3Dev::Init() set_spi_clock(25000 Khz) Ret code %d\n", retCode);
+            return retCode;
+        }
+
         long len = 512;
         char* tbuff = buff.data();
         for (; written < sz; tbuff += len) {
@@ -578,7 +584,7 @@ fx3_dev_err_t FX3Dev::send8bitSPI(uint8_t _addr, uint8_t _data)
     return txControlToDevice( buf, len, cmd, value, index);
 }
 
-fx3_dev_err_t FX3Dev::read8bitSPI(uint8_t addr, uint8_t* data)
+fx3_dev_err_t FX3Dev::read8bitSPI(uint8_t addr, uint8_t* data, uint8_t chip)
 {
     uint8_t buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     uint32_t len = 16;
@@ -588,9 +594,43 @@ fx3_dev_err_t FX3Dev::read8bitSPI(uint8_t addr, uint8_t* data)
 
     uint8_t cmd = REG_READ8;
     uint16_t value = addr_fix;
-    uint16_t index = *data;
+    uint16_t index = chip;
     fx3_dev_err_t success = txControlFromDevice(buf, len, cmd, value, index );
     *data = buf[0];
+
+    return success;
+}
+
+fx3_dev_err_t FX3Dev::writeADXL(uint8_t _addr, uint8_t _data)
+{
+    uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 16;
+
+    buf[0] = (uint8_t)(_addr << 1);
+    buf[1] = (uint8_t)_data;
+
+    uint8_t cmd = ADXL_WRITE;
+    uint16_t value = 0;
+    uint16_t index = 1;
+
+    fprintf( stderr, "Reg:%u 0x%04x \n", _addr, _data);
+
+    return txControlToDevice( buf, len, cmd, value, index);
+}
+
+fx3_dev_err_t FX3Dev::readADXL(uint8_t _addr, uint8_t* _data)
+{
+    uint8_t buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 1;
+    uint8_t addr_fix = ((_addr << 1) | 0x01);
+
+    // fprintf( stderr, "FX3Dev::read16bitSPI_ECP5() from  0x%03X\n", addr );
+
+    uint8_t cmd = ADXL_READ;
+    uint16_t value = addr_fix;
+    uint16_t index = *_data;
+    fx3_dev_err_t success = txControlFromDevice(buf, len, cmd, value, index );
+    *_data = buf[0];
 
     return success;
 }
@@ -771,6 +811,20 @@ fx3_dev_err_t FX3Dev::reset_nt1065()
 
     return txControlToDevice(buf, len, cmd, value, index);
 }
+
+
+fx3_dev_err_t FX3Dev::set_spi_clock(uint16_t _clock)
+{
+    uint8_t  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint32_t len = 1;
+
+    uint8_t cmd = SET_SPI_CLOCK;
+    uint16_t value = _clock;
+    uint16_t index = 1;
+
+    return txControlToDevice(buf, len, cmd, value, index);
+}
+
 
 fx3_dev_err_t FX3Dev::load1065Ctrlfile(const char* fwFileName, int lastaddr)
 {

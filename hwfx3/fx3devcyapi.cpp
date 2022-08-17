@@ -151,6 +151,12 @@ fx3_dev_err_t FX3DevCyAPI::init_fpga(const char* bitFileName)
     int written = 0;
     int rstFPGA = resetECP5();
     if(rstFPGA == FX3_ERR_OK) {
+        retCode = set_spi_clock(25000);
+        if(retCode != FX3_ERR_OK) {
+            fprintf( stderr, "FX3Dev::Init() set_spi_clock(25000 Khz) Ret code %d\n", retCode);
+            return retCode;
+        }
+
         long len = 512;
         char* tbuff = buff.data();
         for (; written < sz; tbuff += len) {
@@ -514,7 +520,7 @@ fx3_dev_err_t FX3DevCyAPI::send8bitSPI(uint8_t _addr, uint8_t _data)
     return ctrlToDevice(REG_WRITE8, value, index, buf, len);
 }
 
-fx3_dev_err_t FX3DevCyAPI::read8bitSPI(uint8_t addr, uint8_t* data)
+fx3_dev_err_t FX3DevCyAPI::read8bitSPI(uint8_t addr, uint8_t* data, uint8_t chip)
 {
     UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     LONG len = 16;
@@ -523,13 +529,45 @@ fx3_dev_err_t FX3DevCyAPI::read8bitSPI(uint8_t addr, uint8_t* data)
     //fprintf( stderr, "FX3Dev::read16bitSPI_ECP5() from  0x%03X\n", addr );
 
     WORD value = addr_fix;
-    WORD index = *data;
+    WORD index = chip;
     fx3_dev_err_t success = ctrlFromDevice(REG_READ8, value, index, buf, len);
     *data = buf[0];
 
     return success;
 
 }
+
+fx3_dev_err_t FX3DevCyAPI::writeADXL(uint8_t _addr, uint8_t _data)
+{
+    UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 16;
+
+    buf[0] = (UCHAR)(_addr << 1);
+    buf[1] = (UCHAR)_data;
+
+    WORD value = 0;
+    WORD index = 1;
+    //fprintf( stderr, "Reg:%u 0x%04x \n", _addr, _data);
+
+   return ctrlToDevice(ADXL_WRITE, value, index, buf, len);
+}
+
+fx3_dev_err_t FX3DevCyAPI::readADXL(uint8_t _addr, uint8_t* _data)
+{
+    UCHAR buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 1;
+    uint8_t addr_fix = ((_addr << 1) | 0x01);
+
+    // fprintf( stderr, "FX3DevCyAPI::read16bitSPI_ECP5() from  0x%03X\n", addr );
+
+    uint16_t value = addr_fix;
+    uint16_t index = *_data;
+    fx3_dev_err_t success = ctrlFromDevice(ADXL_READ, value, index, buf, len);
+    *_data = buf[0];
+
+    return success;
+}
+
 
 fx3_dev_err_t FX3DevCyAPI::sendECP5(uint8_t* _data, long _data_len)
 {
@@ -682,6 +720,17 @@ fx3_dev_err_t FX3DevCyAPI::reset_nt1065()
     WORD value = 0;
     WORD index = 1;
     return ctrlToDevice(NT1065_RESET, value, index, buf, len);
+}
+
+fx3_dev_err_t FX3DevCyAPI::set_spi_clock(uint16_t _clock)
+{
+    UCHAR  buf[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    LONG len = 1;
+
+    WORD value = _clock;
+    WORD index = 1;
+
+    return ctrlToDevice(SET_SPI_CLOCK, value, index, buf, len);
 }
 
 fx3_dev_err_t FX3DevCyAPI::load1065Ctrlfile(const char* fwFileName, int lastaddr)
