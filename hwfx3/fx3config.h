@@ -21,10 +21,7 @@
 //#define ADC_DATA_TYPE   ( DT_INT16_REAL )
 //#define DATA_SIZE       ( 16368 )
 
-
-//#define DEF_FW_NAME "fx3_newsub_injector.img"
-#define DEF_FW_NAME "fx3_att_dbg.img"
-//#define DEF_FW_NAME "D:\\work\\SlaveFifoSyncKeldush\\Release\\SlaveFifoSync.img"
+#define DEF_FW_NAME "AmungoItsFx3Firmware-nt4s7.img"
 
 enum ADCType {
     ADC_NT1065,
@@ -51,6 +48,7 @@ struct FX3Config {
     bool have_dbg;
     std::string fn_hex;
     std::string fn_img;
+    std::string fn_bit;
     double adc_sample_rate_hz;
     double inter_freq_hz;
     bool auto_start_streams;
@@ -135,10 +133,9 @@ struct FX3Config {
             have_submodules = true;
             have_atts       = false;
             have_dbg        = true;
-            //fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex";
-            fn_hex          = "manual";
-            //fn_img          = "D://work//raw_signal.img";
-            fn_img          = "AmungoItsFx3Firmware-2017-07-28-00.img";
+            fn_hex          = "ConfigSet_all_GPS_L1_patched_ldvs.hex"; //"manual";
+            fn_img          = DEF_FW_NAME;
+            fn_bit          = "nt4s7.bit";
             adc_sample_rate_hz = 53.0e6;
             inter_freq_hz      = 1590.0e6;
             break;

@@ -42,7 +42,7 @@ public:
     
     // StreamDataHandler interface
     virtual void HandleADCStreamData(void* data, size_t size8);
-    virtual void HandleStreamDataOneChan(short* one_ch_data, size_t pts_cnt, int channel);
+    virtual void HandleStreamDataOneChan(short* one_ch_data, size_t pts_cnt, int chan, int channel);
     
 
 private:    

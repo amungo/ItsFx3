@@ -18,7 +18,7 @@ public:
     // StreamDataHandler interface
 public:
     void HandleADCStreamData(void *data, size_t size8);
-    void HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel);
+    void HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int chip, int channel);
 
     void FlushStatistic();
 

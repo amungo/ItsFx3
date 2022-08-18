@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <set>
 #include <QDirIterator>
+#include <math.h>
 
 using namespace std;
 
@@ -64,7 +65,7 @@ std::string EtalonsFiles::GetFileFor(double freq, int ant_idx)
         int diff = abs( x.first - freqMhz );
         if ( diff < best_diff ) {
             best_diff = diff;
-            best_fname =  x.second[ant_idx];
+            best_fname = x.second[ant_idx];
             best_freq = x.first;
         }
     }

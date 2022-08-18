@@ -7,13 +7,25 @@ enum fx3cmd {
     FW_LOAD         = 0xA0,
     GET_VERSION     = 0xB0,
     INIT_PROJECT    = 0xB1,
-    REG_WRITE       = 0xB3,
     READ_DEBUG_INFO = 0xB4,
-    REG_READ        = 0xB5,
-    CYPRESS_RESET   = 0xBF,
-    START           = 0xC0,
-    WRITE_GPIO      = 0xC1,
-    READ_GPIO       = 0xC2
+    DEVICE_START    = 0xBA,
+    DEVICE_STOP     = 0xBB,
+    CYPRESS_RESET   = 0xB3,
+    NT1065_RESET    = 0xD7,
+
+    ECP5_RESET      = 0xD0,
+    ECP5_OFF        = 0xDA,
+    REG_WRITE8      = 0xD6,
+    REG_READ8       = 0xD9,
+    ECP5_WRITE      = 0xD1,
+    ECP5_READ       = 0xD5,
+    ECP5_CSON       = 0xD3,
+    ECP5_CSOFF      = 0xD4,
+    ECP5_CHECK      = 0xD2,
+    ECP5_SET_DAC    = 0xD8,
+    ADXL_WRITE      = 0xDB,
+    ADXL_READ       = 0xDE,
+    SET_SPI_CLOCK   = 0xB5,
 };
 
 enum fx3gpio {

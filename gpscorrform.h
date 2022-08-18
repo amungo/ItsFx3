@@ -78,6 +78,8 @@ private:
     int selectedPrn = 1;
     void setshifts();
 
+    std::vector<char> gyro_data;
+
     int antijamIdx;
 
     void processRawData( const std::vector<short>* data );
@@ -108,6 +110,7 @@ private slots:
     void checkAll(bool);
     void uncheckAll(bool);
     void uncheckInVis(bool);
+    void gyroChanged();
 
 
 signals:
@@ -116,7 +119,8 @@ signals:
     // StreamDataHandler interface
 public:
     void HandleADCStreamData(void *data, size_t size8);
-    void HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel);
+    void HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int chip, int channel);
+    virtual void HandleGyroData(char* data, size_t size8);
 
     // FileDumpCallbackIfce interface
 public:

@@ -48,8 +48,6 @@ SOURCES += main.cpp \
     hwfx3/FileSimDev.cpp \
     SpectrumForm.cpp \
     util/TimeComputator.cpp \
-    hwfx3/ad9361/ad9361_tuner.cpp \
-    hwfx3/ad9361/types/filters.cpp \
     gcacorr/lazy_matrix.cpp \
     phaseform.cpp \
     phasewidget.cpp \
@@ -117,14 +115,7 @@ HEADERS  += itsmain.h \
     SpectrumForm.h \
     gcacorr/averagervector.h \
     util/TimeComputator.h \
-    hwfx3/ad9361/ad9361_defines.h \
-    hwfx3/ad9361/ad9361_tuner.h \
     hwfx3/devioifce.h \
-    hwfx3/ad9361/types/filters.h \
-    hwfx3/ad9361/ad9361_client.h \
-    hwfx3/ad9361/ad9361_filter_taps.h \
-    hwfx3/ad9361/ad9361_gain_tables.h \
-    hwfx3/ad9361/ad9361_synth_lut.h \
     datahandlers/filedumpcallbackifce.h \
     gcacorr/lazy_matrix.h \
     phaseform.h \
@@ -160,36 +151,48 @@ win32: LIBS += -luser32
 win32: LIBS += -lsetupapi
 win32: QMAKE_LFLAGS += /NODEFAULTLIB:LIBCMT
 
-win32:!win32-g++: LIBS += -L$$PWD/libs/libusb/MS32/static/ -llibusb-1.0
+#win32:!win32-g++: LIBS += -L$$PWD/libs/libusb/MS32/static/ -llibusb-1.0
+win32:!win32-g++: LIBS += -L$$PWD/libs/libusb/MS64/static/ -llibusb-1.0
 else:win32-g++:   LIBS += -L$$PWD/libs/libusb/MinGW32/static/ -lusb-1.0
 
-win32:!win32-g++: INCLUDEPATH += $$PWD/libs/libusb/MS32/static
+#win32:!win32-g++: INCLUDEPATH += $$PWD/libs/libusb/MS32/static
+win32:!win32-g++: INCLUDEPATH += $$PWD/libs/libusb/MS64/static
 else:win32-g++:   INCLUDEPATH += $$PWD/libs/libusb/MinGW32/static
 
-win32:!win32-g++: DEPENDPATH += $$PWD/libs/libusb/MS32/static
+#win32:!win32-g++: DEPENDPATH += $$PWD/libs/libusb/MS32/static
+win32:!win32-g++: DEPENDPATH += $$PWD/libs/libusb/MS64/static
 else:win32-g++:   DEPENDPATH += $$PWD/libs/libusb/MinGW32/static
 
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libusb/MS32/static/libusb-1.0.lib
+#win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libusb/MS32/static/libusb-1.0.lib
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libusb/MS64/static/libusb-1.0.lib
 else:win32-g++:   PRE_TARGETDEPS += $$PWD/libs/libusb/MinGW32/static/libusb-1.0.a
 
 
 
-win32: LIBS += -L$$PWD/libs/cyapi/x86/ -lCyAPI
+#win32: LIBS += -L$$PWD/libs/cyapi/x86/ -lCyAPI
+win32: LIBS += -L$$PWD/libs/cyapi/x64/ -lCyAPI
 
-win32: INCLUDEPATH += $$PWD/libs/cyapi/x86
-win32: DEPENDPATH += $$PWD/libs/cyapi/x86
+#win32: INCLUDEPATH += $$PWD/libs/cyapi/x86
+win32: INCLUDEPATH += $$PWD/libs/cyapi/x64
+#win32: DEPENDPATH += $$PWD/libs/cyapi/x86
+win32: DEPENDPATH += $$PWD/libs/cyapi/x64
 
+#win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/cyapi/x86/CyAPI.lib
 win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/cyapi/x86/CyAPI.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/libs/cyapi/x86/libCyAPI.a
 
 
 
-win32: LIBS += -L$$PWD/libs/libfftw/ -llibfftw3f-3
+#win32: LIBS += -L$$PWD/libs/libfftw/ -llibfftw3f-3
+win32: LIBS += -L$$PWD/libs/libfftw/x64 -llibfftw3f-3 -llegacy_stdio_definitions
 
-win32: INCLUDEPATH += $$PWD/libs/libfftw
-win32: DEPENDPATH += $$PWD/libs/libfftw
+#win32: INCLUDEPATH += $$PWD/libs/libfftw
+win32: INCLUDEPATH += $$PWD/libs/libfftw/x64
+#win32: DEPENDPATH += $$PWD/libs/libfftw
+win32: DEPENDPATH += $$PWD/libs/libfftw/x64
 
-win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libfftw/libfftw3f-3.lib
+#win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libfftw/libfftw3f-3.lib
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/libs/libfftw/x64/libfftw3f-3.lib
 else:win32-g++: PRE_TARGETDEPS += $$PWD/libs/libfftw/liblibfftw3f-3.a
 
 unix:!macx: LIBS += -lusb-1.0

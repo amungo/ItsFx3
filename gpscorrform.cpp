@@ -93,6 +93,7 @@ GPSCorrForm::GPSCorrForm(FX3Config *cfg, QWidget *parent) :
     //antijamIdx = cfg->chan_count;
     //ui->comboBoxChannel->addItem( "antijamming", antijamIdx );
 
+    ui->comboBoxChip->setCurrentIndex( 0 );
     ui->comboBoxChannel->setCurrentIndex( 0 );
 
     set_tmp_dir( "M:\\tmp" );
@@ -439,8 +440,8 @@ void GPSCorrForm::HandleADCStreamData(void *data, size_t size8) {
 #endif
 }
 
-void GPSCorrForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel) {
-    if ( ui->comboBoxChannel->currentIndex() != channel ) {
+void GPSCorrForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int chip, int channel) {
+    if ( ui->comboBoxChannel->currentIndex() != channel || ui->comboBoxChip->currentIndex() != chip) {
         return;
     }
 
@@ -455,6 +456,16 @@ void GPSCorrForm::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, in
 
         SetWorking( true );
     }
+}
+
+
+void GPSCorrForm::HandleGyroData(char* data, size_t size8)
+{
+
+    if(gyro_data.size() != size8)
+        gyro_data.resize(size8);
+
+    memcpy(gyro_data.data(), data, size8);
 }
 
 void GPSCorrForm::onFileDumpComplete(std::string fname, ChunkDumpParams params) {
@@ -538,6 +549,30 @@ void GPSCorrForm::satChanged(int prn, float corr, int shift, double freq, bool i
     }
 
     setshifts();
+
+    gyroChanged();
+}
+
+void GPSCorrForm::gyroChanged()
+{
+    unsigned short* p16 = (unsigned short*)gyro_data.data();
+
+    unsigned short adxr1 = p16[0];
+    unsigned short adxr2 = p16[1];
+    unsigned short adxr3 = p16[2];
+
+    unsigned int x_coord = (p16[3] << 16) | p16[4];
+    unsigned int y_coord = (p16[5] << 16) | p16[6];
+    unsigned int z_coord = (p16[7] << 16) | p16[8];
+
+    ui->le_gyro1->setText(QString("%1").arg(adxr1, 0, 16));
+    ui->le_gyro2->setText(QString("%1").arg(adxr2, 0, 16));
+    ui->le_gyro3->setText(QString("%1").arg(adxr3, 0, 16));
+
+    ui->le_accel_x->setText(QString("%1").arg(x_coord, 0, 16));
+    ui->le_accel_y->setText(QString("%1").arg(y_coord, 0, 16));
+    ui->le_accel_z->setText(QString("%1").arg(z_coord, 0, 16));
+
 }
 
 void GPSCorrForm::cellSelected(int x, int) {

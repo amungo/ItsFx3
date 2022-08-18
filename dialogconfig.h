@@ -26,6 +26,7 @@ private slots:
     void reSetFields();
     void openFileImg(bool);
     void openFileAddFw(bool);
+    void openFileBit(bool);
     void changedSubs(int);
     void setConfigValues();
 };

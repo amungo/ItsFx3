@@ -83,7 +83,7 @@ void StreamDumper::HandleADCStreamData(void* data, size_t size8) {
     }
 }
 
-void StreamDumper::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int channel) {
+void StreamDumper::HandleStreamDataOneChan(short *one_ch_data, size_t pts_cnt, int, int channel) {
     int samples = 0;
     fmtx.lock();
     if ( dump_file ) {

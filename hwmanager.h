@@ -25,7 +25,8 @@ private:
 signals:
     
 public slots:
-    void initHardware( DriverType_t drvType, const char* imageFileName, const char* additionalImageFileName);
+    void initHardware( DriverType_t drvType, const char* imageFileName, const char* additionalImageFileName,
+                       const char* bitName);
     void closeHardware();
     void startStreams();
     void stopStreams();
